@@ -1,9 +1,22 @@
+import HeroAction from "./components/SeccioPrincipal/Herosection";
+import Drivingfutureseccion from "./components/SeccioPrincipal/Drivingfuturesection";
+import Backedtransparentsection from "./components/SeccioPrincipal/Backedtransparentsection";
+import Widespreadadoptionsection from "./components/SeccioPrincipal/Widespreadadoptionsection";
+import Disruptingindustrysection from "./components/SeccioPrincipal/Disruptingindustrysection";
+import Faqsection from "./components/SeccioPrincipal/Faqsection";
+import Layout from "./Layouts/MainLayout";
+
 export default function HomePage() {
-  return (
-    <div className="flex h-screen items-center justify-center ">
-      <p className="text-2xl text-black border border-white p-4 rounded-lg hover:bg-white hover:text-black">
-        Hello, Next.js!
-      </p>
-    </div>
+  return(
+    <>  
+        <Layout>
+        <HeroAction/>
+        <Drivingfutureseccion/>
+        <Backedtransparentsection/>
+        <Widespreadadoptionsection/>
+        <Disruptingindustrysection/>
+        <Faqsection/>
+        </Layout>
+    </>
   );
 }
