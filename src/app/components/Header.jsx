@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import NavLink from './Header/Navlink';
 import Logo from '../Components/Logo';
- 
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function Header() {
           >
             HUNBOLI
           </span>
-           
+
         </div>
 
         <nav className="hidden lg:flex items-center gap-8 font-semibold text-gray-700">
@@ -47,22 +47,24 @@ export default function Header() {
             <NavLink key={link.href} href={link.href}>
               {link.label}
             </NavLink>
-          ))}  
+          ))}
 
           <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setIsLogInOpen(true)}
-                className="text-gray-300 hover:text-teal-400 transition-colors"
-              >
-                Log In
-              </button>
-              <button 
-                onClick={() => setIsSignUpOpen(true)}
-                className="px-6 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-full transition-colors"
-              >
-                Sign Up
-              </button>
-            </div>
+            <Link href="/login"><button
+              onClick={() => setIsLogInOpen(true)}
+              className="text-gray-300 hover:text-teal-400 transition-colors"
+            >
+              Log In
+            </button>
+            </Link>
+            <Link href="/sign-up"><button
+              onClick={() => setIsSignUpOpen(true)}
+              className="px-6 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-full transition-colors"
+            >
+              Sign Up
+            </button>
+            </Link>
+          </div>
         </nav>
         <button
           className="lg:hidden text-gray-700 hover:text-black transition-colors"
