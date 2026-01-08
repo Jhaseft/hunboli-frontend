@@ -17,8 +17,8 @@ export function FloatingIcons() {
   ];
 
   return (
-    <div className="relative w-full h-[600px]">
-      {/* Connection lines */}
+    <div className="relative w-full  h-[600px]">
+     
       <svg className="absolute inset-0 w-full h-full opacity-20">
         <defs>
           <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -26,7 +26,7 @@ export function FloatingIcons() {
             <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {/* Curved decorative lines */}
+        
         <path
           d="M 100 100 Q 300 150 400 200"
           stroke="url(#line-gradient)"
@@ -47,7 +47,6 @@ export function FloatingIcons() {
         />
       </svg>
 
-      {/* Floating crypto icons */}
       {icons.map(({ Icon, position, delay, color }, index) => (
         <div
           key={index}
@@ -66,7 +65,7 @@ export function FloatingIcons() {
         </div>
       ))}
 
-      {/* Large decorative circles */}
+
       <div className="absolute top-40 right-20 w-64 h-64 bg-teal-500/5 rounded-full blur-2xl"></div>
       <div className="absolute bottom-40 left-20 w-80 h-80 bg-teal-600/5 rounded-full blur-3xl"></div>
     </div>

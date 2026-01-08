@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Logo } from '@/components/ui/Logo';
+import { Logo } from '../ui/Logo';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -18,7 +18,7 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full justify-center  max-w-md">
         <Logo />
 
         <div className="text-center mb-8">

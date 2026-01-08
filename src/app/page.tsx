@@ -1,22 +1,24 @@
-import HeroAction from "./components/SeccioPrincipal/Herosection";
-import Drivingfutureseccion from "./components/SeccioPrincipal/Drivingfuturesection";
-import Backedtransparentsection from "./components/SeccioPrincipal/Backedtransparentsection";
-import Widespreadadoptionsection from "./components/SeccioPrincipal/Widespreadadoptionsection";
-import Disruptingindustrysection from "./components/SeccioPrincipal/Disruptingindustrysection";
-import Faqsection from "./components/SeccioPrincipal/Faqsection";
-import Layout from "./Layouts/MainLayout";
+'use client';
+import { Navbar } from '../components/Home/Navbar';
+import { HeroSection } from '../components/Home/HeroSection/HeroSection';
+import { FeaturesSection } from '../components/Home/FeaturesSection';
+import { StatsSection } from '../components/Home/StatsSection';
+import { AdoptionSection } from '../components/Home/AdoptionSection';
+import { UseCasesSection } from '../components/Home/UseCasesSection';
+import { FooterSection } from '../components/Home/FooterSection';
 
-export default function HomePage() {
-  return(
-    <>  
-        <Layout>
-        <HeroAction/>
-        <Drivingfutureseccion/>
-        <Backedtransparentsection/>
-        <Widespreadadoptionsection/>
-        <Disruptingindustrysection/>
-        <Faqsection/>
-        </Layout>
-    </>
+export default function App() {
+
+
+  return (
+    <div className="min-h-screen  bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+      <Navbar  />
+      <HeroSection />
+      <FeaturesSection />
+      <StatsSection />
+      <AdoptionSection />
+      <UseCasesSection />
+      <FooterSection />
+    </div>
   );
 }
