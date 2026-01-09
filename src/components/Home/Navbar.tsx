@@ -47,7 +47,7 @@ export function Navbar() {
             <div className="relative">
               <span className="buttonGlow"></span>
               <Link
-                href="/register"
+                href="/sign-up"
                 className="relative  px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-full transition-colors"
               >
                 Registrarse
