@@ -9,7 +9,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'depositar' | 'intercambiar' | 'retirar'>('depositar');
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen bg-[#0a281e]">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
