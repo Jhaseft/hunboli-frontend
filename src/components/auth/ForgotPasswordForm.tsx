@@ -1,3 +1,4 @@
+'use client'
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
@@ -7,7 +8,7 @@ import { authService } from '@/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
 
 export const ForgotPasswordForm = () => {
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
@@ -19,19 +20,16 @@ export const ForgotPasswordForm = () => {
         setError('');
 
         try {
-            const data = await authService.login({ email, password });
-
-            // Usar el contexto de autenticación para guardar el token y usuario
-            login(data.token, data.user);
+            const data = await authService.forgotPassword(email)
 
             // Redirigir al dashboard
             router.push('/dashboard');
 
         } catch (err: any) {
-            console.error('Error en login:', err);
+            console.error('Error en forgot Password:', err);
             setError(
                 err.response?.data?.message ||
-                'Error al iniciar sesión. Verifica tus credenciales.'
+                'Error al pedir codigo. Verifica tus credenciales.'
             );
         } finally {
             setIsLoading(false);
@@ -45,10 +43,10 @@ export const ForgotPasswordForm = () => {
 
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">
-                        Bienvenido de nuevo
+                        Olvidaste tu contrasena?
                     </h1>
                     <p className="text-gray-400">
-                        Inicia sesión en tu cuenta para continuar
+                        Escribe tu correo electronico para reestablecer tu contrasena
                     </p>
                 </div>
 
@@ -70,19 +68,8 @@ export const ForgotPasswordForm = () => {
                         disabled={isLoading}
                     />
 
-                    <Input
-                        id="password"
-                        type="password"
-                        label="Contraseña"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={isLoading}
-                    />
-
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                        {isLoading ? 'Enviando correo...' : 'Enviar correo'}
                     </Button>
 
                     <div className="flex gap-4">
@@ -97,15 +84,6 @@ export const ForgotPasswordForm = () => {
                         </Button>
                     </div>
 
-                    <p className="text-center text-gray-400 text-sm">
-                        Don&apos;t have an account?{' '}
-                        <Link
-                            href="/sign-up"
-                            className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                        >
-                            Regístrate
-                        </Link>
-                    </p>
                 </form>
 
                 <p className="text-center text-gray-500 text-xs mt-8">
