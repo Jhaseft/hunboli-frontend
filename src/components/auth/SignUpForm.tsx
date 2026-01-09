@@ -5,17 +5,42 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { CountrySelector } from './CountrySelector';
+import { TermsCheckbox } from './TermsCheckbox';
 
 
 export const SignUpForm = () => {
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [country, setCountry] = useState('BOLIVIA');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Aquí irá la lógica de login
-        console.log('Sign Up:', { fullName, email, password });
+
+        if (password !== confirmPassword) {
+            alert('Passwords do not match');
+            return;
+        }
+
+        if (!acceptedTerms) {
+            alert('Please accept the terms and conditions');
+            return;
+        }
+
+        // Aquí irá la lógica de sign up
+        console.log('Sign Up:', {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            country,
+            password
+        });
     };
 
     return (
@@ -25,23 +50,35 @@ export const SignUpForm = () => {
 
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">
-                        Create Account
+                        Crear Cuenta
                     </h1>
                     <p className="text-gray-400">
-                        Sign up to join HUNBOLI
+                        Unete a HUNBOLI!!!
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <Input
-                        id="fullName"
-                        type="text"
-                        label="Full Name"
-                        placeholder="John Doe"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                    />
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            id="firstName"
+                            type="text"
+                            label="Nombre"
+                            placeholder="John"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                        />
+                        <Input
+                            id="lastName"
+                            type="text"
+                            label="Apellido"
+                            placeholder="Doe"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                        />
+                    </div>
+
                     <Input
                         id="email"
                         type="email"
@@ -53,9 +90,20 @@ export const SignUpForm = () => {
                     />
 
                     <Input
+                        id="phoneNumber"
+                        type="tel"
+                        label="Numero de Telefono (Opcional)"
+                        placeholder="+591 12345678"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+
+                    <CountrySelector value={country} onChange={setCountry} />
+
+                    <Input
                         id="password"
                         type="password"
-                        label="Password"
+                        label="Contraseña"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -64,30 +112,32 @@ export const SignUpForm = () => {
                     <Input
                         id="confirmPassword"
                         type="password"
-                        label="Confirm Password"
+                        label="Confirmar Contraseña"
                         placeholder="••••••••"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                     />
 
+                    <TermsCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
+
                     <Button type="submit" className="w-full">
-                        Sign up
+                        Registrarse
                     </Button>
 
                     <p className="text-center text-gray-400 text-sm">
-                        Already have an account?{' '}
+                        Ya tienes una cuenta?{' '}
                         <Link
                             href="/login"
                             className="text-cyan-400 hover:text-cyan-300 transition-colors"
                         >
-                            Log in
+                            Iniciar Sesion
                         </Link>
                     </p>
                 </form>
 
                 <p className="text-center text-gray-500 text-xs mt-8">
-                    Stable, secure, and transparent digital currency
+                    Estable, segura, y moneda transparente y digital
                 </p>
             </div>
         </div>
