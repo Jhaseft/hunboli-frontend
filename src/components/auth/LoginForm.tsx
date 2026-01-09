@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '../ui/Logo';
 import { authService } from '@/services/auth.service';
+import { useAuth } from '@/context/AuthContext';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,14 +25,11 @@ export function LoginForm() {
     try {
       const data = await authService.login({ email, password });
 
-      // Guardar el token en localStorage
-      localStorage.setItem('token', data.token);
+      // Usar el contexto de autenticación para guardar el token y usuario
+      login(data.token, data.user);
 
-      // Opcional: Guardar información del usuario
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Redirigir al dashboard o página principal
-      router.push('/dashboard'); // Cambia esto a la ruta que desees
+      // Redirigir al dashboard
+      router.push('/dashboard');
 
     } catch (err: any) {
       console.error('Error en login:', err);
@@ -89,6 +88,18 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </Button>
+
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={() => router.push('/')}
+              disabled={isLoading}
+            >
+              Volver
+            </Button>
+          </div>
 
           <p className="text-center text-gray-400 text-sm">
             Don&apos;t have an account?{' '}
