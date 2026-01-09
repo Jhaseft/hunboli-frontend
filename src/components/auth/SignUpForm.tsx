@@ -7,19 +7,26 @@ import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 import { CountrySelector } from './CountrySelector';
 import { TermsCheckbox } from './TermsCheckbox';
-
+import { authService } from '@/services/auth.service';
+import { Country } from '@/types/index';
+import { useRouter } from 'next/router';
 
 export const SignUpForm = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [country, setCountry] = useState('BOLIVIA');
+    const [country, setCountry] = useState<string>(Country.BOLIVIA);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        setIsLoading(true);
+        setError('');
         e.preventDefault();
 
         if (password !== confirmPassword) {
@@ -33,14 +40,23 @@ export const SignUpForm = () => {
         }
 
         // Aquí irá la lógica de sign up
-        console.log('Sign Up:', {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            country,
-            password
-        });
+        try {
+            const data = await authService.signup({
+                email, password, firstName, lastName, country: country as Country
+            })
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            router.push('/');
+
+        } catch (err: any) {
+            console.error('Error en sign up:', err);
+            setError(
+                err.response?.data?.message ||
+                'Error al crear la cuenta. Intenta nuevamente.'
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -58,6 +74,11 @@ export const SignUpForm = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    {error && (
+                        <div className="bg-red-100 text-red-700 p-3 rounded-md">
+                            {error}
+                        </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             id="firstName"
