@@ -9,7 +9,7 @@ import { CountrySelector } from './CountrySelector';
 import { TermsCheckbox } from './TermsCheckbox';
 import { authService } from '@/services/auth.service';
 import { Country } from '@/types/index';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export const SignUpForm = () => {
     const [firstName, setFirstName] = useState('');
@@ -31,11 +31,13 @@ export const SignUpForm = () => {
 
         if (password !== confirmPassword) {
             alert('Passwords do not match');
+            setIsLoading(false);
             return;
         }
 
         if (!acceptedTerms) {
             alert('Please accept the terms and conditions');
+            setIsLoading(false);
             return;
         }
 
@@ -46,7 +48,7 @@ export const SignUpForm = () => {
             })
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            router.push('/');
+            router.push('/dashboard');
 
         } catch (err: any) {
             console.error('Error en sign up:', err);
@@ -88,6 +90,7 @@ export const SignUpForm = () => {
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
                             required
+                            disabled={isLoading}
                         />
                         <Input
                             id="lastName"
@@ -97,6 +100,7 @@ export const SignUpForm = () => {
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -108,6 +112,7 @@ export const SignUpForm = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
 
                     <Input
@@ -117,6 +122,7 @@ export const SignUpForm = () => {
                         placeholder="+591 12345678"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={isLoading}
                     />
 
                     <CountrySelector value={country} onChange={setCountry} />
@@ -129,6 +135,7 @@ export const SignUpForm = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
                     <Input
                         id="confirmPassword"
@@ -138,11 +145,12 @@ export const SignUpForm = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
 
                     <TermsCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
 
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" className="w-full" disabled={isLoading}>
                         Registrarse
                     </Button>
 

@@ -30,7 +30,7 @@ export function LoginForm() {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirigir al dashboard o página principal
-      router.push('/'); // Cambia esto a la ruta que desees
+      router.push('/dashboard'); // Cambia esto a la ruta que desees
 
     } catch (err: any) {
       console.error('Error en login:', err);
