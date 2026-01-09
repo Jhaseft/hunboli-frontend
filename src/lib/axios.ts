@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // 1. Crear la instancia
 const api = axios.create({
-    baseURL: process.env.BACKEND_URL || 'http://localhost:4001', // Tu backend NestJS
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL, // Tu backend NestJS
     headers: {
         'Content-Type': 'application/json',
     },

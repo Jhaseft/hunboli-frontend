@@ -120,7 +120,7 @@ export function BalanceCard() {
   const shortAddr = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "";
 
   return (
-    <div className="bg-gradient-to-br from-teal-400 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
+    <div className="bg-gradient-to-br from-teal-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-2">
           <Wallet className="w-5 h-5" />

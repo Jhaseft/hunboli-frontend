@@ -26,7 +26,7 @@ export function DepositForm() {
               onClick={() => setSelectedCurrency('BOB')}
               className={`py-3 px-4 rounded-lg font-medium transition-all ${
                 selectedCurrency === 'BOB'
-                  ? 'bg-cyan-600 text-white shadow-md'
+                  ? 'bg-teal-600 text-white shadow-md'
                   : 'bg-[#0a1628] text-gray-300 hover:bg-[#152b47] border border-gray-700'
               }`}
             >
@@ -37,7 +37,7 @@ export function DepositForm() {
               onClick={() => setSelectedCurrency('PEN')}
               className={`py-3 px-4 rounded-lg font-medium transition-all ${
                 selectedCurrency === 'PEN'
-                  ? 'bg-cyan-600 text-white shadow-md'
+                  ? 'bg-teal-600 text-white shadow-md'
                   : 'bg-[#0a1628] text-gray-300 hover:bg-[#152b47] border border-gray-700'
               }`}
             >
@@ -64,7 +64,7 @@ export function DepositForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full py-3.5 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors shadow-md"
+          className="w-full py-3.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors shadow-md"
         >
           Confirmar Transacción
         </button>
