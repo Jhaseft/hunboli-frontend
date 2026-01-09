@@ -10,6 +10,7 @@ import { TermsCheckbox } from './TermsCheckbox';
 import { authService } from '@/services/auth.service';
 import { Country } from '@/types/index';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export const SignUpForm = () => {
     const [firstName, setFirstName] = useState('');
@@ -23,6 +24,7 @@ export const SignUpForm = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         setIsLoading(true);
@@ -46,8 +48,11 @@ export const SignUpForm = () => {
             const data = await authService.signup({
                 email, password, firstName, lastName, country: country as Country
             })
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
+
+            // Usar el contexto de autenticación para guardar el token y usuario
+            login(data.token, data.user);
+
+            // Redirigir al dashboard
             router.push('/dashboard');
 
         } catch (err: any) {
@@ -153,6 +158,18 @@ export const SignUpForm = () => {
                     <Button type="submit" className="w-full" disabled={isLoading}>
                         Registrarse
                     </Button>
+
+                    <div className="flex gap-4">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            className="flex-1"
+                            onClick={() => router.push('/')}
+                            disabled={isLoading}
+                        >
+                            Volver
+                        </Button>
+                    </div>
 
                     <p className="text-center text-gray-400 text-sm">
                         Ya tienes una cuenta?{' '}
