@@ -1,4 +1,4 @@
-import WalletBalanceCard from "../../components/WalletBalanceCard";
+import WalletBalanceCard from "../../components/dashboard/WalletBalanceCard";
 
 export default function BalanceTestPage() {
   return (

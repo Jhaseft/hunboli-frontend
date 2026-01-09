@@ -1,0 +1,7 @@
+'use client'
+
+import App from '@/components/dashboard/App'
+
+export default function DashboardPage() {
+  return <App />
+}
