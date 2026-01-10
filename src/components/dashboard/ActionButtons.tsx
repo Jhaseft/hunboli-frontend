@@ -12,7 +12,7 @@ export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
         onClick={() => setActiveTab('depositar')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
           activeTab === 'depositar'
-            ? 'bg-cyan-600 text-white shadow-md'
+            ? 'bg-teal-600 text-white shadow-md'
             : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
         }`}
       >
@@ -24,7 +24,7 @@ export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
         onClick={() => setActiveTab('intercambiar')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
           activeTab === 'intercambiar'
-            ? 'bg-cyan-600 text-white shadow-md'
+            ? 'bg-teal-600 text-white shadow-md'
             : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
         }`}
       >
@@ -36,7 +36,7 @@ export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
         onClick={() => setActiveTab('retirar')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
           activeTab === 'retirar'
-            ? 'bg-cyan-600 text-white shadow-md'
+            ? 'bg-teal-600 text-white shadow-md'
             : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
         }`}
       >

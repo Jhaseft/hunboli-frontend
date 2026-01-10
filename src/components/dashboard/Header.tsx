@@ -7,10 +7,7 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-cyan-400">HUNBOLI</h1>
-            <span className="px-2 py-0.5 bg-cyan-900/50 text-cyan-400 text-sm rounded font-medium">
-              Perú
-            </span>
+            <h1 className="text-2xl font-bold text-teal-400">HUNBOLI</h1>
           </div>
           
           {/* User Menu */}

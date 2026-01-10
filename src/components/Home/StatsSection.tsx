@@ -1,37 +1,69 @@
-import { TrendingUp, Users, Globe, Shield } from 'lucide-react';
+import { useCountUp } from '@/Hooks/useCountUp';
+import { TrendingUp, Zap, Shield, Clock } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export function StatsSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const fondos = useCountUp(150000, 2000, isVisible);
+  const uptime = useCountUp(99, 1500, isVisible);
+  const velocidad = useCountUp(50, 1800, isVisible);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect(); // Solo anima una vez
+          }
+        });
+      },
+      { threshold: 0.3 } // Se activa cuando el 30% es visible
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const stats = [
     {
       icon: TrendingUp,
-      value: '$120B+',
-      label: 'Total Market Cap',
-      description: 'Trusted by millions worldwide',
+      value: `$${(fondos / 1000).toFixed(0)}K`,
+      label: 'Fondos Iniciales',
+      description: 'Capital respaldado',
     },
     {
-      icon: Users,
-      value: '50M+',
-      label: 'Active Users',
-      description: 'Growing every day',
-    },
-    {
-      icon: Globe,
-      value: '200+',
-      label: 'Countries Supported',
-      description: 'Global coverage',
+      icon: Zap,
+      value: `<${velocidad}ms`,
+      label: 'Velocidad de Transacción',
+      description: 'Ejecución instantánea',
     },
     {
       icon: Shield,
-      value: '100%',
-      label: 'Backed & Transparent',
-      description: 'Full reserve backing',
+      value: `${uptime}.9%`,
+      label: 'Disponibilidad',
+      description: 'Uptime garantizado',
+    },
+    {
+      icon: Clock,
+      value: '24/7',
+      label: 'Soporte',
+      description: 'Asistencia continua',
     },
   ];
 
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-gray-900/50 to-transparent">
+    <section 
+      ref={sectionRef}
+      className="py-24 px-6 bg-gradient-to-b from-gray-900/50 to-transparent"
+    >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat) => (
             <div 
               key={stat.label}
