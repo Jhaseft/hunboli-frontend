@@ -22,7 +22,14 @@ export const authService = {
     },
 
     forgotPassword: async (email: string) => {
-        const { data } = await api.post('/auth/forgot-password');
+        const { data } = await api.post('/auth/forgot-password', { email });
+        return data;
+    },
+
+    resetPassword: async (token: string, newPassword: string) => {
+        const body = { token, newPassword };
+        console.log(body);
+        const { data } = await api.post('/auth/reset-password', body);
         return data;
     }
 };
