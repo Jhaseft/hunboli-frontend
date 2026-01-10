@@ -1,10 +1,16 @@
 import { Logo } from '@/components/ui/LogoAnimacion';
 import Link from 'next/link';
 
-export function MobileMenu({ isOpen, onClose, links }) {
+interface MobileMenuProps {
+  isOpen: boolean;
+  onClose: () => void;
+  links: { label: string; href: string }[];
+}
+
+export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
   return (
     <>
-   
+      
       <div
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 z-40 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -12,16 +18,15 @@ export function MobileMenu({ isOpen, onClose, links }) {
         onClick={onClose}
       />
 
-
+      
       <div
         className={`fixed inset-0 bg-gray-950/95 backdrop-blur-xl transform transition-transform duration-300 z-50
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         md:hidden flex flex-col`}
       >
-     
+       
         <div className="flex items-center justify-between px-8 py-6 border-b border-teal-400/20 shadow-[0_4px_30px_rgba(45,212,191,0.08)]">
           <Logo />
-
           <button
             onClick={onClose}
             className="text-gray-300 hover:text-teal-400 transition-colors"
@@ -40,7 +45,7 @@ export function MobileMenu({ isOpen, onClose, links }) {
           </button>
         </div>
 
-        
+  
         <div className="flex flex-col px-8 py-10 gap-6 flex-1">
           {links.map((link, index) => (
             <div key={link.href}>
@@ -52,7 +57,6 @@ export function MobileMenu({ isOpen, onClose, links }) {
                 {link.label}
               </Link>
 
-            
               {index !== links.length - 1 && (
                 <div className="mt-6 h-px bg-gradient-to-r from-transparent via-teal-400/30 to-transparent" />
               )}
@@ -60,7 +64,7 @@ export function MobileMenu({ isOpen, onClose, links }) {
           ))}
         </div>
 
-       
+     
         <div className="px-8 py-8 border-t border-teal-400/20 shadow-[0_-10px_40px_rgba(45,212,191,0.12)]">
           <div className="flex flex-col gap-4">
             <Link
