@@ -11,33 +11,40 @@ export function AdoptionSection() {
     { name: "Estabilidad", icon: <DollarSign className="w-12 h-12 text-teal-500" /> },
   ];
 
-  const carouselRef = useRef(null);
-  const scrollRef = useRef(0); // guardamos el scroll actual
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<number>(0);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const carousel = carouselRef.current;
     if (!carousel) return;
 
-    let frame;
+    let frame: number | null = null;
 
     const scroll = () => {
       if (!isHovered) {
-        scrollRef.current += 1; // avanza 1px por frame
-        if (scrollRef.current >= carousel.scrollWidth / 2) {
-          // efecto infinito: reiniciamos sin saltos
-          scrollRef.current -= carousel.scrollWidth / 2;
+        scrollRef.current += 1;
+
+        const halfWidth = carousel.scrollWidth / 2;
+        if (scrollRef.current >= halfWidth) {
+          scrollRef.current -= halfWidth;
         }
+
         carousel.scrollLeft = scrollRef.current;
       }
+
       frame = requestAnimationFrame(scroll);
     };
 
     frame = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(frame);
+
+    return () => {
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+    };
   }, [isHovered]);
 
-  // Duplicamos la lista solo una vez
   const displayValues = [...values, ...values];
 
   return (
@@ -47,8 +54,9 @@ export function AdoptionSection() {
           Nuestros valores fundamentales
         </h2>
         <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-16 leading-relaxed">
-          Hunboli es una moneda nueva que empieza su camino, enfocada en generar confianza, estabilidad y oportunidades
-          para todos. Estos son los valores que guían nuestra comunidad y nuestra misión.
+          Hunboli es una moneda nueva que empieza su camino, enfocada en generar
+          confianza, estabilidad y oportunidades para todos. Estos son los
+          valores que guían nuestra comunidad y nuestra misión.
         </p>
 
         <div
@@ -64,7 +72,9 @@ export function AdoptionSection() {
               style={{ minWidth: "150px" }}
             >
               {value.icon}
-              <span className="text-white text-sm font-semibold">{value.name}</span>
+              <span className="text-white text-sm font-semibold">
+                {value.name}
+              </span>
             </div>
           ))}
         </div>

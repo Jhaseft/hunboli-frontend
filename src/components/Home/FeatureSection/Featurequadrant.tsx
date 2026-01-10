@@ -1,13 +1,26 @@
-export default function FeatureQuadrant({ 
+import { ReactNode } from "react";
+
+interface FeatureQuadrantProps {
+  topLeftIcon?: ReactNode;
+  bottomRightIcon?: ReactNode;
+  topLeftImage?: string;
+  bottomRightSVG?: ReactNode;
+  activeColor?: string;
+  inactiveColor?: string;
+  size?: number;
+  backgroundCircleColor?: string;
+}
+
+export default function FeatureQuadrant({
   topLeftIcon,
   bottomRightIcon,
   topLeftImage,
-  bottomRightSVG, // nuevo prop para SVG
+  bottomRightSVG,
   activeColor = "bg-teal-500",
   inactiveColor = "bg-teal-50/30",
   size = 400,
-  backgroundCircleColor = "bg-[#B4ECF0]" // color del círculo de fondo
-}) {
+  backgroundCircleColor = "bg-[#B4ECF0]"
+}: FeatureQuadrantProps) {
   const bgSize = size * 0.7; // tamaño del círculo de fondo (70% del principal)
 
   return (
@@ -25,7 +38,6 @@ export default function FeatureQuadrant({
             zIndex: 0
           }}
         />
-
 
         <div 
           className="relative rounded-full overflow-hidden"
@@ -55,7 +67,6 @@ export default function FeatureQuadrant({
             </div>
           </div>
 
- 
           <div 
             className={`${activeColor} absolute bottom-0 right-0 w-1/2 h-1/2 rounded-br-full`}
           >
