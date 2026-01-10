@@ -17,7 +17,7 @@ const NAV_LINKS = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  // ✅ Condicional por ruta + auth (mínimo)
+  //  Condicional por ruta + auth (mínimo)
   const pathname = usePathname();
   const router = useRouter();
 
@@ -70,7 +70,7 @@ export function Navbar() {
             )}
 
             <div className="flex items-center gap-1">
-              {/*Botones derecha cambian según el modo */}
+             
               {!showDashboardUI ? (
                 <>
                   <div className="relative">
@@ -117,7 +117,7 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Botón menú móvil (mismo que tu amigo) */}
+          
             <button
               className="md:hidden hidden lg:hidden sm:hidden  flex-col gap-1 z-[60]"
               onClick={() => setIsOpen(!isOpen)}
