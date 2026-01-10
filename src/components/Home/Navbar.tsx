@@ -37,7 +37,7 @@ export function Navbar() {
             </div>
 
            
-            <div className="hidden  md:hidden lg:hidden  items-center gap-1">
+            <div className="flex items-center gap-1">
               <div className="relative">
                 <span className="buttonGlow"></span>
                 <Link
@@ -61,7 +61,7 @@ export function Navbar() {
 
    
             <button
-              className="md:hidden lg:hidden flex flex-col gap-1 z-[60]"
+              className="md:hidden hidden lg:hidden sm:hidden  flex-col gap-1 z-[60]"
               onClick={() => setIsOpen(!isOpen)}
             >
               <span className={`h-0.5 w-8 bg-gray-300 transition ${isOpen && 'rotate-45 translate-y-2'}`} />
