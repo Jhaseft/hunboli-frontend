@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 
 interface TypewriterTextProps {
-  texts: string[]; //  array de strings
-  speed?: number; // velocidad de escritura
-  deleteSpeed?: number; // velocidad de borrado
-  delay?: number; // delay antes de borrar
-  className?: string; // clases opcionales
+  texts: string[];
+  speed?: number;
+  deleteSpeed?: number;
+  delay?: number;
+  className?: string;
 }
 
 export function TypewriterText({
