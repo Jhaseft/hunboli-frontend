@@ -23,6 +23,8 @@ export function TypewriterText({
 
   useEffect(() => {
     const currentText = texts[textIndex];
+    if (!currentText) return;
+
     let timeout: NodeJS.Timeout;
 
     if (!isDeleting && displayText.length < currentText.length) {

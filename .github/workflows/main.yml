@@ -1,0 +1,15 @@
+name: Auto Deploy to EasyPanel
+
+on:
+  push:
+    branches:
+      - main  # Solo deploya cuando hagas push a main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Trigger EasyPanel Deploy
+        run: |
+          curl -X POST http://206.183.129.128:3000/api/deploy/1afe35fa30b314bcde1204c1445a46388125fca8d2ba2aab
