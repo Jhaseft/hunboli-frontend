@@ -2,20 +2,28 @@
 
 import { useEffect, useState } from 'react';
 
+interface TypewriterTextProps {
+  texts: string[];
+  speed?: number;
+  deleteSpeed?: number;
+  delay?: number;
+  className?: string;
+}
+
 export function TypewriterText({
   texts = [],
   speed = 100,
   deleteSpeed = 60,
   delay = 1500,
   className = '',
-}) {
+}: TypewriterTextProps) {
   const [textIndex, setTextIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const currentText = texts[textIndex];
-    let timeout;
+    let timeout: NodeJS.Timeout;
 
     if (!isDeleting && displayText.length < currentText.length) {
       timeout = setTimeout(() => {
