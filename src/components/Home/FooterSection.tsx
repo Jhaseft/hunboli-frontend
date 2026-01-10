@@ -1,9 +1,19 @@
-import { FaGithub, FaLinkedin, FaYoutube, FaFacebook, FaInstagram, FaEnvelope } from 'react-icons/fa';
-import { FaXTwitter } from "react-icons/fa6";
-import { Coins } from 'lucide-react';
+import { Coins, Linkedin } from "lucide-react"; // LinkedIn de Lucide
+import { SiGithub, SiYoutube, SiFacebook, SiInstagram, SiGmail, SiX } from "@icons-pack/react-simple-icons";
 
 export function FooterSection() {
-  const footerLinks = {
+
+  const socialIcons = [
+    { Icon: SiX, name: 'X', href: 'https://twitter.com' },
+    { Icon: SiGithub, name: 'GitHub', href: 'https://github.com' },
+    { Icon: Linkedin, name: 'LinkedIn', href: 'https://linkedin.com' }, // ahora LinkedIn de Lucide
+    { Icon: SiGmail, name: 'Email', href: 'mailto:info@hunboli.com' },
+    { Icon: SiYoutube, name: 'YouTube', href: 'https://youtube.com' },
+    { Icon: SiFacebook, name: 'Facebook', href: 'https://facebook.com' },
+    { Icon: SiInstagram, name: 'Instagram', href: 'https://instagram.com' },
+  ];
+  
+ const footerLinks = {
     empresa: [
       { name: 'Sobre nosotros', href: '/sobre-nosotros' },
       { name: 'Blog', href: '/blog' },
@@ -21,17 +31,6 @@ export function FooterSection() {
       { name: 'Seguridad', href: '/seguridad' },
     ],
   };
-
-  const socialIcons = [
-    { Icon: FaXTwitter, name: 'X', href: 'https://twitter.com' },
-    { Icon: FaGithub, name: 'GitHub', href: 'https://github.com' },
-    { Icon: FaLinkedin, name: 'LinkedIn', href: 'https://linkedin.com' },
-    { Icon: FaEnvelope, name: 'Email', href: 'mailto:info@hunboli.com' },
-    { Icon: FaYoutube, name: 'YouTube', href: 'https://youtube.com' },
-    { Icon: FaFacebook, name: 'Facebook', href: 'https://facebook.com' },
-    { Icon: FaInstagram, name: 'Instagram', href: 'https://instagram.com' },
-  ];
-
   return (
     <footer className="bg-gray-900 border-t border-gray-700 py-16 px-6">
       <div className="max-w-7xl mx-auto">
