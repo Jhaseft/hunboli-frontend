@@ -1,89 +1,79 @@
-import { Coins, Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { FaGithub, FaLinkedin, FaYoutube, FaFacebook, FaInstagram, FaEnvelope } from 'react-icons/fa';
+import { FaXTwitter } from "react-icons/fa6";
+import { Coins } from 'lucide-react';
 
 export function FooterSection() {
   const footerLinks = {
-    product: [
-      'How it Works',
-      'Transparency',
-      'Supported Tokens',
-      'Wallet',
-      'API Documentation',
-    ],
-    company: [
-      'About Us',
-      'Careers',
-      'Press Kit',
-      'Blog',
-      'Contact',
+    empresa: [
+      { name: 'Sobre nosotros', href: '/sobre-nosotros' },
+      { name: 'Blog', href: '/blog' },
+      { name: 'Contacto', href: '/contacto' },
+      { name: 'Carreras', href: '/carreras' },
     ],
     legal: [
-      'Terms of Service',
-      'Privacy Policy',
-      'Cookie Policy',
-      'Legal & Compliance',
-      'Risk Disclosure',
+      { name: 'Términos de servicio', href: '/terminos' },
+      { name: 'Política de privacidad', href: '/privacidad' },
+      { name: 'Aviso legal', href: '/aviso-legal' },
     ],
-    support: [
-      'Help Center',
-      'Knowledge Base',
-      'System Status',
-      'Security',
-      'Fees',
+    soporte: [
+      { name: 'Centro de ayuda', href: '/ayuda' },
+      { name: 'Estado del sistema', href: '/estado' },
+      { name: 'Seguridad', href: '/seguridad' },
     ],
   };
 
+  const socialIcons = [
+    { Icon: FaXTwitter, name: 'X', href: 'https://twitter.com' },
+    { Icon: FaGithub, name: 'GitHub', href: 'https://github.com' },
+    { Icon: FaLinkedin, name: 'LinkedIn', href: 'https://linkedin.com' },
+    { Icon: FaEnvelope, name: 'Email', href: 'mailto:info@hunboli.com' },
+    { Icon: FaYoutube, name: 'YouTube', href: 'https://youtube.com' },
+    { Icon: FaFacebook, name: 'Facebook', href: 'https://facebook.com' },
+    { Icon: FaInstagram, name: 'Instagram', href: 'https://instagram.com' },
+  ];
+
   return (
-    <footer className="bg-gray-900/80 border-t border-gray-800 py-16 px-6">
+    <footer className="bg-gray-900 border-t border-gray-700 py-16 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
-                <Coins className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl text-white">StableCoin</span>
-            </div>
-            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              The world's most trusted stablecoin, powering the future of digital finance.
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-teal-500 rounded-lg flex items-center justify-center transition-colors">
-                <Twitter className="w-5 h-5 text-gray-400 hover:text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-teal-500 rounded-lg flex items-center justify-center transition-colors">
-                <Github className="w-5 h-5 text-gray-400 hover:text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-teal-500 rounded-lg flex items-center justify-center transition-colors">
-                <Linkedin className="w-5 h-5 text-gray-400 hover:text-white" />
-              </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-teal-500 rounded-lg flex items-center justify-center transition-colors">
-                <Mail className="w-5 h-5 text-gray-400 hover:text-white" />
-              </a>
-            </div>
-          </div>
 
-          {/* Links */}
-          <div>
-            <h3 className="text-white mb-4">Product</h3>
-            <ul className="space-y-3">
-              {footerLinks.product.map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
+   
+        <div className="mb-12">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
+              <Coins className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl text-white">Hunboli</span>
           </div>
+          <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+            Hunboli es una moneda nueva enfocada en confianza, estabilidad y oportunidades para todos.
+          </p>
 
+         
+          <div className="flex gap-3 flex-wrap mt-2">
+            {socialIcons.map(({ Icon, name, href }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-gray-800 hover:bg-teal-500 rounded-lg flex items-center justify-center transition-colors"
+                title={name}
+              >
+                <Icon className="w-5 h-5 text-gray-400 hover:text-white" />
+              </a>
+            ))}
+          </div>
+        </div>
+
+       
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 md:grid-cols-3 gap-6 mb-12">
           <div>
-            <h3 className="text-white mb-4">Company</h3>
+            <h3 className="text-white mb-4">Empresa</h3>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
-                    {link}
+              {footerLinks.empresa.map(({ name, href }) => (
+                <li key={name}>
+                  <a href={href} className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                    {name}
                   </a>
                 </li>
               ))}
@@ -93,10 +83,10 @@ export function FooterSection() {
           <div>
             <h3 className="text-white mb-4">Legal</h3>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
-                    {link}
+              {footerLinks.legal.map(({ name, href }) => (
+                <li key={name}>
+                  <a href={href} className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                    {name}
                   </a>
                 </li>
               ))}
@@ -104,12 +94,12 @@ export function FooterSection() {
           </div>
 
           <div>
-            <h3 className="text-white mb-4">Support</h3>
+            <h3 className="text-white mb-4">Soporte</h3>
             <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
-                    {link}
+              {footerLinks.soporte.map(({ name, href }) => (
+                <li key={name}>
+                  <a href={href} className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                    {name}
                   </a>
                 </li>
               ))}
@@ -117,25 +107,26 @@ export function FooterSection() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">
-              © 2013 - 2026 StableCoin Operations Limited. All rights reserved.
+       
+        <div className="pt-8 border-t border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm text-center sm:text-left">
+              © 2026 Hunboli. Todos los derechos reservados.
             </p>
-            <div className="flex gap-6 text-sm">
-              <a href="#" className="text-gray-500 hover:text-teal-400 transition-colors">
-                Accessibility
+            <div className="flex flex-wrap justify-center sm:justify-end gap-6 text-sm">
+              <a href="/accesibilidad" className="text-gray-500 hover:text-teal-400 transition-colors">
+                Accesibilidad
               </a>
-              <a href="#" className="text-gray-500 hover:text-teal-400 transition-colors">
-                Sitemap
+              <a href="/mapa-del-sitio" className="text-gray-500 hover:text-teal-400 transition-colors">
+                Mapa del sitio
               </a>
-              <a href="#" className="text-gray-500 hover:text-teal-400 transition-colors">
-                Cookie Settings
+              <a href="/configuracion-cookies" className="text-gray-500 hover:text-teal-400 transition-colors">
+                Configuración de cookies
               </a>
             </div>
           </div>
         </div>
+
       </div>
     </footer>
   );
