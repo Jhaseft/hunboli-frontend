@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Header } from './Header';
 import { BalanceCard } from './BalanceCard';
 import { ActionButtons } from './ActionButtons';
 import { DepositForm } from './DepositForm';
@@ -9,9 +8,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'depositar' | 'intercambiar' | 'retirar'>('depositar');
 
   return (
-    <div className="min-h-screen bg-[#0a281e]">
-      <Header />
-      
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}

@@ -4,6 +4,7 @@ import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css'; // 👈 1. IMPORTAR ESTILOS
 import { Providers } from '../components/Providers'; // 👈 2. IMPORTAR TUS PROVIDERS
 import '../components/dashboard/styles/index.css';
+import { Navbar } from "@/components/layout/Navbar";
 
 
 const geistSans = Geist({
@@ -29,9 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+      
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <Navbar />
           {children}
         </Providers>
       </body>
