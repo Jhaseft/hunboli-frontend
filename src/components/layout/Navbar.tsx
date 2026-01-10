@@ -117,7 +117,7 @@ export function Navbar() {
 
             <div className="md:hidden">
               <button
-                className="flex flex-col gap-1 z-[60]"
+                className="flex flex-col items-end gap-1 z-[60]"
                 onClick={() => setIsOpen(!isOpen)}
               >
                 <span
@@ -125,18 +125,14 @@ export function Navbar() {
                     }`}
                 />
                 <span
-                  className={`h-0.5 w-8 bg-gray-300 transition ${isOpen && "opacity-0"
+                  className={`h-0.5 w-5  bg-gray-300 transition ${isOpen && "opacity-0"
                     }`}
                 />
                 <span
-                  className={`h-0.5 w-8 bg-gray-300 transition ${isOpen && "-rotate-45 -translate-y-2"
+                  className={`h-0.5 w-3 bg-gray-300 transition ${isOpen && "-rotate-45 -translate-y-2"
                     }`}
                 />
               </button>
-
-
-
-
             </div>
 
 

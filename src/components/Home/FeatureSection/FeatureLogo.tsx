@@ -20,7 +20,7 @@ export function FeatureLogo({
     <div className="flex justify-center">
       <div className="relative">
         <div
-          className={`w-80 h-80 bg-gradient-to-br ${variants[variant]} rounded-full flex items-center justify-center shadow-2xl`}
+          className={`w-64 h-64 bg-gradient-to-br ${variants[variant]} rounded-full flex items-center justify-center shadow-2xl`}
         >
           {imageSrc ? (
             <img
