@@ -84,6 +84,15 @@ export function LoginForm() {
             required
             disabled={isLoading}
           />
+          <p className="text-center text-gray-400 text-sm">
+
+            <Link
+              href="/forgot-password"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              Olvidaste Tu Contrasena?
+            </Link>
+          </p>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
