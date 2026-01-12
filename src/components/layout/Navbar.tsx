@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "../ui/LogoAnimacion";
 import { MobileMenu } from "../Home/Layouts/MobileMenu";
-import { getAuthToken } from "@/lib/cookies";
+import { useAuth } from "@/context/AuthContext";
+import { AuthResponse, User } from "@/types";
+
 
 
 const NAV_LINKS = [
@@ -22,6 +24,9 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Usar el contexto de autenticación
+  const { user, token, logout } = useAuth();
+
   const hideNavbar =
     pathname === "/login" ||
     pathname === "/sign-up" ||
@@ -29,18 +34,12 @@ export function Navbar() {
     pathname.startsWith("/sign-up/");
 
   const isDashboard = pathname.startsWith("/dashboard");
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = getAuthToken(); // Obtener token desde cookies
-    setIsAuthenticated(!!token);
-  }, []);
+  const isAuthenticated = !!token && !!user;
 
   const showDashboardUI = isDashboard;
 
   if (hideNavbar) return null;
-
+  console.log(user);
   return (
     <>
       <nav
@@ -98,16 +97,28 @@ export function Navbar() {
 
                   <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-200">
                     <span className="opacity-80">👤</span>
-                    <span className="text-sm">Juanito</span>
+                    <span className="text-sm">{user?.firstName || 'Usuario'}</span>
                   </div>
 
 
-                  <div className="px-3 py-2 rounded-md text-sm font-medium bg-yellow-600/20 text-yellow-300 border border-yellow-500/30">
-                    KYC Pendiente
+                  <div className={`px-3 py-2 rounded-md text-sm font-medium ${user?.KycStatus === 'APPROVED'
+                    ? 'bg-green-600/20 text-green-300 border border-green-500/30'
+                    : user?.KycStatus === 'REJECTED'
+                      ? 'bg-red-600/20 text-red-300 border border-red-500/30'
+                      : 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30'
+                    }`}>
+                    {user?.KycStatus === 'APPROVED'
+                      ? 'KYC Aprobado'
+                      : user?.KycStatus === 'REJECTED'
+                        ? 'KYC Rechazado'
+                        : 'KYC Pendiente'}
                   </div>
 
                   <button
-                    onClick={() => router.push("/")}
+                    onClick={() => {
+                      logout();
+                      router.push("/");
+                    }}
                     className="relative text-gray-300 hover:text-teal-400 transition-colors px-4 py-2 rounded-md"
                   >
                     Salir

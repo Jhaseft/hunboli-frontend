@@ -14,6 +14,7 @@ interface User {
     id: string;
     email: string;
     firstName: string;
+    KycStatus: string;
 }
 
 interface AuthContextType {
