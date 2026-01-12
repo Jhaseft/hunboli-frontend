@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "../ui/LogoAnimacion";
 import { MobileMenu } from "../Home/Layouts/MobileMenu";
+import { getAuthToken } from "@/lib/cookies";
 
 
 const NAV_LINKS = [
@@ -32,7 +33,7 @@ export function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token"); // cambia el key si usas otro
+    const token = getAuthToken(); // Obtener token desde cookies
     setIsAuthenticated(!!token);
   }, []);
 
