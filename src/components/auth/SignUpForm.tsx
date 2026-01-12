@@ -8,7 +8,7 @@ import { Logo } from '@/components/ui/Logo';
 import { CountrySelector } from './CountrySelector';
 import { TermsCheckbox } from './TermsCheckbox';
 import { authService } from '@/services/auth.service';
-import { Country } from '@/types/index';
+import { AuthResponse, Country } from '@/types/index';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
@@ -45,7 +45,7 @@ export const SignUpForm = () => {
 
         // Aquí irá la lógica de sign up
         try {
-            const data = await authService.signup({
+            const data: AuthResponse = await authService.signup({
                 email, password, firstName, lastName, country: country as Country
             })
 
