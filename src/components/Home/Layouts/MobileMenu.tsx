@@ -5,9 +5,11 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   links: { label: string; href: string }[];
+  isAuthenticated?: boolean;
+  onLogout?: () => void;
 }
 
-export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose, links, isAuthenticated, onLogout }: MobileMenuProps) {
   return (
     <>
       
@@ -67,21 +69,44 @@ export function MobileMenu({ isOpen, onClose, links }: MobileMenuProps) {
      
         <div className="px-8 py-8 border-t border-teal-400/20 shadow-[0_-10px_40px_rgba(45,212,191,0.12)]">
           <div className="flex flex-col gap-4">
-            <Link
-              href="/login"
-              onClick={onClose}
-              className="text-xl text-gray-300 text-center hover:text-teal-400 transition-colors"
-            >
-              Iniciar sesión
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={onClose}
+                  className="text-center py-3 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white rounded-full text-lg shadow-lg shadow-teal-500/20 transition-all"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    onClose();
+                  }}
+                  className="text-xl text-red-400 text-center hover:text-red-300 transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="text-xl text-gray-300 text-center hover:text-teal-400 transition-colors"
+                >
+                  Iniciar sesión
+                </Link>
 
-            <Link
-              href="/register"
-              onClick={onClose}
-              className="text-center py-3 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white rounded-full text-lg shadow-lg shadow-teal-500/20 transition-all"
-            >
-              Registrarse
-            </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={onClose}
+                  className="text-center py-3 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white rounded-full text-lg shadow-lg shadow-teal-500/20 transition-all"
+                >
+                  Registrarse
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
