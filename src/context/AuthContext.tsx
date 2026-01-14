@@ -75,9 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Actualizar estado
         setToken(newToken);
         setUser(newUser);
-
-        // Redirigir automáticamente al dashboard
-        router.push('/dashboard');
     };
 
     // 3. Logout - Elimina cookies
