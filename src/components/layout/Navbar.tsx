@@ -35,6 +35,8 @@ export function Navbar() {
   const showDashboardUI = isDashboard;
 
   const userInitial = (user?.firstName?.[0] ?? "U").toUpperCase();
+  const userName = user?.firstName || "Usuario";
+
 
   if (hideNavbar) return null;
 
@@ -113,15 +115,19 @@ export function Navbar() {
                       : "KYC Pendiente"}
                   </div>
 
-                  <button
-                    onClick={() => {
-                      logout();
-                      router.push("/");
-                    }}
-                    className="relative text-gray-300 hover:text-teal-400 transition-colors px-4 py-2 rounded-md"
+                  {/* perfil de usuario */}
+                  <Link
+                    href="/dashboard/settings"
+                    className="relative inline-flex items-center gap-2 rounded-full bg-gray-800/40 border border-gray-700 px-3 py-2 text-gray-100 hover:bg-gray-800/70 transition"
+                    aria-label="Perfil"
+                    title="Perfil"
                   >
-                    Salir
-                  </button>
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal-600/20 border border-teal-500/30 text-teal-200 font-semibold">
+                      {userInitial}
+                    </span>
+                    <span className="text-sm font-medium">{userName}</span>
+                  </Link>
+
                 </>
               )}
             </div>
@@ -137,7 +143,7 @@ export function Navbar() {
               </Link>
             )}
 
-            {/* ✅ NO TOCADO: hamburguesa de tu amigo (solo la “envoltura” para que no salga en dashboard) */}
+            {/* hamburguesa de tu amigo (solo la “envoltura” para que no salga en dashboard) */}
             {!showDashboardUI && (
               <div className="md:hidden">
                 <button
