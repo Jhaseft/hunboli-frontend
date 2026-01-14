@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "../ui/LogoAnimacion";
 import { MobileMenu } from "../Home/Layouts/MobileMenu";
-
+import { useAuth } from "@/context/AuthContext";
+import { AuthResponse, User } from "@/types";
 
 const NAV_LINKS = [
   { label: "¿Por qué Hunboli?", href: "/why" },
@@ -17,9 +18,10 @@ const NAV_LINKS = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  //  Condicional por ruta + auth (mínimo)
   const pathname = usePathname();
   const router = useRouter();
+
+  const { user, token, logout } = useAuth();
 
   const hideNavbar =
     pathname === "/login" ||
@@ -28,32 +30,31 @@ export function Navbar() {
     pathname.startsWith("/sign-up/");
 
   const isDashboard = pathname.startsWith("/dashboard");
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token"); // cambia el key si usas otro
-    setIsAuthenticated(!!token);
-  }, []);
+  const isAuthenticated = !!token && !!user;
 
   const showDashboardUI = isDashboard;
+
+  const userInitial = (user?.firstName?.[0] ?? "U").toUpperCase();
+  const userName = user?.firstName || "Usuario";
+
 
   if (hideNavbar) return null;
 
   return (
     <>
       <nav
-        className={`${showDashboardUI ? "relative bg-gray-950" : "fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-lg"
-          } z-50 border-b border-gray-800`}
+        className={`${
+          showDashboardUI
+            ? "relative bg-gray-950"
+            : "fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-lg"
+        } z-50 border-b border-gray-800`}
       >
-
-        <div className="max-w-7xl mx-auto px-6 py-1">
+        <div className="max-w-7xl mx-auto px-6 py-1 relative">
           <div className="flex items-center justify-between">
-            <Logo />
-
+            <Logo disableLink={showDashboardUI} />
 
             {!showDashboardUI && (
-              <div className="hidden md:flex items-center gap-8 relative">
+              <div className="hidden md:!flex items-center gap-8 relative">
                 {NAV_LINKS.map((link) => (
                   <div key={link.href} className="relative">
                     <span className="navLinkGlow"></span>
@@ -68,8 +69,7 @@ export function Navbar() {
               </div>
             )}
 
-            <div className="md:flex lg:flex hidden items-center gap-1">
-
+            <div className="hidden md:!flex items-center gap-1">
               {!showDashboardUI ? (
                 <>
                   <div className="relative">
@@ -94,48 +94,80 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-
                   <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-200">
                     <span className="opacity-80">👤</span>
-                    <span className="text-sm">Juanito</span>
+                    <span className="text-sm">{user?.firstName || "Usuario"}</span>
                   </div>
 
-
-                  <div className="px-3 py-2 rounded-md text-sm font-medium bg-yellow-600/20 text-yellow-300 border border-yellow-500/30">
-                    KYC Pendiente
-                  </div>
-
-                  <button
-                    onClick={() => router.push("/")}
-                    className="relative text-gray-300 hover:text-teal-400 transition-colors px-4 py-2 rounded-md"
+                  <div
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      user?.KycStatus === "APPROVED"
+                        ? "bg-green-600/20 text-green-300 border border-green-500/30"
+                        : user?.KycStatus === "REJECTED"
+                        ? "bg-red-600/20 text-red-300 border border-red-500/30"
+                        : "bg-yellow-600/20 text-yellow-300 border border-yellow-500/30"
+                    }`}
                   >
-                    Salir
-                  </button>
+                    {user?.KycStatus === "APPROVED"
+                      ? "KYC Aprobado"
+                      : user?.KycStatus === "REJECTED"
+                      ? "KYC Rechazado"
+                      : "KYC Pendiente"}
+                  </div>
+
+                  {/* perfil de usuario */}
+                  <Link
+                    href="/dashboard/settings"
+                    className="relative inline-flex items-center gap-2 rounded-full bg-gray-800/40 border border-gray-700 px-3 py-2 text-gray-100 hover:bg-gray-800/70 transition"
+                    aria-label="Perfil"
+                    title="Perfil"
+                  >
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal-600/20 border border-teal-500/30 text-teal-200 font-semibold">
+                      {userInitial}
+                    </span>
+                    <span className="text-sm font-medium">{userName}</span>
+                  </Link>
+
                 </>
               )}
             </div>
 
-            <div className="md:hidden">
-              <button
-                className="flex flex-col items-end gap-1 z-[60]"
-                onClick={() => setIsOpen(!isOpen)}
+            {showDashboardUI && (
+              <Link
+                href="/dashboard/settings"
+                className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-800/60 border border-gray-700 text-gray-100"
+                aria-label="Perfil"
+                title="Perfil"
               >
-                <span
-                  className={`h-0.5 w-8 bg-gray-300 transition ${isOpen && "rotate-45 translate-y-2"
-                    }`}
-                />
-                <span
-                  className={`h-0.5 w-5  bg-gray-300 transition ${isOpen && "opacity-0"
-                    }`}
-                />
-                <span
-                  className={`h-0.5 w-3 bg-gray-300 transition ${isOpen && "-rotate-45 -translate-y-2"
-                    }`}
-                />
-              </button>
-            </div>
+                <span className="text-sm font-semibold">{userInitial}</span>
+              </Link>
+            )}
 
-
+            {/* hamburguesa de tu amigo (solo la “envoltura” para que no salga en dashboard) */}
+            {!showDashboardUI && (
+              <div className="md:hidden">
+                <button
+                  className="flex flex-col items-end gap-1 z-[60]"
+                  onClick={() => setIsOpen(!isOpen)}
+                >
+                  <span
+                    className={`h-0.5 w-8 bg-gray-300 transition ${
+                      isOpen && "rotate-45 translate-y-2"
+                    }`}
+                  />
+                  <span
+                    className={`h-0.5 w-5  bg-gray-300 transition ${
+                      isOpen && "opacity-0"
+                    }`}
+                  />
+                  <span
+                    className={`h-0.5 w-3 bg-gray-300 transition ${
+                      isOpen && "-rotate-45 -translate-y-2"
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

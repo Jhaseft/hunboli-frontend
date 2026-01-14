@@ -1,5 +1,6 @@
 // src/lib/axios.ts
 import axios from 'axios';
+import { getAuthToken } from './cookies';
 
 // 1. Crear la instancia
 const api = axios.create({
@@ -9,11 +10,11 @@ const api = axios.create({
     },
 });
 
-// 2. Interceptor de Request (Para inyectar el Token automáticamente)
+// 2. Interceptor de Request (Para inyectar el Token automáticamente desde cookies)
 api.interceptors.request.use(
     (config) => {
-        // Si guardas el token en localStorage (o cookies)
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        // Obtener el token desde las cookies
+        const token = typeof window !== 'undefined' ? getAuthToken() : null;
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
