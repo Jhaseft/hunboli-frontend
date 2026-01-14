@@ -74,7 +74,7 @@ export function BalanceCard() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ConnectButton />
+          <ConnectButton chainStatus="none"/>
           <TrendingUp className="w-5 h-5 opacity-70" />
         </div>
       </div>
