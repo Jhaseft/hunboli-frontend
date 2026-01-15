@@ -1,24 +1,26 @@
 import { useState } from 'react';
 
-export function DepositForm() {
+export default function RetiroForm() {
   const [selectedCurrency, setSelectedCurrency] = useState<'BOB' | 'PEN'>('BOB');
   const [amount, setAmount] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Depositar:', { currency: selectedCurrency, amount });
+    console.log('Retirar:', { currency: selectedCurrency, amount, bankAccount });
   };
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl p-6 shadow-sm border border-gray-800">
-      <h2 className="text-2xl font-semibold mb-2 text-white">Depositar Fondos</h2>
-      <p className="text-gray-400 mb-6">Deposita BOB o PEN para recibir tokens BOBH</p>
+      <h2 className="text-2xl font-semibold mb-2 text-white">Retirar Fondos</h2>
+      <p className="text-gray-400 mb-6">Redime tus tokens BOBH por BOB o PEN</p>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-       
+        
+        {/* Selector de Moneda */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
-            Moneda de Depósito
+            Moneda de Retiro
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -46,10 +48,10 @@ export function DepositForm() {
           </div>
         </div>
         
-       
+        {/* Monto de Tokens BOBH */}
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
-            Monto
+            Cantidad de BOBH
           </label>
           <input
             type="text"
@@ -60,13 +62,28 @@ export function DepositForm() {
             className="w-full px-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
           />
         </div>
+
+        {/* Cuenta Bancaria */}
+        <div>
+          <label htmlFor="bankAccount" className="block text-sm font-medium text-gray-300 mb-3">
+            Número de Cuenta Bancaria
+          </label>
+          <input
+            type="text"
+            id="bankAccount"
+            value={bankAccount}
+            onChange={(e) => setBankAccount(e.target.value)}
+            placeholder="Ingresa tu número de cuenta"
+            className="w-full px-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
+          />
+        </div>
         
-        
+        {/* Botón de Confirmación */}
         <button
           type="submit"
           className="w-full py-3.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors shadow-md"
         >
-          Confirmar Transacción
+          Solicitar Retiro
         </button>
       </form>
     </div>

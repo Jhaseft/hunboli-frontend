@@ -5,6 +5,7 @@ import { BalanceCard } from "./BalanceCard";
 import { ActionButtons } from "./ActionButtons";
 import { DepositForm } from "./DepositForm";
 import { RecentActivity } from "./RecentActivity";
+import RetiroForm from "./RetiroForm";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"depositar" | "retirar">("depositar");
@@ -31,32 +32,26 @@ export default function App() {
               <RecentActivity />
             </div>
 
-            {/* Solo desktop: botones arriba */}
             <div className="hidden lg:block">
               <ActionButtons activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
 
-            {/* Solo desktop: contenido inline (en móvil NO se muestra) */}
             <div className="hidden lg:block">
               {activeTab === "depositar" && <DepositForm />}
 
               {activeTab === "retirar" && (
-                <div className="bg-[#0f1e33] rounded-lg p-4 sm:p-6 shadow-sm border border-gray-800">
-                  <h2 className="text-xl font-semibold mb-2 text-white">Retirar</h2>
-                  <p className="text-gray-400">Funcionalidad de retiro próximamente</p>
-                </div>
+                <RetiroForm/>
               )}
             </div>
           </div>
 
-          {/* Sidebar solo PC */}
           <div className="hidden lg:block lg:col-span-1">
             <RecentActivity />
           </div>
         </div>
       </div>
 
-      {/* Mobile Bottom Bar: 2 botones ocupando todo el ancho */}
+   
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-950/90 backdrop-blur border-t border-gray-800">
         <div className="mx-auto w-full max-w-md px-4 py-3">
           <div className="grid grid-cols-2 gap-3">
@@ -77,7 +72,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Mobile Modal (Bottom Sheet) */}
       {mobileModalOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           {/* overlay */}
@@ -99,13 +93,10 @@ export default function App() {
               </button>
             </div>
 
-            {/* contenido del modal */}
             {activeTab === "depositar" ? (
               <DepositForm />
             ) : (
-              <div className="text-gray-200">
-                <p className="text-gray-400">Funcionalidad de retiro próximamente</p>
-              </div>
+              <RetiroForm/>
             )}
           </div>
         </div>
