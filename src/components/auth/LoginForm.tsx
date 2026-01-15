@@ -28,8 +28,9 @@ export function LoginForm() {
       // Usar el contexto de autenticación para guardar el token y usuario
       login(data.token, data.user);
 
-      // Redirigir al dashboard
+      // Redirigir al dashboard y refrescar para actualizar el estado
       router.push('/dashboard');
+      router.refresh();
 
     } catch (err: any) {
       console.error('Error en login:', err);
