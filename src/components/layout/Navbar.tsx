@@ -19,6 +19,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileProfileMenuRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -32,7 +33,8 @@ export function Navbar() {
     pathname.startsWith("/sign-up/");
 
   const isDashboard = pathname.startsWith("/dashboard");
-  const isAuthenticated = !!token && !!user;
+  // Durante la carga inicial, no podemos determinar el estado de autenticación
+  const isAuthenticated = !isLoading && !!token && !!user;
 
   const showDashboardUI = isDashboard;
 
@@ -41,18 +43,30 @@ export function Navbar() {
 
   // Cerrar menú al hacer click fuera
   useEffect(() => {
+    if (!isProfileMenuOpen) return;
+
     function handleClickOutside(event: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      // Verificar si el click fue dentro de alguno de los menús
+      const clickedInsideDesktop = profileMenuRef.current?.contains(target);
+      const clickedInsideMobile = mobileProfileMenuRef.current?.contains(target);
+
+      // Solo cerrar si el click fue fuera de ambos menús
+      if (!clickedInsideDesktop && !clickedInsideMobile) {
         setIsProfileMenuOpen(false);
       }
     }
 
-    if (isProfileMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
+    // Usar setTimeout para que el evento se registre después del click actual
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, [isProfileMenuOpen]);
 
   const handleLogout = () => {
@@ -149,7 +163,7 @@ export function Navbar() {
             <Logo disableLink={showDashboardUI} />
 
             {!showDashboardUI && (
-              <div className="hidden md:!flex items-center gap-8 relative">
+              <div className="hidden! md:flex! items-center gap-8 relative">
                 {NAV_LINKS.map((link) => (
                   <div key={link.href} className="relative">
                     <span className="navLinkGlow"></span>
@@ -164,9 +178,11 @@ export function Navbar() {
               </div>
             )}
 
-            {/* Desktop: botones de auth o perfil */}
-            <div className="hidden md:!flex items-center gap-1">
-              {!isAuthenticated ? (
+            {/* Desktop: botones de auth o perfil - oculto en mobile, visible en md+ */}
+            <div className="hidden! md:flex! items-center gap-1">
+              {isLoading ? (
+                <div className="w-24 h-8 bg-gray-800/50 rounded-full animate-pulse" />
+              ) : !isAuthenticated ? (
                 <>
                   <div className="relative">
                     <span className="buttonGlow"></span>
@@ -249,11 +265,15 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Mobile: perfil y hamburguesa */}
+            {/* Mobile: perfil y hamburguesa - visible en mobile, oculto en md+ */}
             <div className="flex md:hidden! items-center gap-3">
+              {/* Skeleton loader mientras carga */}
+              {isLoading && (
+                <div className="h-10 w-10 rounded-full bg-gray-800/50 animate-pulse" />
+              )}
               {/* Botón de perfil en mobile con menú desplegable */}
-              {isAuthenticated && (
-                <div className="relative">
+              {!isLoading && isAuthenticated && (
+                <div className="relative" ref={mobileProfileMenuRef}>
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-teal-600/20 border border-teal-500/30 text-teal-200 font-semibold hover:bg-teal-600/30 transition"
