@@ -17,7 +17,7 @@ export const authService = {
 
     // Obtener perfil (Ejemplo con GET)
     getProfile: async () => {
-        const { data } = await api.get('/auth/profile');
+        const { data } = await api.get('/users/profile');
         return data;
     },
 
