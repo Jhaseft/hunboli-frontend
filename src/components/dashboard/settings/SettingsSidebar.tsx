@@ -108,9 +108,9 @@ export function SettingsSidebar() {
   };
 
   return (
-    <aside className="w-full md:w-[320px]">
-      {/* Mobile: Selector desplegable */}
-      <div className="md:hidden">
+    <aside className="w-full xl:w-[320px] xl:shrink-0">
+      {/* Mobile/Tablet: Selector desplegable */}
+      <div className="xl:hidden">
         <div className="rounded-xl border border-gray-800 bg-[#0f1e33] overflow-hidden">
           {/* Header con usuario y selector */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
@@ -176,7 +176,7 @@ export function SettingsSidebar() {
       </div>
 
       {/* Desktop: Sidebar tradicional */}
-      <div className="hidden md:block rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
+      <div className="hidden xl:block rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
         {/* Header usuario */}
         <div className="flex items-center gap-3 px-5 py-4">
           <div className="h-10 w-10 rounded-full bg-teal-600/20 border border-teal-500/30 flex items-center justify-center">
