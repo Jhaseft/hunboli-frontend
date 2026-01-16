@@ -1,7 +1,7 @@
 // src/services/auth.service.ts
 import api from '@/lib/axios';
 import { LoginDto, RegisterDto, AuthResponse } from '@/types/index'; // Tus interfaces
-
+ 
 export const authService = {
     // Login
     login: async (credentials: LoginDto) => {

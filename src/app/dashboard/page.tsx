@@ -8,5 +8,5 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <App />
     </ProtectedRoute>
-  );
+  ); 
 }
