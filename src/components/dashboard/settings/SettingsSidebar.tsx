@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -8,18 +9,74 @@ type Item = {
   label: string;
   href?: string;
   key: "account" | "verification" | "payments" | "whitelist" | "transparency" | "logout";
+  icon: React.ReactNode;
 };
 
 const ITEMS: Item[] = [
-  { key: "account", label: "Account settings", href: "/dashboard/settings" },
-  { key: "verification", label: "Verification", href: "/dashboard/settings/verification" },
-  { key: "payments", label: "My Payment Accounts", href: "/dashboard/settings/payments" },
-  { key: "whitelist", label: "Address Whitelist", href: "/dashboard/settings/whitelist" },
-  { key: "transparency", label: "Transparency", href: "/dashboard/settings/transparency" },
-  { key: "logout", label: "Log Out" },
+  {
+    key: "account",
+    label: "Configuración de cuenta",
+    href: "/dashboard/settings",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    )
+  },
+  {
+    key: "verification",
+    label: "Verificación",
+    href: "/dashboard/settings/verification",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    )
+  },
+  {
+    key: "payments",
+    label: "Mis cuentas de pago",
+    href: "/dashboard/settings/payments",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    )
+  },
+  {
+    key: "whitelist",
+    label: "Lista blanca de direcciones",
+    href: "/dashboard/settings/whitelist",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    )
+  },
+  {
+    key: "transparency",
+    label: "Transparencia",
+    href: "/dashboard/settings/transparency",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    )
+  },
+  {
+    key: "logout",
+    label: "Cerrar sesión",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+    )
+  },
 ];
 
 export function SettingsSidebar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -29,22 +86,105 @@ export function SettingsSidebar() {
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    // activo exacto o subrutas
+    if (href === "/dashboard/settings") {
+      return pathname === href;
+    }
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  const getCurrentLabel = () => {
+    const current = ITEMS.find(item => item.href && isActive(item.href));
+    return current?.label || "Configuración de cuenta";
+  };
+
+  const handleItemClick = (item: Item) => {
+    if (item.key === "logout") {
+      logout();
+      router.push("/");
+    } else if (item.href) {
+      router.push(item.href);
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
-    <aside className="w-full lg:w-[320px]">
-      {/* Card contenedora */}
-      <div className="rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
+    <aside className="w-full md:w-[320px]">
+      {/* Mobile: Selector desplegable */}
+      <div className="md:hidden">
+        <div className="rounded-xl border border-gray-800 bg-[#0f1e33] overflow-hidden">
+          {/* Header con usuario y selector */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
+            <div className="h-9 w-9 rounded-full bg-teal-600/20 border border-teal-500/30 flex items-center justify-center shrink-0">
+              <span className="font-semibold text-teal-300 text-sm">{userInitial}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-medium text-white text-sm truncate">{userName}</div>
+              <div className="text-xs text-gray-500">Cuenta</div>
+            </div>
+          </div>
+
+          {/* Botón selector de sección */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition"
+          >
+            <span className="text-teal-300 font-medium text-sm">{getCurrentLabel()}</span>
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Menú desplegable */}
+          {isMenuOpen && (
+            <nav className="border-t border-gray-800 py-1">
+              {ITEMS.map((item) => {
+                const active = isActive(item.href);
+                const isLogout = item.key === "logout";
+
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => handleItemClick(item)}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition ${
+                      isLogout
+                        ? "text-red-400 hover:bg-red-500/10"
+                        : active
+                        ? "bg-teal-600/10 text-teal-300"
+                        : "text-gray-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <span className={isLogout ? "text-red-400" : active ? "text-teal-400" : "text-gray-500"}>
+                      {item.icon}
+                    </span>
+                    <span className="font-medium text-sm">{item.label}</span>
+                    {active && !isLogout && (
+                      <svg className="w-4 h-4 ml-auto text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop: Sidebar tradicional */}
+      <div className="hidden md:block rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
         {/* Header usuario */}
         <div className="flex items-center gap-3 px-5 py-4">
           <div className="h-10 w-10 rounded-full bg-teal-600/20 border border-teal-500/30 flex items-center justify-center">
-            <span className="font-semibold text-teal-700">{userInitial}</span>
+            <span className="font-semibold text-teal-300">{userInitial}</span>
           </div>
           <div className="min-w-0">
             <div className="font-semibold text-white truncate">{userName}</div>
-            <div className="text-xs text-gray-400 truncate">Account</div>
+            <div className="text-xs text-gray-400 truncate">Cuenta</div>
           </div>
         </div>
 
@@ -54,9 +194,9 @@ export function SettingsSidebar() {
         <nav className="py-2">
           {ITEMS.map((item) => {
             const active = isActive(item.href);
+            const isLogout = item.key === "logout";
 
-            // Logout item (no Link)
-            if (item.key === "logout") {
+            if (isLogout) {
               return (
                 <button
                   key={item.key}
@@ -64,10 +204,10 @@ export function SettingsSidebar() {
                     logout();
                     router.push("/");
                   }}
-                  className="w-full text-left px-5 py-3 flex items-center gap-3 text-gray-200 hover:bg-white/5 transition"
+                  className="w-full text-left px-5 py-3 flex items-center gap-3 text-red-400 hover:bg-red-500/10 transition"
                 >
-                  <span className="text-gray-400">⟵</span>
-                  <span className="font-medium">Log Out</span>
+                  <span className="text-red-400">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
                 </button>
               );
             }
@@ -77,7 +217,7 @@ export function SettingsSidebar() {
                 key={item.key}
                 href={item.href!}
                 className={`px-5 py-3 flex items-center gap-3 transition ${
-                  active ? "bg-teal-600/10 text-teal-200" : "text-gray-200 hover:bg-white/5"
+                  active ? "bg-teal-600/10 text-teal-300" : "text-gray-300 hover:bg-white/5"
                 }`}
               >
                 <span
@@ -85,6 +225,7 @@ export function SettingsSidebar() {
                     active ? "bg-teal-500" : "bg-transparent"
                   }`}
                 />
+                <span className={active ? "text-teal-400" : "text-gray-500"}>{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </Link>
             );
