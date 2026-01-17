@@ -14,7 +14,8 @@ interface User {
     id: string;
     email: string;
     firstName: string;
-    KycStatus: string;
+    kycStatus: string;
+    walletAddress: string | null;
 }
 
 interface AuthContextType {
@@ -22,6 +23,7 @@ interface AuthContextType {
     token: string | null;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    updateWalletAddress: (walletAddress: string) => void;
     isLoading: boolean;
 }
 
@@ -90,8 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
+    // 4. Actualizar wallet address después de vincular
+    const updateWalletAddress = (walletAddress: string) => {
+        if (user) {
+            const updatedUser = { ...user, walletAddress };
+            setUserData(updatedUser);
+            setUser(updatedUser);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateWalletAddress, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
