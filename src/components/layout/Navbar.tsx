@@ -220,16 +220,16 @@ export function Navbar() {
                       </div>
 
                       <div
-                        className={`px-3 py-2 rounded-md text-sm font-medium ${user?.KycStatus === "APPROVED"
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${user?.kycStatus === "APPROVED"
                           ? "bg-green-600/20 text-green-300 border border-green-500/30"
-                          : user?.KycStatus === "REJECTED"
+                          : user?.kycStatus === "REJECTED"
                             ? "bg-red-600/20 text-red-300 border border-red-500/30"
                             : "bg-yellow-600/20 text-yellow-300 border border-yellow-500/30"
                           }`}
                       >
-                        {user?.KycStatus === "APPROVED"
+                        {user?.kycStatus === "APPROVED"
                           ? "KYC Aprobado"
-                          : user?.KycStatus === "REJECTED"
+                          : user?.kycStatus === "REJECTED"
                             ? "KYC Rechazado"
                             : "KYC Pendiente"}
                       </div>
