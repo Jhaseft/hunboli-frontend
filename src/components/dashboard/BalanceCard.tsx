@@ -1,9 +1,12 @@
 "use client";
 
-import { Wallet, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Wallet, TrendingUp, Link as LinkIcon } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance, useChainId, useReadContracts } from "wagmi";
 import { formatUnits } from "viem";
+import { useAuth } from "@/context/AuthContext";
+import { LinkWalletModal } from "./LinkWalletModal";
 
 const EXPECTED_CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? "11155111");
 const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_BOBH_ADDRESS as `0x${string}`;
@@ -36,8 +39,16 @@ const ERC20_ABI = [
 export function BalanceCard() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
+  const { user } = useAuth();
+
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [walletLinkedSuccess, setWalletLinkedSuccess] = useState(false);
 
   const wrongNetwork = isConnected && chainId !== EXPECTED_CHAIN_ID;
+
+  // Detectar si es una wallet nueva (conectada pero no vinculada en BD)
+  const isNewWallet = isConnected && address && user?.walletAddress !== address;
+  const isWalletLinked = user?.walletAddress === address;
 
   const { data: native } = useBalance({
     address,
@@ -94,6 +105,27 @@ export function BalanceCard() {
             Falta NEXT_PUBLIC_BOBH_ADDRESS en .env.local
           </div>
         )}
+
+        {/* Mostrar botón de vincular si es wallet nueva */}
+        {isNewWallet && !wrongNetwork && (
+          <button
+            onClick={() => setShowLinkModal(true)}
+            className="mt-4 w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg px-4 py-3 transition-colors"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Vincular esta wallet a mi cuenta
+          </button>
+        )}
+
+        {/* Mensaje de éxito */}
+        {(isWalletLinked || walletLinkedSuccess) && (
+          <div className="mt-4 text-sm bg-green-500/20 text-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Wallet vinculada a tu cuenta
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-8">
@@ -111,6 +143,16 @@ export function BalanceCard() {
       <div className="mt-6 text-xs text-white/60">
         ETH gas: {native?.formatted ? Number(native.formatted).toFixed(4) : "0.0000"} {native?.symbol ?? "ETH"}
       </div>
+
+      {/* Modal de vinculación */}
+      {address && (
+        <LinkWalletModal
+          isOpen={showLinkModal}
+          onClose={() => setShowLinkModal(false)}
+          walletAddress={address}
+          onSuccess={() => setWalletLinkedSuccess(true)}
+        />
+      )}
     </div>
   );
 }
