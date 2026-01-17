@@ -18,13 +18,13 @@ export interface RegisterDto {
 }
 
 export interface AuthResponse {
-    token: string;
+    access_token: string;
     user: {
-        "id": string;
-        "email": string;
-        "firstName": string;
-        "KycStatus": string;
-
+        id: string;
+        email: string;
+        firstName: string;
+        kycStatus: string;
+        walletAddress: string | null;
     };
 }
 
@@ -32,5 +32,6 @@ export interface User {
     id: string;
     email: string;
     firstName: string;
-    KycStatus: string;
+    kycStatus: string;
+    walletAddress: string | null;
 }

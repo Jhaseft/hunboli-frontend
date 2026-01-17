@@ -50,7 +50,7 @@ export const SignUpForm = () => {
             })
 
             // Usar el contexto de autenticación para guardar el token y usuario
-            login(data.token, data.user);
+            login(data.access_token, data.user);
 
             // Redirigir al dashboard
             router.push('/dashboard');
