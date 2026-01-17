@@ -30,7 +30,13 @@ export function Navbar() {
     pathname === "/login" ||
     pathname === "/sign-up" ||
     pathname.startsWith("/login/") ||
-    pathname.startsWith("/sign-up/");
+    pathname.startsWith("/sign-up/") ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/reset-password/") ||
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/forgot-password/") ||
+    pathname === "/dashboard/settings" ||
+    pathname.startsWith("/dashboard/settings/");
 
   const isDashboard = pathname.startsWith("/dashboard");
   // Durante la carga inicial, no podemos determinar el estado de autenticación
@@ -154,8 +160,8 @@ export function Navbar() {
     <>
       <nav
         className={`${showDashboardUI
-            ? "relative bg-gray-950"
-            : "fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-lg"
+          ? "relative bg-gray-950"
+          : "fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-lg"
           } z-50 border-b border-gray-800`}
       >
         <div className="max-w-7xl mx-auto px-6 py-1 relative">
@@ -214,16 +220,16 @@ export function Navbar() {
                       </div>
 
                       <div
-                        className={`px-3 py-2 rounded-md text-sm font-medium ${user?.KycStatus === "APPROVED"
-                            ? "bg-green-600/20 text-green-300 border border-green-500/30"
-                            : user?.KycStatus === "REJECTED"
-                              ? "bg-red-600/20 text-red-300 border border-red-500/30"
-                              : "bg-yellow-600/20 text-yellow-300 border border-yellow-500/30"
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${user?.kycStatus === "APPROVED"
+                          ? "bg-green-600/20 text-green-300 border border-green-500/30"
+                          : user?.kycStatus === "REJECTED"
+                            ? "bg-red-600/20 text-red-300 border border-red-500/30"
+                            : "bg-yellow-600/20 text-yellow-300 border border-yellow-500/30"
                           }`}
                       >
-                        {user?.KycStatus === "APPROVED"
+                        {user?.kycStatus === "APPROVED"
                           ? "KYC Aprobado"
-                          : user?.KycStatus === "REJECTED"
+                          : user?.kycStatus === "REJECTED"
                             ? "KYC Rechazado"
                             : "KYC Pendiente"}
                       </div>

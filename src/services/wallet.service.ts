@@ -3,6 +3,7 @@ import api from '@/lib/axios';
 
 export interface LinkWalletDto {
     walletAddress: string;
+    password: string;
 }
 
 export interface LinkWalletResponse {
@@ -14,11 +15,14 @@ export interface LinkWalletResponse {
 export const walletService = {
     /**
      * Vincula una wallet address al usuario autenticado
+     * Requiere verificación de contraseña para seguridad
      * @param walletAddress - La dirección de la wallet de MetaMask
+     * @param password - La contraseña del usuario para verificación
      */
-    linkWallet: async (walletAddress: string): Promise<LinkWalletResponse> => {
-        const { data } = await api.post<LinkWalletResponse>('/users/link-wallet', {
+    linkWallet: async (walletAddress: string, password: string): Promise<LinkWalletResponse> => {
+        const { data } = await api.patch<LinkWalletResponse>('/users/link-wallet', {
             walletAddress,
+            password,
         });
         return data;
     },

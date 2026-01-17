@@ -26,7 +26,7 @@ export function LoginForm() {
       const data = await authService.login({ email, password });
 
       // Usar el contexto de autenticación para guardar el token y usuario
-      login(data.token, data.user);
+      login(data.access_token, data.user);
 
       // Redirigir al dashboard - usar replace para evitar volver al login
       window.location.href = '/dashboard';
