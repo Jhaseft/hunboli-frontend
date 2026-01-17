@@ -17,7 +17,6 @@ export default function RetiroForm() {
       
       <form onSubmit={handleSubmit} className="space-y-6">
         
-        {/* Selector de Moneda */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Moneda de Retiro
@@ -48,7 +47,7 @@ export default function RetiroForm() {
           </div>
         </div>
         
-        {/* Monto de Tokens BOBH */}
+       
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
             Cantidad de BOBH
@@ -63,7 +62,7 @@ export default function RetiroForm() {
           />
         </div>
 
-        {/* Cuenta Bancaria */}
+      
         <div>
           <label htmlFor="bankAccount" className="block text-sm font-medium text-gray-300 mb-3">
             Número de Cuenta Bancaria
@@ -78,7 +77,7 @@ export default function RetiroForm() {
           />
         </div>
         
-        {/* Botón de Confirmación */}
+        
         <button
           type="submit"
           className="w-full py-3.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors shadow-md"
