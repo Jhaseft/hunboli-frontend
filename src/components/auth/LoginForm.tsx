@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Logo } from '../ui/Logo';
 import { authService } from '@/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
+import { GoogleButton } from './GoogleButton';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -109,6 +110,17 @@ export function LoginForm() {
               Volver
             </Button>
           </div>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-[#0a1929] text-gray-400">O continúa con</span>
+            </div>
+          </div>
+
+          <GoogleButton disabled={isLoading} />
 
           <p className="text-center text-gray-400 text-sm">
             Don&apos;t have an account?{' '}

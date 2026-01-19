@@ -11,6 +11,7 @@ import { authService } from '@/services/auth.service';
 import { AuthResponse, Country } from '@/types/index';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { GoogleButton } from './GoogleButton';
 
 export const SignUpForm = () => {
     const [firstName, setFirstName] = useState('');
@@ -158,6 +159,17 @@ export const SignUpForm = () => {
                     <Button type="submit" className="w-full" disabled={isLoading}>
                         Registrarse
                     </Button>
+
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-[#0f1f33] text-gray-400">o</span>
+                        </div>
+                    </div>
+
+                    <GoogleButton />
 
                     <div className="flex gap-4">
                         <Button
