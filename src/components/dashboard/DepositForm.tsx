@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 type Currency = "BOB" | "PEN";
 
@@ -13,14 +14,49 @@ function parseMoney(input: string) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+type DepositInstructions = {
+  title: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  note: string;
+};
+
+type DepositCreateResponse = {
+  depositId: string;
+  status: string;
+  referenceCode: string;
+  currency: Currency;
+  amount: number;
+  feeRate: number;
+  serviceFee: number;
+  totalAmount: number;
+  rateUsed: number;
+  expectedBOBH: number;
+  instructions: DepositInstructions;
+};
+
 export function DepositForm() {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("BOB");
   const [amount, setAmount] = useState("");
 
-  // Rate state (PEN -> BOB)
+  // Rate state (PEN -> BOB) solo para mostrar en UI/calculadora
   const [penToBobRate, setPenToBobRate] = useState<number | null>(null);
   const [rateStatus, setRateStatus] = useState<"idle" | "loading" | "error">("idle");
   const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<DepositCreateResponse | null>(null);
+
+  const { token, isLoading } = useAuth();
+
+  // Cuando cambias moneda o monto, limpiamos resultado/errores para no confundir
+  useEffect(() => {
+    setError(null);
+    setResult(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCurrency, amount]);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,7 +109,6 @@ export function DepositForm() {
 
     if (selectedCurrency === "BOB") return amountNum;
 
-    // PEN -> BOB usando tasa actual
     if (!penToBobRate) return 0;
     return amountNum * penToBobRate;
   }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
@@ -92,43 +127,78 @@ export function DepositForm() {
     return amountNum + serviceFee;
   }, [isValidAmount, amountNum, serviceFee]);
 
-  // BOBH a recibir
+  // BOBH a recibir (calculadora UI)
   const receiveBOBH = useMemo(() => {
     if (!isValidAmount) return 0;
 
-    if (selectedCurrency === "BOB") return amountNum; // 1:1
+    if (selectedCurrency === "BOB") return amountNum;
 
     if (!penToBobRate) return 0;
-    return amountNum * penToBobRate; // PEN -> BOB -> BOBH (1:1 con BOB)
+    return amountNum * penToBobRate;
   }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
 
   const needsRate = selectedCurrency === "PEN";
   const hasRate = !!penToBobRate;
 
   const canSubmit =
+    !isLoading &&
+    !!token &&
     isValidAmount &&
     meetsMinimum &&
-    (!needsRate || hasRate);
+    (!needsRate || hasRate) &&
+    !isSubmitting;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setResult(null);
+
+    if (isLoading) return;
+    if (!token) {
+      setError("Debes iniciar sesión para crear un depósito.");
+      return;
+    }
     if (!canSubmit) return;
 
-    // IMPORTANTE: en el backend debes recalcular fee, mínimo y expectedBOBH para evitar manipulación.
-    console.log("Crear depósito:", {
-      currency: selectedCurrency,
-      amount: amountNum,
-      feeRate: FEE_RATE,
-      serviceFee,
-      totalToPay,
-      expectedBOBH: receiveBOBH,
-      rateUsed: selectedCurrency === "PEN" ? penToBobRate : 1,
-      minDepositBob: MIN_DEPOSIT_BOB,
-    });
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      setError("NEXT_PUBLIC_BACKEND_URL no está configurado en el frontend.");
+      return;
+    }
 
-    // Próximo paso real:
-    // POST `${NEXT_PUBLIC_BACKEND_URL}/deposits` con { currency, amount }
-    // y el backend devuelve referenceCode + instrucciones.
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(`${backendUrl}/deposits`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currency: selectedCurrency,
+          amount: amountNum,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const msg =
+          (data && (data.message || data.error)) ||
+          (res.status === 401
+            ? "Sesión expirada. Vuelve a iniciar sesión."
+            : "No se pudo crear el depósito.");
+        setError(typeof msg === "string" ? msg : "No se pudo crear el depósito.");
+        return;
+      }
+
+      setResult(data as DepositCreateResponse);
+    } catch {
+      setError("Error de red. Revisa que el backend esté activo y CORS habilitado.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
@@ -138,8 +208,13 @@ export function DepositForm() {
       <h2 className="text-2xl font-semibold mb-2 text-white">Depositar Fondos</h2>
       <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p>
 
+      {error && (
+        <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+          <p className="text-sm text-red-200">{error}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Moneda */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Moneda de Depósito
@@ -177,7 +252,6 @@ export function DepositForm() {
           )}
         </div>
 
-        {/* Monto */}
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
             Monto
@@ -197,12 +271,12 @@ export function DepositForm() {
 
           {isValidAmount && !meetsMinimum && (
             <p className="mt-2 text-xs text-amber-300/90">
-              Depósito mínimo: 10.000 Bs (equivalente). Actualmente: {amountInBobEquivalent.toFixed(2)} Bs.
+              Depósito mínimo: 10.000 Bs (equivalente). Actualmente:{" "}
+              {amountInBobEquivalent.toFixed(2)} Bs.
             </p>
           )}
         </div>
 
-        {/* Tipo de cambio + calculadora + resumen */}
         <div className="rounded-2xl border border-gray-700 bg-[#0a1628] p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-300">Tipo de cambio</span>
@@ -247,7 +321,6 @@ export function DepositForm() {
           </p>
         </div>
 
-        {/* Confirmar */}
         <button
           type="submit"
           disabled={!canSubmit}
@@ -257,9 +330,56 @@ export function DepositForm() {
               : "bg-gray-700/40 text-gray-400 cursor-not-allowed"
           }`}
         >
-          Confirmar Transacción
+          {isSubmitting ? "Creando depósito..." : "Confirmar Transacción"}
         </button>
       </form>
+
+      {result && (
+        <div className="mt-6 rounded-2xl border border-teal-500/30 bg-teal-500/10 p-5">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-lg font-semibold text-white">Depósito creado</h3>
+            <p className="text-sm text-gray-200">
+              <span className="text-gray-300">Referencia:</span>{" "}
+              <span className="font-semibold text-teal-200">{result.referenceCode}</span>
+            </p>
+
+            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
+                <p className="text-xs text-gray-400 mb-1">Total a pagar</p>
+                <p className="text-base font-semibold text-white">
+                  {Number(result.totalAmount).toFixed(2)}{" "}
+                  {result.currency === "BOB" ? "Bs" : "S/"}
+                </p>
+                <p className="mt-2 text-xs text-gray-400 mb-1">Recibirás (estimado)</p>
+                <p className="text-base font-semibold text-teal-300">
+                  {Number(result.expectedBOBH).toFixed(2)} BOBH
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
+                <p className="text-xs text-gray-400 mb-2">{result.instructions.title}</p>
+                <p className="text-sm text-gray-200">
+                  <span className="text-gray-400">Banco:</span> {result.instructions.bankName}
+                </p>
+                <p className="text-sm text-gray-200">
+                  <span className="text-gray-400">Titular:</span> {result.instructions.accountName}
+                </p>
+                <p className="text-sm text-gray-200">
+                  <span className="text-gray-400">Cuenta:</span> {result.instructions.accountNumber}
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-3 text-sm text-gray-200">
+              {result.instructions.note}
+            </p>
+
+            <p className="mt-1 text-xs text-gray-400">
+              Estado actual: <span className="text-gray-200">{result.status}</span>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
