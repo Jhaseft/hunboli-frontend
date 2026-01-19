@@ -42,21 +42,51 @@ export function DepositForm() {
 
   // Rate state (PEN -> BOB) solo para mostrar en UI/calculadora
   const [penToBobRate, setPenToBobRate] = useState<number | null>(null);
-  const [rateStatus, setRateStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [rateStatus, setRateStatus] = useState<"idle" | "loading" | "error">(
+    "idle"
+  );
   const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DepositCreateResponse | null>(null);
 
+  // Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { token, isLoading } = useAuth();
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // Si quieres limpiar el resultado al cerrar, descomenta:
+    // setResult(null);
+  };
 
   // Cuando cambias moneda o monto, limpiamos resultado/errores para no confundir
   useEffect(() => {
     setError(null);
     setResult(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsModalOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCurrency, amount]);
+
+  // Cerrar con ESC + bloquear scroll
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModal();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isModalOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,6 +224,7 @@ export function DepositForm() {
       }
 
       setResult(data as DepositCreateResponse);
+      setIsModalOpen(true);
     } catch {
       setError("Error de red. Revisa que el backend esté activo y CORS habilitado.");
     } finally {
@@ -286,8 +317,8 @@ export function DepositForm() {
                 (rateStatus === "loading"
                   ? "Cargando..."
                   : penToBobRate
-                    ? `1 PEN = ${penToBobRate} BOB`
-                    : "No disponible")}
+                  ? `1 PEN = ${penToBobRate} BOB`
+                  : "No disponible")}
             </span>
           </div>
 
@@ -334,49 +365,96 @@ export function DepositForm() {
         </button>
       </form>
 
-      {result && (
-        <div className="mt-6 rounded-2xl border border-teal-500/30 bg-teal-500/10 p-5">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-lg font-semibold text-white">Depósito creado</h3>
-            <p className="text-sm text-gray-200">
-              <span className="text-gray-300">Referencia:</span>{" "}
-              <span className="font-semibold text-teal-200">{result.referenceCode}</span>
-            </p>
-
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
-                <p className="text-xs text-gray-400 mb-1">Total a pagar</p>
-                <p className="text-base font-semibold text-white">
-                  {Number(result.totalAmount).toFixed(2)}{" "}
-                  {result.currency === "BOB" ? "Bs" : "S/"}
-                </p>
-                <p className="mt-2 text-xs text-gray-400 mb-1">Recibirás (estimado)</p>
-                <p className="text-base font-semibold text-teal-300">
-                  {Number(result.expectedBOBH).toFixed(2)} BOBH
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
-                <p className="text-xs text-gray-400 mb-2">{result.instructions.title}</p>
-                <p className="text-sm text-gray-200">
-                  <span className="text-gray-400">Banco:</span> {result.instructions.bankName}
-                </p>
-                <p className="text-sm text-gray-200">
-                  <span className="text-gray-400">Titular:</span> {result.instructions.accountName}
-                </p>
-                <p className="text-sm text-gray-200">
-                  <span className="text-gray-400">Cuenta:</span> {result.instructions.accountNumber}
+      {/* Modal */}
+      {isModalOpen && result && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onMouseDown={closeModal}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="w-full max-w-2xl rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-gray-800 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Depósito creado</h3>
+                <p className="text-sm text-gray-300">
+                  Referencia:{" "}
+                  <span className="font-semibold text-teal-200">{result.referenceCode}</span>
                 </p>
               </div>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-lg border border-gray-700 bg-[#0a1628] px-3 py-1.5 text-sm text-gray-200 hover:bg-[#152b47]"
+              >
+                Cerrar
+              </button>
             </div>
 
-            <p className="mt-3 text-sm text-gray-200">
-              {result.instructions.note}
-            </p>
+            {/* Body */}
+            <div className="px-6 py-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
+                  <p className="text-xs text-gray-400 mb-1">Total a pagar</p>
+                  <p className="text-base font-semibold text-white">
+                    {Number(result.totalAmount).toFixed(2)}{" "}
+                    {result.currency === "BOB" ? "Bs" : "S/"}
+                  </p>
 
-            <p className="mt-1 text-xs text-gray-400">
-              Estado actual: <span className="text-gray-200">{result.status}</span>
-            </p>
+                  <p className="mt-2 text-xs text-gray-400 mb-1">Recibirás (estimado)</p>
+                  <p className="text-base font-semibold text-teal-300">
+                    {Number(result.expectedBOBH).toFixed(2)} BOBH
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
+                  <p className="text-xs text-gray-400 mb-2">{result.instructions.title}</p>
+                  <p className="text-sm text-gray-200">
+                    <span className="text-gray-400">Banco:</span> {result.instructions.bankName}
+                  </p>
+                  <p className="text-sm text-gray-200">
+                    <span className="text-gray-400">Titular:</span>{" "}
+                    {result.instructions.accountName}
+                  </p>
+                  <p className="text-sm text-gray-200">
+                    <span className="text-gray-400">Cuenta:</span>{" "}
+                    {result.instructions.accountNumber}
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-4 text-sm text-gray-200">{result.instructions.note}</p>
+
+              <p className="mt-2 text-xs text-gray-400">
+                Estado actual: <span className="text-gray-200">{result.status}</span>
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-gray-800 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(result.referenceCode).catch(() => {});
+                }}
+                className="rounded-lg border border-gray-700 bg-[#0a1628] px-4 py-2 text-sm text-gray-200 hover:bg-[#152b47]"
+              >
+                Copiar referencia
+              </button>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
+              >
+                Entendido
+              </button>
+            </div>
           </div>
         </div>
       )}
