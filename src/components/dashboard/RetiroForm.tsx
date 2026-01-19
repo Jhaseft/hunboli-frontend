@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import api from '@/lib/api_axios';
 export default function RetiroForm() {
   const [selectedCurrency, setSelectedCurrency] = useState<'BOB' | 'PEN'>('BOB');
   const [amount, setAmount] = useState('');
@@ -9,6 +9,11 @@ export default function RetiroForm() {
     e.preventDefault();
     console.log('Retirar:', { currency: selectedCurrency, amount, bankAccount });
   };
+
+ export const getBanks = async () => {
+  const { data } = await api.get('/banks');
+  return data;
+};
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl p-6 shadow-sm border border-gray-800">
