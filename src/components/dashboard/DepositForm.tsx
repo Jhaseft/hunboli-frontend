@@ -179,7 +179,10 @@ export function DepositForm() {
 
         {/* Monto */}
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
+          <label
+            htmlFor="amount"
+            className="block text-sm font-medium text-gray-300 mb-3"
+          >
             Monto
           </label>
           <input

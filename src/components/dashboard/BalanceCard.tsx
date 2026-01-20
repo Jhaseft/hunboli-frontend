@@ -134,16 +134,12 @@ export function BalanceCard() {
           <div className="text-xl font-semibold">{bobUI} Bs</div>
         </div>
         <div>
-          <div className="text-cyan-200 text-sm mb-1">Estado KYC</div>
-          <div className="text-xl font-semibold">Pendiente</div>
+          <div className="text-cyan-200 text-sm mb-1">BNB gas:</div>
+          <div className="text-xl font-semibold">
+            {native?.formatted ? Number(native.formatted).toFixed(4) : "0.0000"} {native?.symbol ?? "ETH"}
+          </div>
         </div>
       </div>
-
-      {/* Debug opcional */}
-      <div className="mt-6 text-xs text-white/60">
-        ETH gas: {native?.formatted ? Number(native.formatted).toFixed(4) : "0.0000"} {native?.symbol ?? "ETH"}
-      </div>
-
       {/* Modal de vinculación */}
       {address && (
         <LinkWalletModal
