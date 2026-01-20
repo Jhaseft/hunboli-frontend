@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { authService } from '@/services/auth.service';
@@ -10,8 +10,11 @@ function AuthCallbackContent() {
     const router = useRouter();
     const { login } = useAuth();
     const [error, setError] = useState<string | null>(null);
+    const hasProcessed = useRef(false);
 
     useEffect(() => {
+        if (hasProcessed.current) return;
+
         const handleCallback = async () => {
             const token = searchParams.get('token');
 
@@ -19,6 +22,8 @@ function AuthCallbackContent() {
                 setError('No se recibió el token de autenticación');
                 return;
             }
+
+            hasProcessed.current = true;
 
             try {
                 // Guardar el token temporalmente para que el interceptor de axios lo use
@@ -29,12 +34,11 @@ function AuthCallbackContent() {
                 const userProfile = await authService.getProfile();
 
                 // Guardar en el contexto de autenticación
+                // login() ya maneja la redirección según isOnboardingCompleted
                 login(token, userProfile);
-
-                // Redirigir al dashboard
-                window.location.href = '/dashboard';
             } catch (err: any) {
                 console.error('Error al procesar el callback de Google:', err);
+                hasProcessed.current = false;
                 setError(
                     err.response?.data?.message ||
                     'Error al autenticar con Google. Por favor, intenta nuevamente.'
