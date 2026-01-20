@@ -49,7 +49,9 @@ export function CompleteProfileForm() {
             // Actualizar cookies con los nuevos datos del usuario
             await refreshUser();
 
-            router.push('/dashboard');
+            // Usar window.location para forzar un hard reload
+            // Esto evita race conditions con la guardia de onboarding en producción
+            window.location.href = '/dashboard';
         } catch (err: any) {
             console.error('Error al completar perfil:', err);
             setError(
