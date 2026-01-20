@@ -11,6 +11,7 @@ import { CountrySelector } from './CountrySelector';
 import { authService } from '@/services/auth.service';
 import { Country } from '@/types/index';
 import { useAuth } from '@/context/AuthContext';
+import { setAuthToken, setUserData } from '@/lib/cookies';
 
 export function CompleteProfileForm() {
     const [password, setPassword] = useState('');
@@ -40,13 +41,23 @@ export function CompleteProfileForm() {
         }
 
         try {
-            await authService.completeProfile({
+            const response = await authService.completeProfile({
                 password,
                 phoneNumber: phoneNumber || '',
                 country: country as Country,
             });
 
-            // Actualizar cookies con los nuevos datos del usuario
+            // Si el backend devuelve un nuevo token, actualizarlo
+            if (response.accessToken) {
+                setAuthToken(response.accessToken);
+            }
+
+            // Si devuelve el usuario actualizado, guardarlo directamente
+            if (response.user) {
+                setUserData(response.user);
+            }
+
+            // Actualizar el estado del contexto con los nuevos datos
             await refreshUser();
 
             // Usar window.location para forzar un hard reload
