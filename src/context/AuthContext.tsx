@@ -17,21 +17,7 @@ import {
     setUserData,
     clearAuthCookies,
 } from '@/lib/cookies';
-
-// 1. ACTUALIZAMOS LA INTERFAZ
-interface User {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    country?: string | null;
-    kycStatus: string;
-    role: string;
-    walletAddress: string | null;
-    // 👇 Nuevos campos críticos
-    isOnboardingCompleted: boolean;
-    hasPassword?: boolean; // Viene del getter del backend
-}
+import { User } from '@/types/auth.types';
 
 interface AuthContextType {
     user: User | null;

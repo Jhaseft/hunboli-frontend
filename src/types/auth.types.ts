@@ -26,9 +26,13 @@ export interface User {
     id: string;
     email: string;
     firstName: string;
+    lastName: string;
+    country?: string | null;
     kycStatus: string;
+    role: string;
     walletAddress: string | null;
     isOnboardingCompleted: boolean;
+    hasPassword?: boolean;
 }
 
 export interface CompleteProfileDto {
