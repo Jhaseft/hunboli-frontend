@@ -3,16 +3,15 @@
 import { authService } from "@/services/auth.service";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from 'react';
-import Link from 'next/link';
-import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { PasswordRequirements, isPasswordValid } from '@/components/ui/PasswordRequirements';
 
 
 export const ResetPasswordFrom = () => {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
-    console.log('Token from URL:', token);
     const router = useRouter();
     const [newPassword, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,20 +29,20 @@ export const ResetPasswordFrom = () => {
             setIsLoading(false);
             return;
         }
+        if (!isPasswordValid(newPassword)) {
+            setError('La contraseña no cumple con los requisitos de seguridad');
+            setIsLoading(false);
+            return;
+        }
         if (newPassword !== confirmPassword) {
             setError('Las contraseñas no coinciden');
             setIsLoading(false);
             return;
         }
-        if (newPassword.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres');
-            setIsLoading(false);
-            return;
-        }
 
         try {
-            const data = await authService.resetPassword(token, newPassword);
-            setMessage('¡Contraseña actualizada con éxito! Redirigiendo...');
+            await authService.resetPassword(token, newPassword);
+            setMessage('Contraseña actualizada con exito! Redirigiendo...');
             setTimeout(() => {
                 router.push('/login');
             }, 2000);
@@ -51,14 +50,20 @@ export const ResetPasswordFrom = () => {
             console.error('Error al restablecer la contraseña:', err);
             setError(
                 err.response?.data?.message ||
-                'Error al restablecer la contraseña. Inténtalo de nuevo.'
+                'Error al restablecer la contraseña. Intentalo de nuevo.'
             );
             setIsLoading(false);
         }
 
     }
     if (!token) {
-        return <div className="text-red-500">Error: Enlace inválido. No se encontró el token.</div>;
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-6 py-4 rounded-lg">
+                    Error: Enlace invalido. No se encontro el token.
+                </div>
+            </div>
+        );
     }
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
@@ -70,32 +75,36 @@ export const ResetPasswordFrom = () => {
                         Reestablecer Contraseña
                     </h1>
                     <p className="text-gray-400">
-                        Escriba su nueva contraseña a continuación
+                        Escriba su nueva contraseña a continuacion
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded-md">
+                        <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
                             {error}
                         </div>
                     )}
-                    {message && <p className="text-green-500 text-sm">{message}</p>}
+                    {message && (
+                        <div className="bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 px-4 py-3 rounded-lg text-sm">
+                            {message}
+                        </div>
+                    )}
 
-
-                    <Input
+                    <PasswordInput
                         id="password"
-                        type="password"
-                        label="Contraseña"
+                        label="Nueva Contraseña"
                         placeholder="••••••••"
                         value={newPassword}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={isLoading}
                     />
-                    <Input
+
+                    <PasswordRequirements password={newPassword} show={newPassword.length > 0} />
+
+                    <PasswordInput
                         id="confirmPassword"
-                        type="password"
                         label="Confirmar Contraseña"
                         placeholder="••••••••"
                         value={confirmPassword}
