@@ -19,13 +19,7 @@ export interface RegisterDto {
 
 export interface AuthResponse {
     access_token: string;
-    user: {
-        id: string;
-        email: string;
-        firstName: string;
-        kycStatus: string;
-        walletAddress: string | null;
-    };
+    user: User;
 }
 
 export interface User {
@@ -34,4 +28,11 @@ export interface User {
     firstName: string;
     kycStatus: string;
     walletAddress: string | null;
+    isOnboardingCompleted: boolean;
+}
+
+export interface CompleteProfileDto {
+    password: string;
+    phoneNumber: string;
+    country: Country;
 }
