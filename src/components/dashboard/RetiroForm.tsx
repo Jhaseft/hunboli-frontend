@@ -1,25 +1,55 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '@/lib/api_axios';
+
+type Bank = {
+  id: number;
+  name: string;
+  country: 'Bolivia' | 'PERU';
+  logo_url: string;
+};
+
 export default function RetiroForm() {
   const [selectedCurrency, setSelectedCurrency] = useState<'BOB' | 'PEN'>('BOB');
   const [amount, setAmount] = useState('');
   const [bankAccount, setBankAccount] = useState('');
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [selectedBankId, setSelectedBankId] = useState<number | ''>('');
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const { data } = await api.get<Bank[]>('/banks');
+        setBanks(data);
+      } catch (error) {
+        console.error('Error al cargar bancos', error);
+      }
+    };
+
+    fetchBanks();
+  }, []);
+
+  const filteredBanks = banks.filter((bank) => {
+    if (selectedCurrency === 'BOB') return bank.country === 'Bolivia';
+    if (selectedCurrency === 'PEN') return bank.country === 'PERU';
+    return false;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Retirar:', { currency: selectedCurrency, amount, bankAccount });
-  };
 
- export const getBanks = async () => {
-  const { data } = await api.get('/banks');
-  return data;
-};
+    console.log('Retirar:', {
+      currency: selectedCurrency,
+      amount,
+      bankId: selectedBankId,
+      bankAccount,
+    });
+  };
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl p-6 shadow-sm border border-gray-800">
       <h2 className="text-2xl font-semibold mb-2 text-white">Retirar Fondos</h2>
       <p className="text-gray-400 mb-6">Redime tus tokens BOBH por BOB o PEN</p>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         
         <div>
@@ -51,8 +81,8 @@ export default function RetiroForm() {
             </button>
           </div>
         </div>
-        
-       
+
+ 
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
             Cantidad de BOBH
@@ -67,7 +97,25 @@ export default function RetiroForm() {
           />
         </div>
 
-      
+ 
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-3">
+            Banco
+          </label>
+          <select
+            value={selectedBankId}
+            onChange={(e) => setSelectedBankId(Number(e.target.value))}
+            className="w-full px-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg text-white"
+          >
+            <option value="">Selecciona un banco</option>
+            {filteredBanks.map((bank) => (
+              <option key={bank.id} value={bank.id}>
+                {bank.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div>
           <label htmlFor="bankAccount" className="block text-sm font-medium text-gray-300 mb-3">
             Número de Cuenta Bancaria
@@ -81,8 +129,7 @@ export default function RetiroForm() {
             className="w-full px-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
           />
         </div>
-        
-        
+
         <button
           type="submit"
           className="w-full py-3.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors shadow-md"
