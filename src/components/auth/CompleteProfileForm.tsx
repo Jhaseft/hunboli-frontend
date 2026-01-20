@@ -57,11 +57,15 @@ export function CompleteProfileForm() {
                 setUserData(response.user);
             }
 
-            // Actualizar el estado del contexto con los nuevos datos
-            await refreshUser();
+            // Intentar actualizar el estado del contexto
+            // Si falla, igual redirigimos porque ya guardamos las cookies
+            try {
+                await refreshUser();
+            } catch {
+                // Ignorar error - las cookies ya están guardadas
+            }
 
             // Usar window.location para forzar un hard reload
-            // Esto evita race conditions con la guardia de onboarding en producción
             window.location.href = '/dashboard';
         } catch (err: any) {
             console.error('Error al completar perfil:', err);
