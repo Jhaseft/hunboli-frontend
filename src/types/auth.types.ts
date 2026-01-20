@@ -15,6 +15,7 @@ export interface RegisterDto {
     firstName: string;
     lastName: string;
     country: Country;
+    phoneNumber?: string;
 }
 
 export interface AuthResponse {

@@ -55,7 +55,8 @@ export const SignUpForm = () => {
         // Aquí irá la lógica de sign up
         try {
             const data: AuthResponse = await authService.signup({
-                email, password, firstName, lastName, country: country as Country
+                email, password, firstName, lastName, country: country as Country,
+                phoneNumber: phoneNumber || undefined
             })
 
             // Usar el contexto de autenticación para guardar el token y usuario
