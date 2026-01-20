@@ -47,25 +47,23 @@ export function CompleteProfileForm() {
                 country: country as Country,
             });
 
+            console.log('✅ completeProfile response:', response);
+
             // Si el backend devuelve un nuevo token, actualizarlo
             if (response.accessToken) {
+                console.log('🔑 Nuevo token recibido, actualizando...');
                 setAuthToken(response.accessToken);
             }
 
             // Si devuelve el usuario actualizado, guardarlo directamente
             if (response.user) {
+                console.log('👤 Usuario actualizado recibido:', response.user);
                 setUserData(response.user);
             }
 
-            // Intentar actualizar el estado del contexto
-            // Si falla, igual redirigimos porque ya guardamos las cookies
-            try {
-                await refreshUser();
-            } catch {
-                // Ignorar error - las cookies ya están guardadas
-            }
-
-            // Usar window.location para forzar un hard reload
+            // NO llamamos a refreshUser() para evitar el 401 que causa logout
+            // El hard reload va a cargar los datos frescos de todas formas
+            console.log('🚀 Redirigiendo a dashboard...');
             window.location.href = '/dashboard';
         } catch (err: any) {
             console.error('Error al completar perfil:', err);
