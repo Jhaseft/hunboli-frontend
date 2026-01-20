@@ -5,11 +5,12 @@ import { BalanceCard } from "./BalanceCard";
 import { ActionButtons } from "./ActionButtons";
 import { DepositForm } from "./DepositForm";
 import { RecentActivity } from "./RecentActivity";
-import RetiroForm from "./RetiroForm";
+import RetiroForm from "./Retiro/RetiroForm";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"depositar" | "retirar">("depositar");
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
+    const [walletBalance, setWalletBalance] = useState<string>("0");
 
   const openMobileModal = (tab: "depositar" | "retirar") => {
     setActiveTab(tab);
@@ -25,7 +26,7 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <BalanceCard />
+            <BalanceCard onBalanceChange={setWalletBalance} />
 
             {/* En móvil: historial debajo del balance */}
             <div className="lg:hidden">
@@ -40,7 +41,9 @@ export default function App() {
               {activeTab === "depositar" && <DepositForm />}
 
               {activeTab === "retirar" && (
-                <RetiroForm/>
+                <RetiroForm
+                amount_wallet={walletBalance}
+                />
               )}
             </div>
           </div>
@@ -96,7 +99,9 @@ export default function App() {
             {activeTab === "depositar" ? (
               <DepositForm />
             ) : (
-              <RetiroForm/>
+              <RetiroForm
+              amount_wallet={walletBalance}
+              />
             )}
           </div>
         </div>
