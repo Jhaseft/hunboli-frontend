@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordRequirements, isPasswordValid } from '@/components/ui/PasswordRequirements';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { CountrySelector } from './CountrySelector';
 import { TermsCheckbox } from './TermsCheckbox';
 import { authService } from '@/services/auth.service';
@@ -130,13 +131,12 @@ export const SignUpForm = () => {
                         disabled={isLoading}
                     />
 
-                    <Input
+                    <PhoneInput
                         id="phoneNumber"
-                        type="tel"
                         label="Numero de Telefono (Opcional)"
-                        placeholder="+591 12345678"
+                        placeholder="12345678"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={setPhoneNumber}
                         disabled={isLoading}
                     />
 
