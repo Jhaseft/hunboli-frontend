@@ -8,15 +8,15 @@ import { useAuth } from "@/context/AuthContext";
 type Item = {
   label: string;
   href?: string;
-  key: "account" | "verification" | "payments" | "whitelist" | "transparency" | "logout";
+  key: "account" | "security" | "bank_accounts" | "whitelist" | "transparency" | "logout";
   icon: React.ReactNode;
 };
 
 const ITEMS: Item[] = [
   {
     key: "account",
-    label: "Configuración de cuenta",
-    href: "/dashboard/settings",
+    label: "Mi Perfil",
+    href: "/dashboard/settings/profile",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -24,9 +24,9 @@ const ITEMS: Item[] = [
     )
   },
   {
-    key: "verification",
-    label: "Verificación",
-    href: "/dashboard/settings/verification",
+    key: "security",
+    label: "Seguridad ",
+    href: "/dashboard/settings/security",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -34,9 +34,9 @@ const ITEMS: Item[] = [
     )
   },
   {
-    key: "payments",
-    label: "Mis cuentas de pago",
-    href: "/dashboard/settings/payments",
+    key: "bank_accounts",
+    label: "Cuentas Bancarias",
+    href: "/dashboard/settings/bank-accounts",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -45,22 +45,11 @@ const ITEMS: Item[] = [
   },
   {
     key: "whitelist",
-    label: "Lista blanca de direcciones",
-    href: "/dashboard/settings/whitelist",
+    label: "Verificacion",
+    href: "/dashboard/settings/verification",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-      </svg>
-    )
-  },
-  {
-    key: "transparency",
-    label: "Transparencia",
-    href: "/dashboard/settings/transparency",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
       </svg>
     )
   },
@@ -86,9 +75,6 @@ export function SettingsSidebar() {
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    if (href === "/dashboard/settings") {
-      return pathname === href;
-    }
     return pathname === href || pathname.startsWith(href + "/");
   };
 
@@ -150,13 +136,12 @@ export function SettingsSidebar() {
                   <button
                     key={item.key}
                     onClick={() => handleItemClick(item)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition ${
-                      isLogout
-                        ? "text-red-400 hover:bg-red-500/10"
-                        : active
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition ${isLogout
+                      ? "text-red-400 hover:bg-red-500/10"
+                      : active
                         ? "bg-teal-600/10 text-teal-300"
                         : "text-gray-300 hover:bg-white/5"
-                    }`}
+                      }`}
                   >
                     <span className={isLogout ? "text-red-400" : active ? "text-teal-400" : "text-gray-500"}>
                       {item.icon}
@@ -216,14 +201,12 @@ export function SettingsSidebar() {
               <Link
                 key={item.key}
                 href={item.href!}
-                className={`px-5 py-3 flex items-center gap-3 transition ${
-                  active ? "bg-teal-600/10 text-teal-300" : "text-gray-300 hover:bg-white/5"
-                }`}
+                className={`px-5 py-3 flex items-center gap-3 transition ${active ? "bg-teal-600/10 text-teal-300" : "text-gray-300 hover:bg-white/5"
+                  }`}
               >
                 <span
-                  className={`h-6 w-1 rounded-full ${
-                    active ? "bg-teal-500" : "bg-transparent"
-                  }`}
+                  className={`h-6 w-1 rounded-full ${active ? "bg-teal-500" : "bg-transparent"
+                    }`}
                 />
                 <span className={active ? "text-teal-400" : "text-gray-500"}>{item.icon}</span>
                 <span className="font-medium">{item.label}</span>

@@ -1,7 +1,7 @@
 // src/services/auth.service.ts
 import api from '@/lib/axios';
-import { LoginDto, RegisterDto, AuthResponse } from '@/types/index'; // Tus interfaces
- 
+import { LoginDto, RegisterDto, AuthResponse, CompleteProfileDto } from '@/types/index'; // Tus interfaces
+
 export const authService = {
     // Login
     login: async (credentials: LoginDto) => {
@@ -30,6 +30,10 @@ export const authService = {
         const body = { token, newPassword };
         console.log(body);
         const { data } = await api.post('/auth/reset-password', body);
+        return data;
+    },
+    completeProfile: async (completeProfileData: CompleteProfileDto) => {
+        const { data } = await api.patch('/users/complete-profile', completeProfileData);
         return data;
     }
 };

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '../ui/Logo';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { authService } from '@/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
 import { GoogleButton } from './GoogleButton';
@@ -75,9 +76,8 @@ export function LoginForm() {
             disabled={isLoading}
           />
 
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             label="Contraseña"
             placeholder="••••••••"
             value={password}

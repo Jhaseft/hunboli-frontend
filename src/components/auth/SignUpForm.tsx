@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/ui/Logo';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { PasswordRequirements, isPasswordValid } from '@/components/ui/PasswordRequirements';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { CountrySelector } from './CountrySelector';
 import { TermsCheckbox } from './TermsCheckbox';
 import { authService } from '@/services/auth.service';
@@ -32,14 +35,20 @@ export const SignUpForm = () => {
         setError('');
         e.preventDefault();
 
+        if (!isPasswordValid(password)) {
+            setError('La contraseña no cumple con los requisitos de seguridad');
+            setIsLoading(false);
+            return;
+        }
+
         if (password !== confirmPassword) {
-            alert('Passwords do not match');
+            setError('Las contraseñas no coinciden');
             setIsLoading(false);
             return;
         }
 
         if (!acceptedTerms) {
-            alert('Please accept the terms and conditions');
+            setError('Debes aceptar los terminos y condiciones');
             setIsLoading(false);
             return;
         }
@@ -47,7 +56,8 @@ export const SignUpForm = () => {
         // Aquí irá la lógica de sign up
         try {
             const data: AuthResponse = await authService.signup({
-                email, password, firstName, lastName, country: country as Country
+                email, password, firstName, lastName, country: country as Country,
+                phoneNumber: phoneNumber || undefined
             })
 
             // Usar el contexto de autenticación para guardar el token y usuario
@@ -121,21 +131,19 @@ export const SignUpForm = () => {
                         disabled={isLoading}
                     />
 
-                    <Input
+                    <PhoneInput
                         id="phoneNumber"
-                        type="tel"
                         label="Numero de Telefono (Opcional)"
-                        placeholder="+591 12345678"
+                        placeholder="12345678"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        onChange={setPhoneNumber}
                         disabled={isLoading}
                     />
 
                     <CountrySelector value={country} onChange={setCountry} />
 
-                    <Input
+                    <PasswordInput
                         id="password"
-                        type="password"
                         label="Contraseña"
                         placeholder="••••••••"
                         value={password}
@@ -143,9 +151,11 @@ export const SignUpForm = () => {
                         required
                         disabled={isLoading}
                     />
-                    <Input
+
+                    <PasswordRequirements password={password} show={password.length > 0} />
+
+                    <PasswordInput
                         id="confirmPassword"
-                        type="password"
                         label="Confirmar Contraseña"
                         placeholder="••••••••"
                         value={confirmPassword}

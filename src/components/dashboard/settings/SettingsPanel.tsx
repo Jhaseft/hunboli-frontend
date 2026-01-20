@@ -10,7 +10,7 @@ export function SettingsPanel() {
   const [tab, setTab] = useState<Tab>("profile");
 
   return (
-    <section className="w-full rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
+    <section className="w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-800">
         <h1 className="text-xl sm:text-2xl font-bold text-white">Configuración de cuenta</h1>
