@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState,useEffect } from "react";
 import { Wallet, TrendingUp, Link as LinkIcon } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance, useChainId, useReadContracts } from "wagmi";
 import { formatUnits } from "viem";
 import { useAuth } from "@/context/AuthContext";
 import { LinkWalletModal } from "./LinkWalletModal";
-
+type BalanceCardProps = {
+  onBalanceChange?: (balance: string) => void;
+};
 const EXPECTED_CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? "11155111");
 const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_BOBH_ADDRESS as `0x${string}`;
 
@@ -36,7 +38,7 @@ const ERC20_ABI = [
   },
 ] as const;
 
-export function BalanceCard() {
+export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { user } = useAuth();
@@ -60,10 +62,10 @@ export function BalanceCard() {
   const { data: tokenReads } = useReadContracts({
     contracts: tokenEnabled
       ? [
-          { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "decimals" },
-          { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "symbol" },
-          { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "balanceOf", args: [address!] },
-        ]
+        { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "decimals" },
+        { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "symbol" },
+        { address: TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "balanceOf", args: [address!] },
+      ]
       : [],
     query: { enabled: tokenEnabled },
   }); // hook oficial para múltiples lecturas :contentReference[oaicite:5]{index=5}
@@ -76,6 +78,12 @@ export function BalanceCard() {
   const tokenUI = Number(tokenBalance || "0").toFixed(2).replace(".", ",");
   const bobUI = tokenUI;
 
+  useEffect(() => {
+    if (onBalanceChange) {
+      onBalanceChange(tokenBalance); // valor real (no formateado)
+    }
+  }, [tokenBalance, onBalanceChange]);
+  
   return (
     <div className="bg-gradient-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
       <div className="flex items-start justify-between mb-8">
@@ -85,7 +93,7 @@ export function BalanceCard() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ConnectButton chainStatus="none"/>
+          <ConnectButton chainStatus="none" />
           <TrendingUp className="w-5 h-5 opacity-70" />
         </div>
       </div>
@@ -140,7 +148,7 @@ export function BalanceCard() {
           </div>
         </div>
       </div>
-      {/* Modal de vinculación */}
+
       {address && (
         <LinkWalletModal
           isOpen={showLinkModal}

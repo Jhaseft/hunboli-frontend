@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 const COOKIE_OPTIONS = {
   expires: 7, // 7 días
   secure: process.env.NODE_ENV === 'production', // Solo HTTPS en producción
-  sameSite: 'strict' as const, // Protección CSRF
+  sameSite: 'lax' as const, // 'lax' permite navegación normal, 'strict' puede causar problemas con redirecciones
   path: '/', // Disponible en toda la app
 };
 
