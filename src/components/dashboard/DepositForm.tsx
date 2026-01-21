@@ -27,12 +27,15 @@ type DepositCreateResponse = {
   status: string;
   referenceCode: string;
   currency: Currency;
-  amount: number;
-  feeRate: number;
-  serviceFee: number;
-  totalAmount: number;
-  rateUsed: number;
-  expectedBOBH: number;
+  amount: string;
+  feeRate: string;
+  serviceFee: string;
+  totalAmount: string;
+  rateUsed: string | null;
+  rateSource: string | null;
+  rateQuotedAt: string | null;
+  rateExpiresAt: string | null;
+  expectedBOBH: string;
   instructions: DepositInstructions;
 };
 
@@ -53,6 +56,10 @@ export function DepositForm() {
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+  const [proofSuccess, setProofSuccess] = useState<string | null>(null);
 
   const { token, isLoading } = useAuth();
 
@@ -232,6 +239,59 @@ export function DepositForm() {
     }
   };
 
+  const handleUploadProof = async () => {
+    if (!result?.depositId) return;
+    if (!token) {
+      setProofError("Debes iniciar sesión.");
+      return;
+    }
+    if (!proofFile) {
+      setProofError("Selecciona un archivo.");
+      return;
+    }
+
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      setProofError("NEXT_PUBLIC_BACKEND_URL no está configurado.");
+      return;
+    }
+
+    setIsUploadingProof(true);
+    setProofError(null);
+    setProofSuccess(null);
+
+    try {
+      const form = new FormData();
+      form.append("file", proofFile);
+
+      const res = await fetch(`${backendUrl}/deposits/${result.depositId}/proof`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const msg =
+          (data && (data.message || data.error)) ||
+          "No se pudo subir el comprobante.";
+        setProofError(
+          typeof msg === "string" ? msg : "No se pudo subir el comprobante."
+        );
+        return;
+      }
+
+      setProofSuccess("Comprobante subido correctamente.");
+    } catch {
+      setProofError("Error de red al subir el comprobante.");
+    } finally {
+      setIsUploadingProof(false);
+    }
+  };
+
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
 
   return (
@@ -388,6 +448,12 @@ export function DepositForm() {
                   Referencia:{" "}
                   <span className="font-semibold text-teal-200">{result.referenceCode}</span>
                 </p>
+                {result.currency === "PEN" && result.rateUsed && result.rateExpiresAt && (
+                  <p className="mt-2 text-xs text-gray-400">
+                    Tipo de cambio fijado: 1 PEN = {Number(result.rateUsed).toFixed(4)} BOB •
+                    Válido hasta: {new Date(result.rateExpiresAt).toLocaleString()}
+                  </p>
+                )}
               </div>
 
               <button
@@ -436,6 +502,35 @@ export function DepositForm() {
               <p className="mt-2 text-xs text-gray-400">
                 Estado actual: <span className="text-gray-200">{result.status}</span>
               </p>
+
+              <div className="mt-4 rounded-xl border border-gray-700 bg-[#0a1628] p-4">
+                <p className="text-sm font-semibold text-white mb-2">Subir comprobante</p>
+
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                  className="block w-full text-sm text-gray-300"
+                />
+
+                {proofError && <p className="mt-2 text-xs text-red-300">{proofError}</p>}
+                {proofSuccess && (
+                  <p className="mt-2 text-xs text-teal-300">{proofSuccess}</p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleUploadProof}
+                  disabled={!proofFile || isUploadingProof}
+                  className={`mt-3 w-full py-2.5 rounded-lg font-medium transition-colors ${
+                    !proofFile || isUploadingProof
+                      ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
+                      : "bg-teal-600 text-white hover:bg-cyan-700"
+                  }`}
+                >
+                  {isUploadingProof ? "Subiendo..." : "Subir comprobante"}
+                </button>
+              </div>
             </div>
 
             {/* Footer */}
