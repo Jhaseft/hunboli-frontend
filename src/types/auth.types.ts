@@ -29,6 +29,7 @@ export interface User {
     firstName: string;
     lastName: string;
     country?: string | null;
+    phoneNumber?: string | null;
     kycStatus: string;
     role: string;
     walletAddress: string | null;
