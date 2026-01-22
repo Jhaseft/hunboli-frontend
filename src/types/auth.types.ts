@@ -28,13 +28,16 @@ export interface User {
     email: string;
     firstName: string;
     lastName: string;
-    country?: string | null;
     phoneNumber?: string | null;
+    country: Country;
+    walletAddress: string | null;
     kycStatus: string;
     role: string;
-    walletAddress: string | null;
+    createdAt: string;
+    updatedAt: string;
+    lastLogin: string | null;
+    isGoogleAccount: boolean | null;
     isOnboardingCompleted: boolean;
-    hasPassword?: boolean;
 }
 
 export interface CompleteProfileDto {
