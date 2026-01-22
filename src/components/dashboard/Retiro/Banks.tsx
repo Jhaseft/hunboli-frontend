@@ -21,10 +21,12 @@ type BankAccount = {
 };
 
 interface BanksProps {
-  selectedCurrency: 'BOB' | 'PEN';
+  selectedCurrency: "BOB" | "PEN";
+  onBankChange: React.Dispatch<React.SetStateAction<number | "">>;
+  onAccountChange: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function Banks({ selectedCurrency }: BanksProps) {
+export default function Banks({selectedCurrency,onBankChange,onAccountChange,}: BanksProps) {
 
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [catalogBanks, setCatalogBanks] = useState<Bank[]>([]);
@@ -38,7 +40,7 @@ export default function Banks({ selectedCurrency }: BanksProps) {
   });
   const USER_ID = user?.id;
 
-   const fetchBanks = useCallback(async () => {
+  const fetchBanks = useCallback(async () => {
     if (!USER_ID) return;
     try {
       const { data } = await api.get<BankAccount[]>(`/bank-accounts/user/${USER_ID}`);
@@ -56,7 +58,7 @@ export default function Banks({ selectedCurrency }: BanksProps) {
     try {
       const { data } = await api.get<Bank[]>('/banks');
       setCatalogBanks(data);
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Error al cargar catálogo de bancos:', error.response.data.message);
     }
   }, []);
@@ -145,7 +147,7 @@ export default function Banks({ selectedCurrency }: BanksProps) {
         userId={USER_ID}
         onSaved={fetchBanks}
       />
-       <ReportModal
+      <ReportModal
         isOpen={reportModal.isOpen}
         onClose={() => setReportModal({ ...reportModal, isOpen: false })}
         success={reportModal.success}
