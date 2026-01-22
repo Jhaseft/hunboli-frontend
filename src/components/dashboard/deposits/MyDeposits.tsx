@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
 
 type DepositStatus = 
     | "PENDING"

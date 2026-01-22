@@ -41,6 +41,7 @@ export function ProfileMenu({ isDashboard, variant = 'desktop' }: ProfileMenuPro
       {isOpen && (
         <ProfileDropdown
           isDashboard={isDashboard}
+          userRole={user.role}
           onNavigate={handleNavigation}
           onLogout={handleLogout}
           variant={variant}

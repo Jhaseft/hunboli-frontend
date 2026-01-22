@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
 
 type Currency = "BOB" | "PEN";
 
@@ -503,33 +504,14 @@ export function DepositForm() {
                 Estado actual: <span className="text-gray-200">{result.status}</span>
               </p>
 
-              <div className="mt-4 rounded-xl border border-gray-700 bg-[#0a1628] p-4">
-                <p className="text-sm font-semibold text-white mb-2">Subir comprobante</p>
-
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                  className="block w-full text-sm text-gray-300"
+              <div className="mt-4">
+                <ProofUploader
+                  depositId={result.depositId}
+                  onUploaded={() => {
+                    // Opcional: si quieres cerrar el modal al subir
+                    // setIsModalOpen(false);
+                  }}
                 />
-
-                {proofError && <p className="mt-2 text-xs text-red-300">{proofError}</p>}
-                {proofSuccess && (
-                  <p className="mt-2 text-xs text-teal-300">{proofSuccess}</p>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleUploadProof}
-                  disabled={!proofFile || isUploadingProof}
-                  className={`mt-3 w-full py-2.5 rounded-lg font-medium transition-colors ${
-                    !proofFile || isUploadingProof
-                      ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
-                      : "bg-teal-600 text-white hover:bg-cyan-700"
-                  }`}
-                >
-                  {isUploadingProof ? "Subiendo..." : "Subir comprobante"}
-                </button>
               </div>
             </div>
 

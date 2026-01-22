@@ -3,6 +3,7 @@ import { getProfileMenuItems } from './profileMenu.config';
 
 interface ProfileDropdownProps {
   isDashboard: boolean;
+  userRole?: string;
   onNavigate: (href: string) => void;
   onLogout: () => void;
   variant?: 'desktop' | 'mobile';
@@ -10,11 +11,12 @@ interface ProfileDropdownProps {
 
 export function ProfileDropdown({
   isDashboard,
+  userRole,
   onNavigate,
   onLogout,
   variant = 'desktop',
 }: ProfileDropdownProps) {
-  const menuItems = getProfileMenuItems(isDashboard);
+  const menuItems = getProfileMenuItems(isDashboard, userRole);
 
   const handleItemClick = (itemId: string, href?: string) => {
     if (itemId === 'logout') {

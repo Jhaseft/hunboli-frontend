@@ -5,12 +5,14 @@ import {
   SettingsIcon,
   DocumentIcon,
   LogoutIcon,
+  WalletIcon,
+  ShieldIcon,
 } from '@/components/common/icons';
 
 /**
  * Tipo para los items del menú de perfil
  */
-export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'kyc' | 'logout';
+export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'kyc' | 'deposits' | 'admin-deposits' | 'logout';
 
 export interface ProfileMenuItem {
   id: ProfileMenuItemType;
@@ -21,6 +23,7 @@ export interface ProfileMenuItem {
   requiresAuth?: boolean;
   showInDashboard?: boolean;
   showOutsideDashboard?: boolean;
+  requiredRole?: 'admin'; // Solo visible para admins
 }
 
 /**
@@ -68,6 +71,27 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
     showOutsideDashboard: true,
   },
   {
+    id: 'deposits',
+    label: 'Mis Depósitos',
+    icon: WalletIcon,
+    href: ROUTES.DASHBOARD_DEPOSITS,
+    variant: 'default',
+    requiresAuth: true,
+    showInDashboard: true,
+    showOutsideDashboard: true,
+  },
+  {
+    id: 'admin-deposits',
+    label: 'Admin Depósitos',
+    icon: ShieldIcon,
+    href: ROUTES.ADMIN_DEPOSITS,
+    variant: 'default',
+    requiresAuth: true,
+    showInDashboard: true,
+    showOutsideDashboard: true,
+    requiredRole: 'admin',
+  },
+  {
     id: 'logout',
     label: 'Cerrar sesión',
     icon: LogoutIcon,
@@ -79,10 +103,16 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
 ];
 
 /**
- * Filtra los items del menú según el contexto
+ * Filtra los items del menú según el contexto y rol del usuario
  */
-export function getProfileMenuItems(isDashboard: boolean): ProfileMenuItem[] {
-  return PROFILE_MENU_ITEMS.filter((item) =>
-    isDashboard ? item.showInDashboard : item.showOutsideDashboard
-  );
+export function getProfileMenuItems(isDashboard: boolean, userRole?: string): ProfileMenuItem[] {
+  return PROFILE_MENU_ITEMS.filter((item) => {
+    // Filtrar por contexto (dashboard o no)
+    const contextMatch = isDashboard ? item.showInDashboard : item.showOutsideDashboard;
+
+    // Filtrar por rol si el item requiere uno específico
+    const roleMatch = !item.requiredRole || userRole === item.requiredRole;
+
+    return contextMatch && roleMatch;
+  });
 }

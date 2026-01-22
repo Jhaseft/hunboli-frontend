@@ -19,6 +19,10 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   DASHBOARD_SETTINGS: '/dashboard/settings',
   DASHBOARD_KYC: '/dashboard/kyc',
+  DASHBOARD_DEPOSITS: '/dashboard/deposits',
+
+  // Admin
+  ADMIN_DEPOSITS: '/dashboard/admin/deposits',
 
   // Onboarding
   COMPLETE_PROFILE: '/complete-profile',

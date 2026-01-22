@@ -4,3 +4,5 @@ export { SettingsIcon } from './SettingsIcon';
 export { DocumentIcon } from './DocumentIcon';
 export { LogoutIcon } from './LogoutIcon';
 export { ChevronIcon } from './ChevronIcon';
+export { WalletIcon } from './WalletIcon';
+export { ShieldIcon } from './ShieldIcon';
