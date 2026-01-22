@@ -8,12 +8,20 @@ type Bank = {
   logo_url: string;
 };
 
-interface Props {
-  banks: Bank[];
+type BankAccount = {
+  id: string;
+  userId: string;
+  bankId: number;
+  accountNumber: string;
+  bank: Bank;
+};
+
+type Props = {
+  banks: BankAccount[];
   currency: 'BOB' | 'PEN';
-  value: number | null;
-  onChange: (bankId: number) => void;
-}
+  value: string | null;
+  onChange: (id: string) => void;
+};
 
 export default function BankAccountSelect({
   banks,
@@ -25,14 +33,8 @@ export default function BankAccountSelect({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const filteredBanks = banks.filter(b =>
-    currency === 'BOB'
-      ? b.country === 'Bolivia'
-      : b.country === 'PERU'
-  );
-
-  const selectedBank = filteredBanks.find(b => b.id === value);
-
+  const selectedBank = banks.find(b => b.id === value) || null;
+   
   // cerrar al click fuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -47,7 +49,6 @@ export default function BankAccountSelect({
   return (
     <div ref={ref} className="relative w-full">
 
-   
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -56,20 +57,19 @@ export default function BankAccountSelect({
         {selectedBank ? (
           <div className="flex items-center gap-3">
             <img
-              src={selectedBank.logo_url}
+              src={selectedBank.bank.logo_url}
               className="w-7 h-7 rounded object-contain"
-              alt={selectedBank.name}
+              alt={selectedBank.bank.name}
             />
             <div className="text-left">
               <p className="text-sm text-white font-medium">
-                {selectedBank.name}
+                {selectedBank.bank.name}
               </p>
               <p className="text-xs text-gray-400">
-                {selectedBank.country}
+                {selectedBank.bank.country}
               </p>
-        
               <p className="text-xs text-teal-400">
-                Cuenta: ********
+                Cuenta: ****{selectedBank.accountNumber.slice(-4)}
               </p>
             </div>
           </div>
@@ -80,32 +80,31 @@ export default function BankAccountSelect({
         <ChevronDown size={18} className="text-gray-400" />
       </button>
 
-  
       {open && (
         <div className="absolute z-50 mt-1 w-full bg-[#0a1628] border border-gray-700 rounded-lg max-h-72 overflow-y-auto">
-          {filteredBanks.map(bank => (
+          {banks.map(account => (
             <button
-              key={bank.id}
+              key={account.id}
               onClick={() => {
-                onChange(bank.id);
+                onChange(account.id);
                 setOpen(false);
               }}
               className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#13294b] text-left"
             >
               <img
-                src={bank.logo_url}
+                src={account.bank.logo_url}
                 className="w-8 h-8 rounded object-contain"
-                alt={bank.name}
+                alt={account.bank.name}
               />
               <div>
                 <p className="text-sm text-white">
-                  {bank.name}
+                  {account.bank.name}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {bank.country}
+                  {account.bank.country}
                 </p>
                 <p className="text-xs text-teal-400">
-                  Cuenta: ********
+                  Cuenta: ****{account.accountNumber.slice(-4)}
                 </p>
               </div>
             </button>

@@ -1,62 +1,121 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Minus } from "lucide-react";
-import api from '@/lib/api_axios';
+import api from '@/lib/api';
 import AddBankModal from "./AddBankModal";
 import BankAccountSelect from "./BankAccountSelect";
-
+import { useAuth } from '@/context/AuthContext';
+import ReportModal from "../ReportModal";
 type Bank = {
   id: number;
   name: string;
   country: 'Bolivia' | 'PERU';
+  logo_url: string;
+};
+
+type BankAccount = {
+  id: string;
+  userId: string;
+  bankId: number;
+  accountNumber: string;
+  bank: Bank;
 };
 
 interface BanksProps {
   selectedCurrency: 'BOB' | 'PEN';
-  onBankChange?: (bankId: number | '') => void;
 }
 
-export default function Banks({ selectedCurrency, onBankChange }: BanksProps) {
+export default function Banks({ selectedCurrency }: BanksProps) {
 
-  const [banks, setBanks] = useState<Bank[]>([]);
-  const [selectedBankId, setSelectedBankId] = useState<number | ''>('');
+  const [banks, setBanks] = useState<BankAccount[]>([]);
+  const [catalogBanks, setCatalogBanks] = useState<Bank[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
+  const { user } = useAuth();
+  const [reportModal, setReportModal] = useState({
+    isOpen: false,
+    success: true,
+    message: ''
+  });
+  const USER_ID = user?.id;
 
-  const fetchBanks = async () => {
+   const fetchBanks = useCallback(async () => {
+    if (!USER_ID) return;
+    try {
+      const { data } = await api.get<BankAccount[]>(`/bank-accounts/user/${USER_ID}`);
+      setBanks(data);
+    } catch (error: any) {
+      setReportModal({
+        isOpen: false,
+        success: false,
+        message: error.response?.data?.message || 'Error al cargar cuentas bancarias'
+      });
+    }
+  }, [USER_ID]);
+
+  const fetchCatalogBanks = useCallback(async () => {
     try {
       const { data } = await api.get<Bank[]>('/banks');
-      setBanks(data);
-    } catch (error) {
-      console.error('Error al cargar bancos', error);
+      setCatalogBanks(data);
+    } catch (error:any) {
+      console.error('Error al cargar catálogo de bancos:', error.response.data.message);
+    }
+  }, []);
+
+  const handleDeleteBankAccount = async () => {
+    if (!selectedAccount) return;
+
+    const confirmed = window.confirm(
+      "¿Estás seguro que quieres eliminar esta cuenta bancaria?"
+    );
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/bank-accounts/${selectedAccount}`);
+      setSelectedAccount(null);
+      fetchBanks();
+
+      setReportModal({
+        isOpen: true,
+        success: true,
+        message: 'Cuenta bancaria eliminada correctamente'
+      });
+    } catch (error: any) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: error.response?.data?.message || 'Error al eliminar la cuenta bancaria'
+      });
     }
   };
 
+
   useEffect(() => {
     fetchBanks();
-  }, []);
+    fetchCatalogBanks();
+  }, [fetchBanks, fetchCatalogBanks]);
 
-  const filteredBanks = banks.filter(bank =>
+  const filteredBanks = banks.filter(account =>
+    selectedCurrency === 'BOB'
+      ? account.bank.country === 'Bolivia'
+      : account.bank.country === 'PERU'
+  );
+
+  const filteredCatalogBanks = catalogBanks.filter(bank =>
     selectedCurrency === 'BOB'
       ? bank.country === 'Bolivia'
       : bank.country === 'PERU'
   );
-
-  const handleBankChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value === '' ? '' : Number(e.target.value);
-    setSelectedBankId(value);
-    onBankChange?.(value);
-  };
 
   return (
     <>
       <div className="bg-[#0a1628] border border-gray-700 p-4 rounded-br-4xl flex items-center gap-2">
 
         <BankAccountSelect
-  banks={banks}
-  currency={selectedCurrency}
-  value={selectedAccount}
-  onChange={setSelectedAccount}
-/>
+          banks={filteredBanks}
+          currency={selectedCurrency}
+          value={selectedAccount}
+          onChange={setSelectedAccount}
+        />
 
         <div className="flex flex-col gap-1">
           <button
@@ -67,7 +126,12 @@ export default function Banks({ selectedCurrency, onBankChange }: BanksProps) {
           </button>
 
           <button
-            className="bg-red-600 p-1 rounded hover:bg-red-700"
+            onClick={handleDeleteBankAccount}
+            disabled={!selectedAccount}
+            className={`p-1 rounded ${selectedAccount
+              ? 'bg-red-600 hover:bg-red-700'
+              : 'bg-gray-600 cursor-not-allowed'
+              }`}
           >
             <Minus size={16} />
           </button>
@@ -77,9 +141,15 @@ export default function Banks({ selectedCurrency, onBankChange }: BanksProps) {
       <AddBankModal
         isOpen={openModal}
         onClose={() => setOpenModal(false)}
-        banks={banks}
-        currency={selectedCurrency}
+        banks={filteredCatalogBanks}
+        userId={USER_ID}
         onSaved={fetchBanks}
+      />
+       <ReportModal
+        isOpen={reportModal.isOpen}
+        onClose={() => setReportModal({ ...reportModal, isOpen: false })}
+        success={reportModal.success}
+        message={reportModal.message}
       />
     </>
   );

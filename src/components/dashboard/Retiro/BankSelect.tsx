@@ -10,26 +10,22 @@
 
   interface BankSelectProps {
     banks: Bank[];
-    currency: 'BOB' | 'PEN';
     value: number | null;
     onChange: (bankId: number) => void;
   }
 
   export default function BankSelect({
     banks,
-    currency,
     value,
     onChange
   }: BankSelectProps) {
 
+
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
-    const filteredBanks = banks.filter(b =>
-      currency === 'BOB' ? b.country === 'Bolivia' : b.country === 'PERU'
-    );
 
-    const selectedBank = filteredBanks.find(b => b.id === value);
+    const selectedBank = banks.find(b => b.id === value);
 
     // cerrar al hacer click fuera
     useEffect(() => {
@@ -71,7 +67,7 @@
 
         {open && (
           <div className="absolute z-50 mt-1 w-full bg-[#0a1628] border border-gray-700 rounded-lg max-h-64 overflow-y-auto">
-            {filteredBanks.map(bank => (
+            {banks.map(bank => (
               <button
                 key={bank.id}
                 onClick={() => {
