@@ -1,4 +1,7 @@
-export default function Tasa({exchangeRates}){
+interface TasaProps {
+  exchangeRates: Record<string, number>; // o el tipo que tenga tu objeto
+}
+export default function Tasa({ exchangeRates }: TasaProps) {
     return(
         <div className="space-y-2">
 
