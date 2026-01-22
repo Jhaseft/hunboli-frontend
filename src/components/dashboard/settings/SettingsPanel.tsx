@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { userService } from "@/services/user.service";
 
 export function SettingsPanel() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     phoneNumber: user?.phoneNumber || "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Usuario";
   const userInitial = (user?.firstName?.[0] ?? "U").toUpperCase();
@@ -17,17 +19,27 @@ export function SettingsPanel() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
   };
 
   const handleSave = async () => {
+    if (!formData.phoneNumber.trim()) {
+      setError("El número de teléfono es obligatorio");
+      return;
+    }
+
     setIsSaving(true);
-    // TODO: Implementar llamada al backend para actualizar datos
-    // await updateProfile(formData);
-    console.log("Guardando cambios:", formData);
-    setTimeout(() => {
-      setIsSaving(false);
+    setError(null);
+    try {
+      await userService.editPhoneNumber(formData.phoneNumber);
+      await refreshUser();
       setIsEditing(false);
-    }, 1000);
+    } catch (error) {
+      console.error("Error al guardar los cambios:", error);
+      setError("Error al actualizar el número de teléfono");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -65,6 +77,7 @@ export function SettingsPanel() {
           isEditing={isEditing}
           onEdit={() => setIsEditing(true)}
           onChange={handleInputChange}
+          error={error}
         />
 
         {/* Botones de acción */}
@@ -136,11 +149,10 @@ function RoleBadge({ role }: { role: string }) {
   const isAdmin = role === "Administrador";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-        isAdmin
-          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-          : "bg-teal-500/20 text-teal-300 border border-teal-500/30"
-      }`}
+      className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs font-semibold ${isAdmin
+        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+        : "bg-teal-500/20 text-teal-300 border border-teal-500/30"
+        }`}
     >
       {isAdmin ? <ShieldIcon /> : <UserIcon />}
       {role}
@@ -234,11 +246,13 @@ function ContactDataSection({
   isEditing,
   onEdit,
   onChange,
+  error,
 }: {
   phoneNumber: string;
   isEditing: boolean;
   onEdit: () => void;
   onChange: (field: string, value: string) => void;
+  error: string | null;
 }) {
   return (
     <div className="rounded-xl border border-gray-800 bg-[#0f1e33] overflow-hidden">
@@ -262,7 +276,7 @@ function ContactDataSection({
         )}
       </div>
 
-      <div className="p-4 sm:p-5">
+      <div className="p-4 sm:p-5 space-y-3">
         <EditableField
           label="Teléfono"
           value={phoneNumber}
@@ -271,6 +285,9 @@ function ContactDataSection({
           isEditing={isEditing}
           onChange={(v) => onChange("phoneNumber", v)}
         />
+        {error && (
+          <p className="text-sm text-red-400">{error}</p>
+        )}
       </div>
     </div>
   );
