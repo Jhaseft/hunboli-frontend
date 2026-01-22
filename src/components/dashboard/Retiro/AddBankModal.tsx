@@ -8,6 +8,7 @@ type Bank = {
     id: number;
     name: string;
     country: 'Bolivia' | 'PERU';
+    logo_url: string; 
 };
 
 interface AddBankModalProps {
