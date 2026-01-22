@@ -15,7 +15,7 @@ interface AddBankModalProps {
     isOpen: boolean;
     onClose: () => void;
     banks: Bank[];
-    userId: string;
+    userId?: string;
     onSaved?: () => void;
 }
 
@@ -77,6 +77,7 @@ export default function AddBankModal({
     };
 
     if (!isOpen) return null;
+    if (!userId) return null;
 
     return (
         <>
