@@ -4,7 +4,7 @@ import { getAuthToken } from './cookies';
 
 // 1. Crear una instancia básica de Axios
 const api = axios.create({
-    baseURL: process.env.BACKEND_URL, // La URL de tu backend NestJS
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL, // La URL de tu backend NestJS
 });
 
 // 2. Configurar el INTERCEPTOR (El portero)
