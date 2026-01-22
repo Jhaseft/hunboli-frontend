@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/services/user.service";
+import { walletService } from "@/services/wallet.service";
 import { PasswordRequirements, isPasswordValid } from "@/components/ui/PasswordRequirements";
 
 export function SecurityPanel() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const walletAddress = user?.walletAddress;
@@ -36,6 +37,7 @@ export function SecurityPanel() {
           walletAddress={walletAddress}
           hasWallet={hasWallet}
           formatAddress={formatWalletAddress}
+          onWalletLinked={refreshUser}
         />
       </div>
     </section>
@@ -274,21 +276,97 @@ function PasswordInput({
 // ============================================
 // Bloque 2: Billetera Vinculada
 // ============================================
+type WalletStep = 'idle' | 'confirm-change' | 'connecting' | 'password';
+
 function WalletSection({
   walletAddress,
   hasWallet,
   formatAddress,
+  onWalletLinked,
 }: {
   walletAddress: string | null | undefined;
   hasWallet: boolean;
   formatAddress: (address: string) => string;
+  onWalletLinked: () => Promise<void>;
 }) {
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [step, setStep] = useState<WalletStep>('idle');
+  const [pendingWalletAddress, setPendingWalletAddress] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const handleChangeWallet = () => {
-    // TODO: Implementar cambio de billetera
-    console.log("Cambiando billetera...");
-    setIsConfirmOpen(false);
+  const resetState = () => {
+    setStep('idle');
+    setPendingWalletAddress(null);
+    setPassword("");
+    setShowPassword(false);
+    setError(null);
+    setSuccess(false);
+  };
+
+  const connectMetaMask = async () => {
+    const ethereum = window.ethereum as { isMetaMask?: boolean; request: (args: { method: string }) => Promise<string[]> } | undefined;
+
+    if (!ethereum?.isMetaMask) {
+      setError("MetaMask no está instalado. Por favor instálalo para continuar.");
+      return;
+    }
+
+    setStep('connecting');
+    setError(null);
+
+    try {
+      const accounts = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (accounts && accounts.length > 0) {
+        setPendingWalletAddress(accounts[0]);
+        setStep('password');
+      } else {
+        setError("No se pudo obtener la dirección de la billetera");
+        setStep('idle');
+      }
+    } catch (err: unknown) {
+      const error = err as { code?: number; message?: string };
+      if (error.code === 4001) {
+        setError("Conexión rechazada. Por favor acepta la conexión en MetaMask.");
+      } else {
+        setError("Error al conectar con MetaMask");
+      }
+      setStep('idle');
+    }
+  };
+
+  const handleLinkWallet = async () => {
+    if (!pendingWalletAddress || !password) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await walletService.linkWallet(pendingWalletAddress, password);
+      setSuccess(true);
+      await onWalletLinked();
+      setTimeout(() => {
+        resetState();
+      }, 2000);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || "Error al vincular la billetera");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartChange = () => {
+    setStep('confirm-change');
+  };
+
+  const handleConfirmChange = () => {
+    connectMetaMask();
   };
 
   return (
@@ -308,6 +386,20 @@ function WalletSection({
       </div>
 
       <div className="p-4 sm:p-5">
+        {/* Mensaje de éxito */}
+        {success && (
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 mb-4">
+            <p className="text-sm text-emerald-400">Billetera vinculada correctamente</p>
+          </div>
+        )}
+
+        {/* Mensaje de error */}
+        {error && (
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 mb-4">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
         {hasWallet ? (
           <div className="space-y-4">
             {/* Wallet Address Display */}
@@ -326,17 +418,20 @@ function WalletSection({
               </span>
             </div>
 
-            {/* Change Wallet Button */}
-            {!isConfirmOpen ? (
+            {/* Step: Idle - Show change button */}
+            {step === 'idle' && (
               <button
                 type="button"
-                onClick={() => setIsConfirmOpen(true)}
+                onClick={handleStartChange}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 border border-red-500/30 transition"
               >
                 <RefreshIcon className="w-4 h-4" />
                 Cambiar Billetera
               </button>
-            ) : (
+            )}
+
+            {/* Step: Confirm change */}
+            {step === 'confirm-change' && (
               <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 space-y-3">
                 <div className="flex items-start gap-3">
                   <WarningIcon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
@@ -345,45 +440,200 @@ function WalletSection({
                       ¿Estás seguro de cambiar tu billetera?
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      Esta acción desvinculará tu billetera actual. Deberás vincular una nueva billetera para realizar depósitos.
+                      Se conectará con MetaMask para obtener tu nueva dirección.
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsConfirmOpen(false)}
+                    onClick={resetState}
                     className="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-gray-700 text-gray-300 text-sm font-medium hover:bg-gray-800 transition"
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
-                    onClick={handleChangeWallet}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition"
+                    onClick={handleConfirmChange}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold transition"
                   >
-                    <RefreshIcon className="w-4 h-4" />
-                    Sí, cambiar billetera
+                    <FoxIcon />
+                    Conectar MetaMask
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Connecting */}
+            {step === 'connecting' && (
+              <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                <div className="flex items-center gap-3">
+                  <LoadingSpinner />
+                  <p className="text-sm text-orange-400">Conectando con MetaMask...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Step: Password */}
+            {step === 'password' && pendingWalletAddress && (
+              <div className="p-4 rounded-lg bg-gray-800/50 border border-gray-700 space-y-4">
+                <div>
+                  <p className="text-sm text-gray-300 mb-2">Nueva billetera a vincular:</p>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-900/50 border border-gray-700/50">
+                    <FoxIcon />
+                    <span className="font-mono text-sm text-orange-400">
+                      {formatAddress(pendingWalletAddress)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Confirma tu contraseña para continuar
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                      placeholder="Ingresa tu contraseña"
+                      className="w-full rounded-lg border border-gray-700 bg-gray-900/70 px-4 py-2.5 pr-12 text-gray-100 text-sm placeholder:text-gray-600 outline-none focus:border-teal-500/70 focus:ring-2 focus:ring-teal-500/20 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={resetState}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-gray-700 text-gray-300 text-sm font-medium hover:bg-gray-800 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLinkWallet}
+                    disabled={isLoading || !password}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <LoadingSpinner />
+                        Vinculando...
+                      </>
+                    ) : (
+                      <>
+                        <LinkIcon className="w-4 h-4" />
+                        Vincular Billetera
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center py-4">
-            <div className="h-12 w-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-3">
-              <WalletIcon className="w-6 h-6 text-gray-500" />
-            </div>
-            <p className="text-sm text-gray-400 mb-4">
-              No tienes ninguna billetera vinculada
-            </p>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold transition"
-            >
-              <LinkIcon className="w-4 h-4" />
-              Vincular Billetera
-            </button>
+          <div className="space-y-4">
+            {step === 'idle' && (
+              <div className="text-center py-4">
+                <div className="h-12 w-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                  <WalletIcon className="w-6 h-6 text-gray-500" />
+                </div>
+                <p className="text-sm text-gray-400 mb-4">
+                  No tienes ninguna billetera vinculada
+                </p>
+                <button
+                  type="button"
+                  onClick={connectMetaMask}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold transition"
+                >
+                  <FoxIcon />
+                  Conectar MetaMask
+                </button>
+              </div>
+            )}
+
+            {/* Step: Connecting */}
+            {step === 'connecting' && (
+              <div className="text-center py-4">
+                <div className="h-12 w-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-3">
+                  <LoadingSpinner />
+                </div>
+                <p className="text-sm text-orange-400">Conectando con MetaMask...</p>
+              </div>
+            )}
+
+            {/* Step: Password */}
+            {step === 'password' && pendingWalletAddress && (
+              <div className="p-4 rounded-lg bg-gray-800/50 border border-gray-700 space-y-4">
+                <div>
+                  <p className="text-sm text-gray-300 mb-2">Billetera a vincular:</p>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-900/50 border border-gray-700/50">
+                    <FoxIcon />
+                    <span className="font-mono text-sm text-orange-400">
+                      {formatAddress(pendingWalletAddress)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    Confirma tu contraseña para continuar
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                      placeholder="Ingresa tu contraseña"
+                      className="w-full rounded-lg border border-gray-700 bg-gray-900/70 px-4 py-2.5 pr-12 text-gray-100 text-sm placeholder:text-gray-600 outline-none focus:border-teal-500/70 focus:ring-2 focus:ring-teal-500/20 transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={resetState}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-gray-700 text-gray-300 text-sm font-medium hover:bg-gray-800 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLinkWallet}
+                    disabled={isLoading || !password}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <LoadingSpinner />
+                        Vinculando...
+                      </>
+                    ) : (
+                      <>
+                        <LinkIcon className="w-4 h-4" />
+                        Vincular Billetera
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
