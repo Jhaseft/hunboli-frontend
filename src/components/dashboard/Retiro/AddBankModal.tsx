@@ -26,7 +26,7 @@ export default function AddBankModal({
     userId,
     onSaved
 }: AddBankModalProps) {
-    const [bankId, setBankId] = useState<number | ''>('');
+    const [bankId, setBankId] = useState<number | null>(null);
     const [accountNumber, setAccountNumber] = useState('');
 
     const [reportModal, setReportModal] = useState({
@@ -58,7 +58,7 @@ export default function AddBankModal({
                 success: true,
                 message: 'Cuenta bancaria creada correctamente'
             });
-            setBankId('');
+            setBankId(null);
             setAccountNumber('');
             onSaved?.();
 
