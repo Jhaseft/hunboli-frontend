@@ -4,7 +4,7 @@ import { FeaturesSection } from '../components/Home/FeaturesSection';
 import { StatsSection } from '../components/Home/StatsSection';
 import { AdoptionSection } from '../components/Home/AdoptionSection';
 import { FooterSection } from '../components/Home/FooterSection';
-
+//cambios pequeños
 export default function App() {
 
   return (

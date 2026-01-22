@@ -1,12 +1,12 @@
 "use client";
 
-import { useState,useEffect } from "react";
-import { Wallet, TrendingUp, Link as LinkIcon } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Wallet, TrendingUp, Link as LinkIcon, AlertTriangle } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useBalance, useChainId, useReadContracts } from "wagmi";
 import { formatUnits } from "viem";
 import { useAuth } from "@/context/AuthContext";
-import { LinkWalletModal } from "./LinkWalletModal";
 type BalanceCardProps = {
   onBalanceChange?: (balance: string) => void;
 };
@@ -42,15 +42,21 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { user } = useAuth();
-
-  const [showLinkModal, setShowLinkModal] = useState(false);
-  const [walletLinkedSuccess, setWalletLinkedSuccess] = useState(false);
+  const router = useRouter();
 
   const wrongNetwork = isConnected && chainId !== EXPECTED_CHAIN_ID;
 
-  // Detectar si es una wallet nueva (conectada pero no vinculada en BD)
-  const isNewWallet = isConnected && address && user?.walletAddress !== address;
-  const isWalletLinked = user?.walletAddress === address;
+  // Estados de wallet - normalizar a minúsculas para comparación consistente
+  const hasLinkedWallet = !!user?.walletAddress;
+  const linkedWalletLower = user?.walletAddress?.toLowerCase();
+  const connectedWalletLower = address?.toLowerCase();
+  const isWalletLinked = isConnected && address && linkedWalletLower === connectedWalletLower;
+  const isWrongWallet = isConnected && address && hasLinkedWallet && linkedWalletLower !== connectedWalletLower;
+  const canLinkWallet = isConnected && address && !hasLinkedWallet;
+
+  const handleGoToLinkWallet = () => {
+    router.push("/dashboard/settings/security");
+  };
 
   const { data: native } = useBalance({
     address,
@@ -114,10 +120,10 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </div>
         )}
 
-        {/* Mostrar botón de vincular si es wallet nueva */}
-        {isNewWallet && !wrongNetwork && (
+        {/* Mostrar botón de vincular si no tiene wallet vinculada */}
+        {canLinkWallet && !wrongNetwork && (
           <button
-            onClick={() => setShowLinkModal(true)}
+            onClick={handleGoToLinkWallet}
             className="mt-4 w-full flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg px-4 py-3 transition-colors"
           >
             <LinkIcon className="w-4 h-4" />
@@ -125,8 +131,28 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </button>
         )}
 
-        {/* Mensaje de éxito */}
-        {(isWalletLinked || walletLinkedSuccess) && (
+        {/* Advertencia: wallet conectada diferente a la vinculada */}
+        {isWrongWallet && !wrongNetwork && (
+          <div className="mt-4 text-sm bg-amber-500/20 text-amber-200 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="font-medium">Esta no es tu wallet vinculada</span>
+            </div>
+            <p className="text-xs text-amber-200/80 mb-3">
+              Tu cuenta está vinculada a otra wallet. Conecta la wallet correcta o cambia la vinculación en ajustes.
+            </p>
+            <button
+              onClick={handleGoToLinkWallet}
+              className="w-full flex items-center justify-center gap-2 bg-amber-500/30 hover:bg-amber-500/40 text-amber-100 font-medium rounded-lg px-3 py-2 text-xs transition-colors"
+            >
+              <LinkIcon className="w-3 h-3" />
+              Cambiar wallet vinculada
+            </button>
+          </div>
+        )}
+
+        {/* Mensaje de éxito: wallet vinculada correctamente */}
+        {isWalletLinked && (
           <div className="mt-4 text-sm bg-green-500/20 text-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -149,14 +175,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
         </div>
       </div>
 
-      {address && (
-        <LinkWalletModal
-          isOpen={showLinkModal}
-          onClose={() => setShowLinkModal(false)}
-          walletAddress={address}
-          onSuccess={() => setWalletLinkedSuccess(true)}
-        />
-      )}
     </div>
   );
 }
