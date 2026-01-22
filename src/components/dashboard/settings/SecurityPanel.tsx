@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { userService } from "@/services/user.service";
+import { PasswordRequirements, isPasswordValid } from "@/components/ui/PasswordRequirements";
 
 export function SecurityPanel() {
   const { user } = useAuth();
@@ -57,28 +59,51 @@ function PasswordSection({
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const passwordsMatch = newPassword === confirmPassword;
+  const isNewPasswordValid = isPasswordValid(newPassword);
+  const canSubmit = currentPassword && newPassword && confirmPassword && passwordsMatch && isNewPasswordValid;
 
   const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
+    setError(null);
+
+    if (!passwordsMatch) {
+      setError("Las contraseñas no coinciden");
       return;
     }
+
+    if (!isNewPasswordValid) {
+      setError("La contraseña no cumple con los requisitos");
+      return;
+    }
+
     setIsLoading(true);
-    // TODO: Implementar llamada al backend
-    console.log("Cambiando contraseña...");
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await userService.editPassword(currentPassword, newPassword);
+      setSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      onToggle();
-    }, 1000);
+      setTimeout(() => {
+        setSuccess(false);
+        onToggle();
+      }, 2000);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || "Error al cambiar la contraseña");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setError(null);
+    setSuccess(false);
     onToggle();
   };
 
@@ -122,7 +147,7 @@ function PasswordSection({
             <PasswordInput
               label="Contraseña actual"
               value={currentPassword}
-              onChange={setCurrentPassword}
+              onChange={(v) => { setCurrentPassword(v); setError(null); }}
               show={showCurrentPassword}
               onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
               placeholder="Ingresa tu contraseña actual"
@@ -130,19 +155,47 @@ function PasswordSection({
             <PasswordInput
               label="Nueva contraseña"
               value={newPassword}
-              onChange={setNewPassword}
+              onChange={(v) => { setNewPassword(v); setError(null); }}
               show={showNewPassword}
               onToggleShow={() => setShowNewPassword(!showNewPassword)}
               placeholder="Ingresa tu nueva contraseña"
             />
+
+            {/* Requisitos de contraseña */}
+            {newPassword && (
+              <PasswordRequirements password={newPassword} />
+            )}
+
             <PasswordInput
               label="Confirmar nueva contraseña"
               value={confirmPassword}
-              onChange={setConfirmPassword}
+              onChange={(v) => { setConfirmPassword(v); setError(null); }}
               show={showConfirmPassword}
               onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
               placeholder="Confirma tu nueva contraseña"
             />
+
+            {/* Indicador de coincidencia */}
+            {confirmPassword && (
+              <div className={`flex items-center gap-2 text-sm ${passwordsMatch ? 'text-emerald-400' : 'text-red-400'}`}>
+                {passwordsMatch ? <CheckIcon className="w-4 h-4" /> : <XIcon className="w-4 h-4" />}
+                <span>{passwordsMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}</span>
+              </div>
+            )}
+
+            {/* Mensaje de error */}
+            {error && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                <p className="text-sm text-red-400">{error}</p>
+              </div>
+            )}
+
+            {/* Mensaje de éxito */}
+            {success && (
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <p className="text-sm text-emerald-400">Contraseña actualizada correctamente</p>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
@@ -155,7 +208,7 @@ function PasswordSection({
               <button
                 type="button"
                 onClick={handleChangePassword}
-                disabled={isLoading || !currentPassword || !newPassword || !confirmPassword}
+                disabled={isLoading || !canSubmit}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -409,6 +462,14 @@ function CheckIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function XIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }

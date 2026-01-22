@@ -10,6 +10,12 @@ export const userService = {
         return data;
     },
 
+    //change password
+    editPassword: async (oldPassword: string, newPassword: string) => {
+        const { data } = await api.patch('/users/edit-password', { oldPassword, newPassword });
+        return data;
+    },
+
     // Obtener perfil (Ejemplo con GET)
     getProfile: async () => {
         const { data } = await api.get('/users/profile');
