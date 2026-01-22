@@ -323,7 +323,21 @@ function WalletSection({
       });
 
       if (accounts && accounts.length > 0) {
-        setPendingWalletAddress(accounts[0]);
+        // Normalizar a minúsculas para comparación consistente con el backend
+        const newAddress = accounts[0].toLowerCase();
+        const currentAddress = walletAddress?.toLowerCase();
+
+        console.log('Nueva wallet (MetaMask):', newAddress);
+        console.log('Wallet actual (Backend):', currentAddress);
+
+        // Verificar si es la misma wallet
+        if (hasWallet && newAddress === currentAddress) {
+          setError("Esta es la misma billetera que ya tienes vinculada. Selecciona una billetera diferente en MetaMask.");
+          setStep('idle');
+          return;
+        }
+
+        setPendingWalletAddress(newAddress);
         setStep('password');
       } else {
         setError("No se pudo obtener la dirección de la billetera");
@@ -345,6 +359,8 @@ function WalletSection({
 
     setIsLoading(true);
     setError(null);
+
+    console.log('Enviando al backend:', { walletAddress: pendingWalletAddress });
 
     try {
       await walletService.linkWallet(pendingWalletAddress, password);
