@@ -1,12 +1,16 @@
-type infoadicional = {
+interface InfoAdicionalProps {
   gasFee: number;
   comision: number;
   totalDeduction: number;
   newBalance: number;
-};
+}
 
-
-export default function Infoadicional({gasFee,comision,totalDeduction,newBalance}){
+export default function Infoadicional({
+  gasFee,
+  comision,
+  totalDeduction,
+  newBalance,
+}: InfoAdicionalProps) {
     return(
         <>
         <div className="bg-[#0a1628] border border-gray-700 p-3 rounded-lg flex justify-between text-sm text-gray-400">
