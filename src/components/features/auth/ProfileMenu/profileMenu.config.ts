@@ -23,7 +23,8 @@ export interface ProfileMenuItem {
   requiresAuth?: boolean;
   showInDashboard?: boolean;
   showOutsideDashboard?: boolean;
-  requiredRole?: 'admin'; // Solo visible para admins
+  requiredRole?: 'admin'; // Solo visible para este rol
+  excludedRoles?: string[]; // No visible para estos roles
 }
 
 /**
@@ -79,6 +80,7 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
     requiresAuth: true,
     showInDashboard: true,
     showOutsideDashboard: true,
+    excludedRoles: ['admin'], // No mostrar a admins
   },
   {
     id: 'admin-deposits',
@@ -106,13 +108,19 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
  * Filtra los items del menú según el contexto y rol del usuario
  */
 export function getProfileMenuItems(isDashboard: boolean, userRole?: string): ProfileMenuItem[] {
+  const normalizedUserRole = userRole?.toLowerCase();
+
   return PROFILE_MENU_ITEMS.filter((item) => {
     // Filtrar por contexto (dashboard o no)
     const contextMatch = isDashboard ? item.showInDashboard : item.showOutsideDashboard;
 
     // Filtrar por rol si el item requiere uno específico
-    const roleMatch = !item.requiredRole || userRole === item.requiredRole;
+    const roleMatch = !item.requiredRole || normalizedUserRole === item.requiredRole;
 
-    return contextMatch && roleMatch;
+    // Excluir si el rol del usuario está en la lista de excluidos
+    const notExcluded =
+      !item.excludedRoles || !normalizedUserRole || !item.excludedRoles.includes(normalizedUserRole);
+
+    return contextMatch && roleMatch && notExcluded;
   });
 }
