@@ -15,7 +15,7 @@ const COOKIE_OPTIONS = {
  */
 export const COOKIE_NAMES = {
   AUTH_TOKEN: 'auth_token',
-  USER_DATA: 'user_data',
+  // USER_DATA removido por seguridad - no guardar datos sensibles en cookies
 } as const;
 
 /**
@@ -40,38 +40,64 @@ export function removeAuthToken(): void {
 }
 
 /**
- * Guarda los datos del usuario en una cookie (como JSON)
+ * ⚠️ SEGURIDAD: No guardar datos del usuario en cookies
+ * 
+ * Los datos del usuario contienen información sensible (email, nombre, teléfono, 
+ * dirección de billetera, estado KYC) que no debe almacenarse en cookies en texto plano.
+ * 
+ * En su lugar:
+ * - Mantener los datos solo en el estado de React durante la sesión
+ * - Usar sessionStorage si se necesita persistencia temporal (se limpia al cerrar la pestaña)
+ * - Siempre obtener datos frescos del backend cuando sea necesario
+ */
+
+/**
+ * Guarda los datos del usuario en sessionStorage (solo durante la sesión del navegador)
+ * Esto es más seguro que cookies porque:
+ * - No se envía automáticamente en cada request HTTP
+ * - Se limpia automáticamente al cerrar la pestaña
+ * - Solo accesible desde JavaScript en el mismo origen
  */
 export function setUserData(userData: object): void {
-  const jsonString = JSON.stringify(userData);
-  Cookies.set(COOKIE_NAMES.USER_DATA, jsonString, COOKIE_OPTIONS);
+  if (typeof window === 'undefined') return; // SSR safety
+  try {
+    const jsonString = JSON.stringify(userData);
+    sessionStorage.setItem('user_data', jsonString);
+  } catch (error) {
+    console.error('Error saving user data to sessionStorage:', error);
+  }
 }
 
 /**
- * Obtiene los datos del usuario desde la cookie
+ * Obtiene los datos del usuario desde sessionStorage
  */
 export function getUserData<T>(): T | null {
-  const data = Cookies.get(COOKIE_NAMES.USER_DATA);
-  if (!data) return null;
-
+  if (typeof window === 'undefined') return null; // SSR safety
   try {
+    const data = sessionStorage.getItem('user_data');
+    if (!data) return null;
     return JSON.parse(data) as T;
   } catch (error) {
-    console.error('Error parsing user data from cookie:', error);
+    console.error('Error parsing user data from sessionStorage:', error);
     removeUserData();
     return null;
   }
 }
 
 /**
- * Elimina los datos del usuario
+ * Elimina los datos del usuario de sessionStorage
  */
 export function removeUserData(): void {
-  Cookies.remove(COOKIE_NAMES.USER_DATA, { path: '/' });
+  if (typeof window === 'undefined') return; // SSR safety
+  try {
+    sessionStorage.removeItem('user_data');
+  } catch (error) {
+    console.error('Error removing user data from sessionStorage:', error);
+  }
 }
 
 /**
- * Limpia todas las cookies de autenticación
+ * Limpia todas las cookies de autenticación y datos de sesión
  */
 export function clearAuthCookies(): void {
   removeAuthToken();
