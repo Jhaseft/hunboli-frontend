@@ -38,6 +38,7 @@ export interface User {
     lastLogin: string | null;
     isGoogleAccount: boolean | null;
     isOnboardingCompleted: boolean;
+    isVerified: boolean;
 }
 
 export interface CompleteProfileDto {
