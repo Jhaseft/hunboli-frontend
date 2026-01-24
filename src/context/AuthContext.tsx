@@ -34,13 +34,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // URL del Backend (puedes poner esto en un .env)
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
+// Función helper para inicializar el estado desde sessionStorage de forma síncrona
+function getInitialUserState(): User | null {
+    if (typeof window === 'undefined') return null; // SSR safety
+    try {
+        const data = sessionStorage.getItem('user_data');
+        if (!data) return null;
+        return JSON.parse(data) as User;
+    } catch (error) {
+        console.error('Error parsing initial user data from sessionStorage:', error);
+        return null;
+    }
+}
+
+function getInitialTokenState(): string | null {
+    if (typeof window === 'undefined') return null; // SSR safety
+    return getAuthToken() || null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    // Inicializar estado de forma síncrona desde sessionStorage (similar a como funcionaba con cookies)
+    const [user, setUser] = useState<User | null>(getInitialUserState);
+    const [token, setToken] = useState<string | null>(getInitialTokenState);
     const [isLoading, setIsLoading] = useState(true);
 
     const router = useRouter();
     const pathname = usePathname(); // 👈 Para saber en qué página estamos
+
+    // 3. Logout (definido antes para que refreshUser pueda usarlo)
+    const logout = useCallback(() => {
+        clearAuthCookies();
+        setUser(null);
+        setToken(null);
+        router.push('/login');
+    }, [router]);
 
     // -------------------------------------------------------------------
     // NUEVA FUNCIÓN: refreshUser
@@ -57,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Actualizamos memoria (React)
             setUser(data);
-            // Actualizamos caché (Cookie)
+            // Actualizamos caché (sessionStorage) - solo para persistencia temporal durante la sesión
             setUserData(data);
 
             console.log("🔄 Datos de usuario refrescados", data);
@@ -68,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 logout();
             }
         }
-    }, []);
+    }, [logout]);
 
     // 1. Cargar sesión al iniciar
     useEffect(() => {
@@ -86,24 +113,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (e) { console.error(e); }
             }
 
-            // Carga normal desde Cookies
+            // Carga normal desde Cookies (solo token)
             const storedToken = getAuthToken();
-            const storedUser = getUserData<User>();
 
             if (storedToken) {
-                setToken(storedToken);
-                // Si tenemos usuario en cookie, lo usamos para pintar rápido la UI
-                if (storedUser) {
-                    setUser(storedUser);
-                }
-                // PERO, inmediatamente pedimos datos frescos al backend (Fetch on Load)
+                // El token y user ya están inicializados síncronamente arriba
+                // Ahora validamos y refrescamos desde el backend
+                // SIEMPRE pedimos datos frescos al backend (Fetch on Load)
                 // Esto asegura que si cambió algo en la BD, se refleje.
-                // Llamamos a axios directamante aquí para evitar deps circulares o usar refreshUser
+                // También previene que datos obsoletos o manipulados se usen
                 try {
                     const { data } = await axios.get(`${API_URL}/users/profile`, {
                         headers: { Authorization: `Bearer ${storedToken}` }
                     });
                     setUser(data);
+                    // Actualizamos sessionStorage con datos frescos del backend
                     setUserData(data);
                 } catch (error) {
                     // Si falla el perfil, logout
@@ -111,6 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setToken(null);
                     setUser(null);
                 }
+            } else {
+                // Si no hay token, limpiamos todo
+                setUser(null);
+                setToken(null);
             }
             setIsLoading(false);
         };
@@ -133,21 +161,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [router]);
 
-    // 3. Logout
-    const logout = useCallback(() => {
-        clearAuthCookies();
-        setUser(null);
-        setToken(null);
-        router.push('/login');
-    }, [router]);
-
     // 4. Update Wallet (Optimista)
     // Actualiza localmente, pero idealmente deberías llamar a refreshUser() después
     const updateWalletAddress = (walletAddress: string) => {
         if (user) {
             const updatedUser = { ...user, walletAddress };
-            setUserData(updatedUser);
             setUser(updatedUser);
+            // Actualizamos sessionStorage con el cambio optimista
+            setUserData(updatedUser);
         }
     };
 
