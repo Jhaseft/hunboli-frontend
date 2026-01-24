@@ -176,7 +176,7 @@ function VerificationBadge({ isVerified }: { isVerified: boolean }) {
   }
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30" title="Cuenta no verificada">
-      <UnverifiedIcon className="w-3.5 h-3.5" />
+      <UnverifiedIcon className="w-4.5 h-4.5" />
     </span>
   );
 }
