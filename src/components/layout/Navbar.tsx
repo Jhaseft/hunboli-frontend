@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "../ui/LogoAnimacion";
 import { MobileMenu } from "../Home/Layouts/MobileMenu";
 import { useAuth } from "@/context/AuthContext";
-import { AuthResponse, User } from "@/types";
 
 const NAV_LINKS = [
   { label: "¿Por qué Hunboli?", href: "/why" },
@@ -214,9 +213,8 @@ export function Navbar() {
                 <>
                   {showDashboardUI && (
                     <>
-                      <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-200">
-                        <span className="opacity-80">👤</span>
-                        <span className="text-sm">{user?.firstName || "Usuario"}</span>
+                      <div className="flex items-center gap-2 px-3 py-2 text-gray-200">
+                        <VerificationBadge isVerified={user?.isVerified ?? false} />
                       </div>
 
                       <div
@@ -279,80 +277,83 @@ export function Navbar() {
               )}
               {/* Botón de perfil en mobile con menú desplegable */}
               {!isLoading && isAuthenticated && (
-                <div className="relative" ref={mobileProfileMenuRef}>
-                  <button
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-teal-600/20 border border-teal-500/30 text-teal-200 font-semibold hover:bg-teal-600/30 transition"
-                    aria-label="Perfil"
-                    title="Perfil"
-                  >
-                    <span className="text-sm">{userInitial}</span>
-                  </button>
+                <>
+                  {showDashboardUI && <VerificationBadge isVerified={user?.isVerified ?? false} />}
+                  <div className="relative" ref={mobileProfileMenuRef}>
+                    <button
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-teal-600/20 border border-teal-500/30 text-teal-200 font-semibold hover:bg-teal-600/30 transition"
+                      aria-label="Perfil"
+                      title="Perfil"
+                    >
+                      <span className="text-sm">{userInitial}</span>
+                    </button>
 
-                  {/* Menú desplegable mobile */}
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-0 top-12 w-56 rounded-lg bg-gray-900 border border-gray-700 shadow-xl overflow-hidden z-50">
-                      <div className="py-1">
-                        {isDashboard ? (
+                    {/* Menú desplegable mobile */}
+                    {isProfileMenuOpen && (
+                      <div className="absolute right-0 top-12 w-56 rounded-lg bg-gray-900 border border-gray-700 shadow-xl overflow-hidden z-50">
+                        <div className="py-1">
+                          {isDashboard ? (
+                            <button
+                              onClick={() => handleNavigation("/")}
+                              className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                              </svg>
+                              <span>Home</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleNavigation("/dashboard")}
+                              className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                              </svg>
+                              <span>Dashboard</span>
+                            </button>
+                          )}
+
+                          <div className="border-t border-gray-800 my-1"></div>
+
                           <button
-                            onClick={() => handleNavigation("/")}
+                            onClick={() => handleNavigation("/dashboard/settings")}
                             className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span>Home</span>
+                            <span>Configuración</span>
                           </button>
-                        ) : (
+
                           <button
-                            onClick={() => handleNavigation("/dashboard")}
+                            onClick={() => handleNavigation("/dashboard/kyc")}
                             className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span>Dashboard</span>
+                            <span>KYC</span>
                           </button>
-                        )}
 
-                        <div className="border-t border-gray-800 my-1"></div>
+                          <div className="border-t border-gray-800 my-1"></div>
 
-                        <button
-                          onClick={() => handleNavigation("/dashboard/settings")}
-                          className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>Configuración</span>
-                        </button>
-
-                        <button
-                          onClick={() => handleNavigation("/dashboard/kyc")}
-                          className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-teal-400 transition-colors w-full text-left"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span>KYC</span>
-                        </button>
-
-                        <div className="border-t border-gray-800 my-1"></div>
-
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-gray-800 hover:text-red-300 transition-colors w-full text-left"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                          </svg>
-                          <span>Cerrar sesión</span>
-                        </button>
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-gray-800 hover:text-red-300 transition-colors w-full text-left"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Cerrar sesión</span>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </>
               )}
 
               {/* Hamburguesa (solo cuando NO está en dashboard) */}
@@ -390,5 +391,31 @@ export function Navbar() {
         />
       )}
     </>
+  );
+}
+
+// Badge de verificación
+function VerificationBadge({ isVerified }: { isVerified: boolean }) {
+  if (isVerified) {
+    return (
+      <span
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/30"
+        title="Cuenta verificada"
+      >
+        <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+        </svg>
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500/20 border border-red-500/30"
+      title="Cuenta no verificada"
+    >
+      <svg className="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </span>
   );
 }
