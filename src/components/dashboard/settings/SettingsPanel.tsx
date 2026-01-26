@@ -62,6 +62,7 @@ export function SettingsPanel() {
           initial={userInitial}
           fullName={fullName}
           role={roleLabel}
+          isVerified={user?.isVerified ?? false}
         />
 
         {/* Bloque 2: Datos de Cuenta (Bloqueados) */}
@@ -122,10 +123,12 @@ function IdentityHeader({
   initial,
   fullName,
   role,
+  isVerified,
 }: {
   initial: string;
   fullName: string;
   role: string;
+  isVerified: boolean;
 }) {
   return (
     <div className="rounded-xl border border-gray-800 bg-gradient-to-r from-[#0f1e33] to-[#0a1929] p-5 sm:p-6">
@@ -137,7 +140,10 @@ function IdentityHeader({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg sm:text-xl font-bold text-white truncate">{fullName}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-white truncate">{fullName}</h2>
+            <VerificationBadge isVerified={isVerified} />
+          </div>
           <RoleBadge role={role} />
         </div>
       </div>
@@ -156,6 +162,21 @@ function RoleBadge({ role }: { role: string }) {
     >
       {isAdmin ? <ShieldIcon /> : <UserIcon />}
       {role}
+    </span>
+  );
+}
+
+function VerificationBadge({ isVerified }: { isVerified: boolean }) {
+  if (isVerified) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" title="Cuenta verificada">
+        <VerifiedIcon className="w-3.5 h-3.5" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30" title="Cuenta no verificada">
+      <UnverifiedIcon className="w-4.5 h-4.5" />
     </span>
   );
 }
@@ -430,6 +451,22 @@ function ShieldIcon() {
   return (
     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  );
+}
+
+function VerifiedIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function UnverifiedIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
   );
 }
