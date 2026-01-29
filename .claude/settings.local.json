@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(ls:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\USUARIO\\Desktop\\Lee\\hunboli-frontend\\src\\components"
     ]
   }
 }
