@@ -36,7 +36,8 @@ export function Navbar() {
     pathname.startsWith("/forgot-password/") ||
     pathname === "/dashboard/settings" ||
     pathname.startsWith("/dashboard/settings/") ||
-    pathname === "/dashboard/verify-account";
+    pathname === "/dashboard/verify-account" ||
+    pathname.startsWith("/admin");
 
   const isDashboard = pathname.startsWith("/dashboard");
   // Durante la carga inicial, no podemos determinar el estado de autenticación
