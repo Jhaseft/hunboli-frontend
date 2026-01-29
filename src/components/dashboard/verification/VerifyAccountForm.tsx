@@ -1,8 +1,10 @@
 'use client';
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { verificationService, VerificationData } from "@/services/verification.service";
+import { VerificationStatusCard } from "./VerificationStatusCard";
 import { useRouter } from 'next/navigation';
-import { useState, useRef, DragEvent, ChangeEvent } from "react";
+import { useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
 
 type Currency = 'BOB' | 'PEN' | null;
 
@@ -30,13 +32,31 @@ const bankDataByCountry: Record<'BOB' | 'PEN', BankData> = {
 
 export const VerifyAccountForm = () => {
     const [isLoading, setIsLoading] = useState(false);
+    const [isCheckingStatus, setIsCheckingStatus] = useState(true);
     const [error, setError] = useState('');
     const [selectedCurrency, setSelectedCurrency] = useState<Currency>(null);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const data = await verificationService.getVerificationStatus();
+                if (data) {
+                    setVerificationData(data);
+                }
+            } catch {
+                // No pending verification, show form
+            } finally {
+                setIsCheckingStatus(false);
+            }
+        };
+        checkStatus();
+    }, []);
 
     const handleFileChange = (file: File | null) => {
         if (file && file.type.startsWith('image/')) {
@@ -98,14 +118,35 @@ export const VerifyAccountForm = () => {
         setIsLoading(true);
         setError('');
 
-        // Aquí iría la lógica para enviar el comprobante
-        setTimeout(() => {
+        try {
+            const data = await verificationService.uploadVerificationFile(uploadedFile);
+            setVerificationData(data);
+        } catch (err: any) {
+            setError(
+                err.response?.data?.message ||
+                'Error al enviar tu comprobante de pago.'
+            );
+        } finally {
             setIsLoading(false);
-            router.push('/dashboard');
-        }, 2000);
+        }
     };
 
     const bankData = selectedCurrency ? bankDataByCountry[selectedCurrency] : null;
+
+    if (isCheckingStatus) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-gray-400 text-sm">Verificando estado...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (verificationData) {
+        return <VerificationStatusCard verification={verificationData} />;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
@@ -293,7 +334,7 @@ export const VerifyAccountForm = () => {
                 </form>
 
                 <p className="text-center text-gray-500 text-xs mt-8">
-                    Tu comprobante será revisado en un plazo de 24-48 horas
+                    Tu comprobante será revisado en un plazo de 24 horas
                 </p>
             </div>
         </div>
