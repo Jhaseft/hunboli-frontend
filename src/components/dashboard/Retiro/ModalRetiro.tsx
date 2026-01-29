@@ -10,7 +10,9 @@ interface ModalRetiroProps {
   amountBOBH: string;
   amountReceived: string;
   walletAmount: string;
+  porcentaje: number;
   comisionminima: number;
+  setSelectedBankId: React.Dispatch<React.SetStateAction<string>>;
   onConfirm: () => void;
 }
 
@@ -21,23 +23,27 @@ export default function ModalRetiro({
   amountBOBH,
   amountReceived,
   walletAmount,
+  porcentaje,
   comisionminima,
+  setSelectedBankId,
   onConfirm,
 }: ModalRetiroProps) {
-    // Estados para manejar datos del componente Banks
-  const [selectedBankId, setSelectedBankId] = useState<number | ''>('');
+
+    // Estados para manejar datos del componente Banks2
   const [bankAccount, setBankAccount] = useState('');
 
   // Convertir a number los valores
   const walletboboenum = parseFloat(walletAmount);
-  const amountBOBHNum = parseFloat(amountBOBH);
-
+  
   // Cálculo de comisión y deducción total
-  const comision = comisionminima + (0.001 * amountBOBHNum);
-  const gasFee = 0.005;
-  const totalDeduction = amountBOBHNum + gasFee + comision;
-  const newBalance = walletboboenum - totalDeduction;
+  const comisionCalculada = Math.max(parseFloat(amountBOBH) * porcentaje, comisionminima);
 
+// amountReceived viene como string, hay que convertirlo a número
+const totalDeduction = parseFloat(amountReceived) + comisionCalculada;
+
+const newBalance = parseFloat(walletAmount) - totalDeduction;
+
+  const gasFee = 0.005;
   if (!isOpen) return null;
   
   return (
@@ -52,7 +58,7 @@ export default function ModalRetiro({
         </button>
 
         <h2 className="text-2xl font-bold text-white mb-4">
-          Retiro: {amountBOBH} BOBH → {currency}
+          Retiro: {amountBOBH} BOBH →{amountReceived} {currency}
         </h2>
 
         <div className="space-y-4">
@@ -65,7 +71,7 @@ export default function ModalRetiro({
 
          
           <Infoadicional
-            comision={comision}
+            comision={comisionCalculada}
             gasFee={gasFee}
             newBalance={newBalance}
             totalDeduction={totalDeduction}
