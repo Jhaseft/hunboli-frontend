@@ -1,4 +1,5 @@
 'use client';
+import React from "react";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { VerificationData } from "@/services/verification.service";
@@ -8,7 +9,7 @@ interface VerificationStatusCardProps {
     verification: VerificationData;
 }
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; borderColor: string; icon: JSX.Element }> = {
+const statusConfig: Record<string, { label: string; color: string; bgColor: string; borderColor: string; icon: React.ReactNode }> = {
     pending: {
         label: 'Pendiente de revisión',
         color: 'text-yellow-400',
