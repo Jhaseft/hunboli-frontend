@@ -15,7 +15,7 @@ export default function Infoadicional({
         <>
         <div className="bg-[#0a1628] border border-gray-700 p-3 rounded-lg flex justify-between text-sm text-gray-400">
             <span>Costo del gas:</span>
-            <span>{(gasFee).toFixed(3)} BOBH</span>
+            <span>{(gasFee).toFixed(3)} BNB</span>
         </div>
 
         <div className="bg-[#0a1628] border border-gray-700 p-3 rounded-lg flex justify-between text-sm text-gray-400">

@@ -56,8 +56,8 @@ export default function BankAccountSelect({
       >
         {selectedBank ? (
           <div className="flex items-center gap-3">
-            <img
-              src={selectedBank.bank.logo_url}
+            <img 
+            src={selectedBank.bank.logo_url}
               className="w-7 h-7 rounded object-contain"
               alt={selectedBank.bank.name}
             />

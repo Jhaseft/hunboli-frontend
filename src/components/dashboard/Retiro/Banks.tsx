@@ -22,17 +22,20 @@ type BankAccount = {
 
 interface BanksProps {
   selectedCurrency: "BOB" | "PEN";
-  onBankChange: React.Dispatch<React.SetStateAction<number | "">>;
+  onBankChange: React.Dispatch<React.SetStateAction<string | "">>;
   onAccountChange: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function Banks({selectedCurrency,onBankChange,onAccountChange,}: BanksProps) {
+export default function Banks({ selectedCurrency, onBankChange, onAccountChange, }: BanksProps) {
 
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [catalogBanks, setCatalogBanks] = useState<Bank[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const { user } = useAuth();
+
+
+
   const [reportModal, setReportModal] = useState({
     isOpen: false,
     success: true,
@@ -116,7 +119,12 @@ export default function Banks({selectedCurrency,onBankChange,onAccountChange,}: 
           banks={filteredBanks}
           currency={selectedCurrency}
           value={selectedAccount}
-          onChange={setSelectedAccount}
+          onChange={(accountId) => {
+            setSelectedAccount(accountId); // actualizas el estado local
+            // busco el banco asociado
+            const account = filteredBanks.find(acc => acc.id === accountId);
+            onBankChange(account ? account.id : ""); // paso el ID del banco al padre
+          }}
         />
 
         <div className="flex flex-col gap-1">
