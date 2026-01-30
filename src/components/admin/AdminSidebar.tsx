@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard,
   Plus,
@@ -53,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -129,7 +131,10 @@ export function AdminSidebar() {
               <div className="font-medium text-white text-sm">Admin</div>
               <div className="text-xs text-gray-500">Operador Principal</div>
             </div>
-            <button className="text-gray-500 hover:text-gray-300 transition-colors">
+            <button
+              onClick={logout}
+              className="text-gray-500 hover:text-gray-300 transition-colors"
+            >
               <LogOut className="w-4 h-4" />
             </button>
           </div>

@@ -28,10 +28,8 @@ export function LoginForm() {
       const data = await authService.login({ email, password });
 
       // Usar el contexto de autenticación para guardar el token y usuario
+      // login() ya maneja la redirección según el rol del usuario
       login(data.access_token, data.user);
-
-      // Redirigir al dashboard - usar replace para evitar volver al login
-      window.location.href = '/dashboard';
 
     } catch (err: any) {
       console.error('Error en login:', err);
