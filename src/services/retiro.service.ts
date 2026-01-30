@@ -3,16 +3,16 @@ import api from '@/lib/axios';
 export const retiroService = {
 
   //obtenrer todos los retiros paginados
- getProfile: async (page = 1, limit = 10) => {
-  const { data } = await api.get('/admin-retiros', {
-    params: {
-      page,
-      limit,
-    },
-  });
+  getProfile: async (page = 1, limit = 10) => {
+    const { data } = await api.get('/admin-retiros', {
+      params: {
+        page,
+        limit,
+      },
+    });
 
-  return data;
-},
+    return data;
+  },
 
   // Actualizar retiro con estado, referencia y archivo
   updateWithdrawal: async (id: string, data: { status: string; payoutTxRef: string; file?: File }) => {
@@ -29,4 +29,17 @@ export const retiroService = {
 
     return response;
   },
+
+  searchBurns: async (query?: string, userId?: string) => {
+    const { data } = await api.get('/admin-retiros/search', {
+      params: { q: query, userId },
+    });
+    return data;
+  },
+
+  pendingacoounts: async () =>{
+    const { data } = await api.get('/admin-retiros/count-pending');
+    return data;
+  }
+
 };

@@ -1,34 +1,163 @@
 "use client";
 
+import { useState } from "react";
+
 type SearchBarProps = {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
+  searchByCode: string;
+  searchByUser: string;
+  onSearchByCodeChange: (value: string) => void;
+  onSearchByUserChange: (value: string) => void;
 };
 
-export default function SearchBar({ searchTerm, onSearchChange }: SearchBarProps) {
+export default function SearchBar({ 
+  searchByCode, 
+  searchByUser, 
+  onSearchByCodeChange, 
+  onSearchByUserChange 
+}: SearchBarProps) {
+  const [localCodeSearch, setLocalCodeSearch] = useState(searchByCode);
+  const [localUserSearch, setLocalUserSearch] = useState(searchByUser);
+
+  const handleCodeSearch = () => {
+    onSearchByCodeChange(localCodeSearch.trim());
+  };
+
+  const handleUserSearch = () => {
+    onSearchByUserChange(localUserSearch.trim());
+  };
+
+  const handleCodeKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleCodeSearch();
+    }
+  };
+
+  const handleUserKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleUserSearch();
+    }
+  };
+
+  const handleClearCode = () => {
+    setLocalCodeSearch("");
+    onSearchByCodeChange("");
+  };
+
+  const handleClearUser = () => {
+    setLocalUserSearch("");
+    onSearchByUserChange("");
+  };
+
+  const handleClearAll = () => {
+    setLocalCodeSearch("");
+    setLocalUserSearch("");
+    onSearchByCodeChange("");
+    onSearchByUserChange("");
+  };
+
+  const hasAnySearch = searchByCode || searchByUser;
+
   return (
     <div className="mb-6">
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Buscar por referencia, usuario, email o moneda..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full px-4 py-3 pl-12 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-        />
-        <svg
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+      <div className="flex flex-wrap gap-3 items-start">
+       
+        <div className="flex gap-2 flex-1 min-w-[300px]">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Buscar por referencia, email o cuenta..."
+              value={localCodeSearch}
+              onChange={(e) => setLocalCodeSearch(e.target.value)}
+              onKeyPress={handleCodeKeyPress}
+              className="w-full px-3 py-2 pl-9 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          
+          <button
+            onClick={handleCodeSearch}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+          >
+            Buscar
+          </button>
+
+          {searchByCode && (
+            <button
+              onClick={handleClearCode}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+              title="Limpiar búsqueda por código"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+      
+        <div className="flex gap-2 flex-1 min-w-[300px]">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Buscar por nombre de usuario..."
+              value={localUserSearch}
+              onChange={(e) => setLocalUserSearch(e.target.value)}
+              onKeyPress={handleUserKeyPress}
+              className="w-full px-3 py-2 pl-9 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </div>
+          
+          <button
+            onClick={handleUserSearch}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+          >
+            Buscar
+          </button>
+
+          {searchByUser && (
+            <button
+              onClick={handleClearUser}
+              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+              title="Limpiar búsqueda por usuario"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+ 
+        {hasAnySearch && (
+          <button
+            onClick={handleClearAll}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+            title="Limpiar todas las búsquedas"
+          >
+            Limpiar Todo
+          </button>
+        )}
       </div>
     </div>
   );

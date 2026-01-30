@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +11,7 @@ import {
   Clock,
   LogOut,
 } from "lucide-react";
+import { retiroService } from "@/services/retiro.service";
 
 type NavItem = {
   label: string;
@@ -20,7 +21,35 @@ type NavItem = {
   section?: string;
 };
 
-const NAV_ITEMS: NavItem[] = [
+
+export function AdminSidebar() {
+  
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const pathname = usePathname();
+  const { logout } = useAuth();
+
+   useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const data = await retiroService.pendingacoounts();
+        setPendingCount(data.pendingCount);
+      } catch (error) {
+        console.error("Error al cargar retiros pendientes:", error);
+      }
+    };
+
+    fetchPendingCount();
+
+    // Opcional: Actualizar cada 30 segundos
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href);
+  };
+    const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
@@ -37,7 +66,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Solicitudes Redeem",
     href: "/admin/redeem",
     icon: <Minus className="w-5 h-5" />,
-    badge: 2,
+    badge: pendingCount ?? undefined,
   },
   {
     label: "Usuarios KYC",
@@ -51,15 +80,6 @@ const NAV_ITEMS: NavItem[] = [
     icon: <Clock className="w-5 h-5" />,
   },
 ];
-
-export function AdminSidebar() {
-  const pathname = usePathname();
-  const { logout } = useAuth();
-
-  const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href);
-  };
 
   return (
     <aside className="

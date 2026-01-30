@@ -25,48 +25,55 @@ export default function AdminRedeemPage() {
   const [selectedRequest, setSelectedRequest] = useState<RedeemRequest | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Estados separados para cada tipo de búsqueda
+  const [searchByCode, setSearchByCode] = useState("");
+  const [searchByUser, setSearchByUser] = useState("");
 
-  //  Cargar retiros paginados
+  // Cargar datos cada vez que cambien los filtros o la página
   useEffect(() => {
-    async function fetchRequests() {
+    async function fetchData() {
       setLoading(true);
       try {
-        const res = await retiroService.getProfile(page, 10);
-        setRequests(res.data);
-        setFilteredRequests(res.data);
-        setMeta(res.meta);
+        const hasSearch = searchByCode || searchByUser;
+        
+        if (!hasSearch) {
+          // Sin búsqueda: cargar página normal con paginación
+          const res = await retiroService.getProfile(page, 10);
+          setRequests(res.data);
+          setFilteredRequests(res.data);
+          setMeta(res.meta);
+        } else {
+          // Con búsqueda: buscar en backend (sin paginación)
+          const res = await retiroService.searchBurns(
+            searchByCode || undefined, 
+            searchByUser || undefined
+          );
+          setFilteredRequests(res);
+          setRequests(res);
+          setMeta(null);
+        }
       } catch (error) {
-        console.error("Error al cargar los retiros:", error);
+        console.error("Error al cargar retiros:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchRequests();
-  }, [page]);
+    fetchData();
+  }, [searchByCode, searchByUser, page]);
 
-  // Búsqueda local
-  useEffect(() => {
-    if (!searchTerm) {
-      setFilteredRequests(requests);
-      return;
-    }
+  // Manejar cambio de búsqueda por código y resetear página
+  const handleSearchByCodeChange = (newSearchTerm: string) => {
+    setSearchByCode(newSearchTerm);
+    setPage(1);
+  };
 
-    const search = searchTerm.toLowerCase();
-
-    const filtered = requests.filter((req) => {
-      return (
-        req.operation.referenceCode?.toLowerCase().includes(search) ||
-        req.operation.user.firstName?.toLowerCase().includes(search) ||
-        req.operation.user.lastName?.toLowerCase().includes(search) ||
-        req.operation.user.email?.toLowerCase().includes(search) ||
-        req.operation.currency?.toLowerCase().includes(search)
-      );
-    });
-
-    setFilteredRequests(filtered);
-  }, [searchTerm, requests]);
+  // Manejar cambio de búsqueda por usuario y resetear página
+  const handleSearchByUserChange = (newSearchTerm: string) => {
+    setSearchByUser(newSearchTerm);
+    setPage(1);
+  };
 
   const handleViewDetail = (request: RedeemRequest) => {
     setSelectedRequest(request);
@@ -119,17 +126,24 @@ export default function AdminRedeemPage() {
     );
   }
 
+  const hasAnySearch = searchByCode || searchByUser;
+
   return (
     <div className="min-h-screen p-6 bg-gray-900">
       <h1 className="text-3xl text-white mb-6 font-bold">
         Solicitudes de Retiro
       </h1>
 
-      <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <SearchBar 
+        searchByCode={searchByCode}
+        searchByUser={searchByUser}
+        onSearchByCodeChange={handleSearchByCodeChange}
+        onSearchByUserChange={handleSearchByUserChange}
+      />
 
       {filteredRequests.length === 0 ? (
         <p className="text-white text-center mt-8">
-          {searchTerm
+          {hasAnySearch
             ? "No se encontraron resultados"
             : "No hay solicitudes pendientes"}
         </p>
@@ -141,13 +155,13 @@ export default function AdminRedeemPage() {
         />
       )}
 
-      {/* 🔢 Paginación */}
-      {meta && (
+    
+      {meta && !hasAnySearch && (
         <div className="flex justify-between items-center mt-6 text-white">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50"
+            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 hover:bg-gray-600 transition-colors"
           >
             Anterior
           </button>
@@ -159,7 +173,7 @@ export default function AdminRedeemPage() {
           <button
             disabled={page === meta.totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50"
+            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 hover:bg-gray-600 transition-colors"
           >
             Siguiente
           </button>

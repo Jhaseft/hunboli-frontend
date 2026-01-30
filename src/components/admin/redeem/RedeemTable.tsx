@@ -30,28 +30,37 @@ export default function RedeemTable({ requests, onViewDetail, onEdit }: RedeemTa
           {requests.map((req) => (
             <tr key={req.id} className="border-t border-gray-700 hover:bg-gray-750 transition">
               <td className="px-4 py-3 text-white text-sm font-mono">
-                {req.operation.referenceCode}
+                {req.operation?.referenceCode || "N/A"}
               </td>
               <td className="px-4 py-3 text-white text-sm">
-                {req.operation.user.firstName} {req.operation.user.lastName}
+                {req.operation?.user?.firstName || ""} {req.operation?.user?.lastName || ""}
+                {!req.operation?.user?.firstName && !req.operation?.user?.lastName && "N/A"}
               </td>
               <td className="px-4 py-3 text-white text-sm">
-                {parseFloat(req.operation.amount).toLocaleString()}
+                {req.operation?.amount 
+                  ? parseFloat(req.operation.amount).toLocaleString() 
+                  : "0"}
               </td>
               <td className="px-4 py-3 text-white text-sm font-semibold">
-                {req.operation.currency}
+                {req.operation?.currency || "N/A"}
               </td>
               <td className="px-4 py-3 text-white text-sm">
-                {parseFloat(req.burnedBOBH).toLocaleString()}
+                {req.burnedBOBH 
+                  ? parseFloat(req.burnedBOBH).toLocaleString() 
+                  : "0"}
               </td>
               <td className="px-4 py-3 text-white text-sm">
-                {parseFloat(req.fiatSent).toLocaleString()}
+                {req.fiatSent 
+                  ? parseFloat(req.fiatSent).toLocaleString() 
+                  : "0"}
               </td>
               <td className="px-4 py-3">
-                <StatusBadge status={req.operation.status} />
+                <StatusBadge status={req.operation?.status || "UNKNOWN"} />
               </td>
               <td className="px-4 py-3 text-white text-sm">
-                {new Date(req.operation.createdAt).toLocaleDateString()}
+                {req.operation?.createdAt 
+                  ? new Date(req.operation.createdAt).toLocaleDateString() 
+                  : "N/A"}
               </td>
               <td className="px-4 py-3">
                 <div className="flex gap-2 justify-center">

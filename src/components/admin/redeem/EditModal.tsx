@@ -10,7 +10,7 @@ type EditModalProps = {
 };
 
 export default function EditModal({ request, onClose, onSave }: EditModalProps) {
-  const [status, setStatus] = useState(request.operation.status);
+  const [status, setStatus] = useState(request.operation?.status || "PENDING");
   const [payoutTxRef, setPayoutTxRef] = useState(request.payoutTxRef || "");
   const [file, setFile] = useState<File | null>(null);
 
@@ -48,7 +48,7 @@ export default function EditModal({ request, onClose, onSave }: EditModalProps) 
           <div>
             <p className="text-gray-400 text-sm mb-2">Referencia</p>
             <p className="text-white font-mono">
-              {request.operation.referenceCode}
+              {request.operation?.referenceCode || "N/A"}
             </p>
           </div>
 
@@ -80,7 +80,7 @@ export default function EditModal({ request, onClose, onSave }: EditModalProps) 
             />
           </div>
 
-          {/* SOLO aparece cuando está PROCESSED */}
+      
           {status === "PROCESSED" && (
             <div>
               <label className="block text-white text-sm mb-2 font-semibold">
@@ -88,9 +88,15 @@ export default function EditModal({ request, onClose, onSave }: EditModalProps) 
               </label>
               <input
                 type="file"
+                accept="image/*,.pdf"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="w-full text-white"
+                className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
               />
+              {file && (
+                <p className="text-green-400 text-sm mt-2">
+                  Archivo seleccionado: {file.name}
+                </p>
+              )}
             </div>
           )}
 
