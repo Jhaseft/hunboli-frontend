@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Clock,
   LogOut,
+  BadgeCheck
 } from "lucide-react";
 
 type NavItem = {
@@ -50,6 +51,11 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/historial",
     icon: <Clock className="w-5 h-5" />,
   },
+  {
+    label: "Solcitudes de Verificacion",
+    href: "/admin/verificacion",
+    icon: <BadgeCheck className="w-5 h-5" />
+  }
 ];
 
 export function AdminSidebar() {
@@ -89,11 +95,10 @@ export function AdminSidebar() {
                 )}
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    active
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active
                       ? "bg-teal-600/20 text-teal-300"
                       : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                  }`}
+                    }`}
                 >
                   {active && (
                     <div className="w-1 h-6 rounded-full bg-teal-400 -ml-1 mr-1" />
@@ -104,11 +109,10 @@ export function AdminSidebar() {
                   <span className="font-medium text-sm flex-1">{item.label}</span>
                   {item.badge !== undefined && (
                     <span
-                      className={`text-xs font-semibold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1.5 ${
-                        active
+                      className={`text-xs font-semibold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1.5 ${active
                           ? "bg-teal-500/30 text-teal-300"
                           : "bg-gray-700 text-gray-300"
-                      }`}
+                        }`}
                     >
                       {item.badge}
                     </span>

@@ -28,5 +28,14 @@ export const verificationService = {
         } catch {
             return null;
         }
+    },
+    getPendingRequests: async (): Promise<VerificationData[] | null> => {
+        const { data } = await api.get<VerificationData[]>("verification");
+        return data;
+    },
+    getApprovedRequests: async (): Promise<VerificationData[] | null> => {
+        const { data } = await api.get<VerificationData[]>("verification");
+        return data;
     }
+
 }
