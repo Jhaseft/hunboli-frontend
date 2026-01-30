@@ -153,9 +153,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(newToken);
         setUser(newUser);
 
-        // Redirección inteligente basada en el onboarding
+        // Redirección inteligente basada en onboarding y rol
         if (!newUser.isOnboardingCompleted) {
             router.push('/complete-profile');
+        } else if (['ADMIN', 'OPERATOR_BO', 'OPERATOR_PE'].includes(newUser.role)) {
+            router.push('/admin');
         } else {
             router.push('/dashboard');
         }
