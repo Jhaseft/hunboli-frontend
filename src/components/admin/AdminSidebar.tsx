@@ -60,8 +60,14 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-[260px] min-h-screen bg-[#0a1628] border-r border-gray-800 flex flex-col justify-between">
-      {/* Logo */}
+    <aside className="
+  fixed top-0 left-0
+  w-[260px] min-h-screen
+  bg-[#0a1628]
+  border-r border-gray-800
+  flex flex-col justify-between
+">
+      
       <div>
         <div className="flex items-center gap-3 px-5 py-6">
           <div className="h-10 w-10 rounded-full bg-teal-500 flex items-center justify-center">
@@ -73,7 +79,7 @@ export function AdminSidebar() {
           </div>
         </div>
 
-        {/* Navigation */}
+        
         <nav className="mt-2 flex flex-col gap-1 px-3">
           {NAV_ITEMS.map((item, index) => {
             const active = isActive(item.href);
@@ -118,7 +124,7 @@ export function AdminSidebar() {
         </nav>
       </div>
 
-      {/* User section */}
+      
       <div className="px-3 pb-5">
         <div className="border-t border-gray-800 pt-4">
           <div className="flex items-center gap-3 px-3 py-2">
