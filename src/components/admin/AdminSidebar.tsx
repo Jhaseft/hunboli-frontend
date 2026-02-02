@@ -52,8 +52,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: <Clock className="w-5 h-5" />,
   },
   {
-    label: "Solcitudes de Verificacion",
-    href: "/admin/verificacion",
+    label: "Verificacion",
+    href: "/admin/verification",
     icon: <BadgeCheck className="w-5 h-5" />
   }
 ];
@@ -96,8 +96,8 @@ export function AdminSidebar() {
                 <Link
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active
-                      ? "bg-teal-600/20 text-teal-300"
-                      : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                    ? "bg-teal-600/20 text-teal-300"
+                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
                     }`}
                 >
                   {active && (
@@ -110,8 +110,8 @@ export function AdminSidebar() {
                   {item.badge !== undefined && (
                     <span
                       className={`text-xs font-semibold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1.5 ${active
-                          ? "bg-teal-500/30 text-teal-300"
-                          : "bg-gray-700 text-gray-300"
+                        ? "bg-teal-500/30 text-teal-300"
+                        : "bg-gray-700 text-gray-300"
                         }`}
                     >
                       {item.badge}
