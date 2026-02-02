@@ -65,7 +65,7 @@ export default function SearchBar({
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="Buscar por referencia, email o cuenta..."
+              placeholder="Buscar por cod de retiro..."
               value={localCodeSearch}
               onChange={(e) => setLocalCodeSearch(e.target.value)}
               onKeyPress={handleCodeKeyPress}
