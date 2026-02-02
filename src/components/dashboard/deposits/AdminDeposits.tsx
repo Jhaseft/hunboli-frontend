@@ -42,6 +42,9 @@ type AdminDepositItem = {
   validatedById: string | null;
   validatedAt: string | null;
 
+  safeTxHash: string | null;
+  safeProposedAt: string | null;
+
   mintTxHash: string | null;
   mintedAt: string | null;
 
@@ -305,6 +308,57 @@ export function AdminDeposits() {
     }
   };
 
+  const proposeMint = async (id: string) => {
+    if (!backendUrl || !token) return;
+
+    setActingId(id);
+    setToast(null);
+
+    try {
+      const res = await fetch(`${backendUrl}/admin/deposits/${id}/propose-mint`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data) {
+        const msg = (data && (data.message || data.error)) || "No se pudo proponer el mint.";
+        setToast({ type: "err", msg: typeof msg === "string" ? msg : "No se pudo proponer el mint." });
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((d) =>
+          d.id === id
+            ? {
+                ...d,
+                safeTxHash: data.safeTxHash ?? d.safeTxHash,
+                safeProposedAt: data.safeProposedAt ?? d.safeProposedAt,
+              }
+            : d
+        )
+      );
+
+      setPreview((p) => {
+        if (!p || p.id !== id) return p;
+        return {
+          ...p,
+          safeTxHash: data.safeTxHash ?? p.safeTxHash,
+          safeProposedAt: data.safeProposedAt ?? p.safeProposedAt,
+        };
+      });
+
+      setToast({ type: "ok", msg: "Propuesta creada en Safe." });
+    } catch {
+      setToast({ type: "err", msg: "Error de red al proponer el mint." });
+    } finally {
+      setActingId(null);
+    }
+  };
+
   async function submitCorrection() {
     if (!backendUrl || !token || !correctionTarget) return;
     const note = correctionNote.trim();
@@ -490,6 +544,11 @@ export function AdminDeposits() {
             (d.status === "PROOF_SUBMITTED" || d.status === "NEED_CORRECTION");
           const canRequestCorrection =
             d.status === "PROOF_SUBMITTED" && !!d.proofUrl;
+          const canProposeMint =
+            d.status === "APPROVED" &&
+            !!d.user.walletAddress &&
+            !d.safeTxHash &&
+            d.status !== "MINTED";
 
           const showImageThumb = !!d.proofUrl && isImageMime(d.proofMimeType);
 
@@ -730,6 +789,21 @@ export function AdminDeposits() {
                       {actingId === d.id ? "Procesando..." : "Rechazar"}
                     </button>
 
+                    {canProposeMint && (
+                      <button
+                        type="button"
+                        onClick={() => proposeMint(d.id)}
+                        disabled={actingId === d.id}
+                        className={`mt-2 w-full py-2.5 rounded-lg font-medium transition-colors ${
+                          actingId === d.id
+                            ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
+                            : "bg-sky-600 text-white hover:bg-sky-700"
+                        }`}
+                      >
+                        {actingId === d.id ? "Procesando..." : "Proponer mint"}
+                      </button>
+                    )}
+
                     {!d.proofUrl && (
                       <p className="mt-3 text-xs text-gray-500">
                         Para aprobar, debe existir comprobante.
@@ -742,6 +816,18 @@ export function AdminDeposits() {
                       </p>
                     )}
                   </div>
+
+                  {d.safeTxHash && (
+                    <div className="mt-3 rounded-2xl border border-gray-800 bg-[#071225] p-4">
+                      <p className="text-xs text-gray-400">Propuesta creada</p>
+                      {d.safeProposedAt && (
+                        <p className="mt-1 text-[11px] text-gray-400">
+                          {new Date(d.safeProposedAt).toLocaleString()}
+                        </p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-200 break-all">{d.safeTxHash}</p>
+                    </div>
+                  )}
 
                   {d.mintTxHash && (
                     <div className="mt-3 rounded-2xl border border-gray-800 bg-[#071225] p-4">
@@ -933,6 +1019,24 @@ export function AdminDeposits() {
                   >
                     {actingId === preview.id ? "Procesando..." : "Rechazar"}
                   </button>
+
+                  {preview.status === "APPROVED" &&
+                    !!preview.user.walletAddress &&
+                    !preview.safeTxHash &&
+                    preview.status !== "MINTED" && (
+                      <button
+                        type="button"
+                        onClick={() => proposeMint(preview.id)}
+                        disabled={actingId === preview.id}
+                        className={`w-full py-2.5 rounded-lg font-medium transition-colors ${
+                          actingId === preview.id
+                            ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
+                            : "bg-sky-600 text-white hover:bg-sky-700"
+                        }`}
+                      >
+                        {actingId === preview.id ? "Procesando..." : "Proponer mint"}
+                      </button>
+                    )}
                 </div>
 
                 <div className="mt-4 flex gap-2">
@@ -954,6 +1058,18 @@ export function AdminDeposits() {
                     Cerrar
                   </button>
                 </div>
+
+                {preview.safeTxHash && (
+                  <div className="mt-4 rounded-xl border border-gray-800 bg-[#0a1628] p-3">
+                    <p className="text-xs text-gray-400">Propuesta creada</p>
+                    {preview.safeProposedAt && (
+                      <p className="mt-1 text-[11px] text-gray-400">
+                        {new Date(preview.safeProposedAt).toLocaleString()}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-gray-200 break-all">{preview.safeTxHash}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
