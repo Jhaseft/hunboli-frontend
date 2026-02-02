@@ -5,9 +5,11 @@ import Moneda_Retiro from './Moneda_Retiro';
 import Tasa from './Tasa';
 import Flecha from './Flecha';
 import RectanguloDerecha from './RectanguloDerecha';
-import { Currency } from 'lucide-react';
+/////////////contacto con el contrato/////////////
+import { useAccount, useWalletClient } from 'wagmi';
+import ABI from '@/abi/BobH.json';
 import ReportModal from "../ReportModal";
-
+/////////////////////////////////////////////////
 type RetiroFormProps = {
   amount_wallet: string;
 };
@@ -26,29 +28,36 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
   const MAX_AMOUNT = Number(amount_wallet) || 0;
   const MAX_DECIMALS = 2;
 
+  const { data: walletClient } = useWalletClient();
+  const { address, isConnected } = useAccount();
+
   const [comisionaMinima, setcomisionaMinima] = useState(0);
   const [porcentaje, setporcentaje] = useState(0);
   const [exchangeRate, setExchangeRate] = useState(1);
   const [minAmount, setminAmount] = useState(1);
 
+  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_BOBH_ADDRESS as `0x${string}`;
+
+ 
+
+  // Obtener tasas y mínimos
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch minAmount
         const resAmin = await api.get('/rate/comision');
-        setcomisionaMinima(resAmin.data); // directamente
-        //fecth monto minimo 
+        setcomisionaMinima(resAmin.data);
+
         const resMin = await api.get('/rate/minim_amount');
         setminAmount(resMin.data);
-        // Fetch comisionMinima
+
         const resCom = await api.get('/rate/porcentaje');
-        setporcentaje(resCom.data); // directamente
-        // Fetch exchangeRate según la moneda seleccionada
+        setporcentaje(resCom.data);
+
         const endpoint = selectedCurrency === 'PEN' ? '/rate/bobtopen' : '/rate/bobtobobh';
         const resRate = await api.get(endpoint);
-        setExchangeRate(resRate.data); // directamente
-      } catch (error) {
-        console.error('Error fetching rates:', error);
+        setExchangeRate(resRate.data);
+      } catch (err) {
+        console.error('Error fetching rates:', err);
       }
     };
     fetchData();
@@ -56,19 +65,11 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
   const validateAmount = (value: string): string => {
     if (!value) return '';
-
     const num = Number(value);
     if (isNaN(num)) return 'Ingresa un número válido';
-
-    if (num < minAmount) {
-      return `El monto mínimo es ${minAmount} BOBH`;
-    }
-
+    if (num < minAmount) return `El monto mínimo es ${minAmount} BOBH`;
     const decimals = value.split('.')[1];
-    if (decimals && decimals.length > MAX_DECIMALS) {
-      return `Máximo ${MAX_DECIMALS} decimales permitidos`;
-    }
-
+    if (decimals && decimals.length > MAX_DECIMALS) return `Máximo ${MAX_DECIMALS} decimales permitidos`;
     return '';
   };
 
@@ -82,39 +83,57 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
     if (amount && !error) setIsModalOpen(true);
   };
 
-  const handleConfirmRetiro = async () => {
+  
+  // Cálculo de comisión y deducción total
+  const comisionCalculada = Math.max(parseFloat(amount) * porcentaje, comisionaMinima);
+  // amountReceived viene como string, hay que convertirlo a número
+  const totalDeduction = parseFloat(calculateReceived()) + comisionCalculada;
 
-    if (!Currency || !amount || !selectedBankId) {
-      setReportModal({
-        isOpen: true,
-        success: false,
-        message: 'Debes completar todos los campos'
-      });
+  const newBalance = parseFloat(amount_wallet) - totalDeduction;
+
+  // Función corregida para enviar retiro y requestRedemption
+  const handleConfirmRetiro = async () => {
+    if (!selectedCurrency || !amount || !selectedBankId) {
+      setReportModal({ isOpen: true, success: false, message: 'Completa todos los campos' });
       return;
     }
 
     try {
-      await api.post('/retiro', {
-        currency: selectedCurrency,
-        amount,
-        bankAccountId:parseInt(selectedBankId),
-      });
+      //  Registrar en backend
+      await api.post('/retiro', { currency: selectedCurrency, amount, bankAccountId: parseInt(selectedBankId) });
+
+      //  Blockchain
+      if (!isConnected || !walletClient) {
+        setReportModal({ isOpen: true, success: false, message: 'Conecta tu wallet' });
+        return;
+      }
+
+      // Convertir amount a BigInt según decimales del token
+      const decimals = 6;
+      const amountWei = BigInt(Math.floor(Number(totalDeduction) * 10 ** decimals));
+
+      // Enviar transacción al contrato
+      const txHash: `0x${string}` = await walletClient.writeContract({
+      address: CONTRACT_ADDRESS,
+      abi: ABI,
+      functionName: 'requestRedemption',
+      args: [amountWei],
+    });
 
       setReportModal({
         isOpen: true,
         success: true,
-        message: 'Retiro registrado con exito'
+        message: `Redención enviada. Hash: ${txHash}`
       });
 
-    setIsModalOpen(false);
-    setAmount('');
-
-    } catch (error: any) {
-      console.log(error);
+      setIsModalOpen(false);
+      setAmount('');
+    } catch (err) {
+      console.error(err);
       setReportModal({
         isOpen: true,
         success: false,
-        message: error.response?.data?.message || 'Error al crear cuenta bancaria'
+        message: 'Error en retiro o redención'
       });
     }
   };
@@ -193,9 +212,9 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
         currency={selectedCurrency}
         amountBOBH={amount}
         amountReceived={calculateReceived()}
-        walletAmount={amount_wallet}
-        porcentaje={porcentaje}
-        comisionminima={comisionaMinima}
+        comisionCalculada={comisionCalculada}
+        newBalance={newBalance}
+        totalDeduction={totalDeduction}
         setSelectedBankId={setSelectedBankId}
         onConfirm={handleConfirmRetiro}
       />
