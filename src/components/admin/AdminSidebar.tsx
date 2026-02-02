@@ -14,7 +14,6 @@ import {
   BadgeCheck
 } from "lucide-react";
 import { retiroService } from "@/services/retiro.service";
-import { User } from './redeem/redeem.types';
 import { verificationService } from "@/services/verification.service";
 
 type NavItem = {
