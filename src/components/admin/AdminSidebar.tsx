@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +12,7 @@ import {
   LogOut,
   BadgeCheck
 } from "lucide-react";
+import { retiroService } from "@/services/retiro.service";
 
 type NavItem = {
   label: string;
@@ -21,7 +22,35 @@ type NavItem = {
   section?: string;
 };
 
-const NAV_ITEMS: NavItem[] = [
+
+export function AdminSidebar() {
+  
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const pathname = usePathname();
+  const { logout } = useAuth();
+
+   useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const data = await retiroService.pendingacoounts();
+        setPendingCount(data.pendingCount);
+      } catch (error) {
+        console.error("Error al cargar retiros pendientes:", error);
+      }
+    };
+
+    fetchPendingCount();
+
+    // Opcional: Actualizar cada 30 segundos
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href);
+  };
+    const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
@@ -38,7 +67,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Solicitudes Redeem",
     href: "/admin/redeem",
     icon: <Minus className="w-5 h-5" />,
-    badge: 2,
+    badge: pendingCount ?? undefined,
   },
   {
     label: "Usuarios KYC",
@@ -58,18 +87,15 @@ const NAV_ITEMS: NavItem[] = [
   }
 ];
 
-export function AdminSidebar() {
-  const pathname = usePathname();
-  const { logout } = useAuth();
-
-  const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href);
-  };
-
   return (
-    <aside className="w-[260px] min-h-screen bg-[#0a1628] border-r border-gray-800 flex flex-col justify-between">
-      {/* Logo */}
+    <aside className="
+  fixed top-0 left-0
+  w-[260px] min-h-screen
+  bg-[#0a1628]
+  border-r border-gray-800
+  flex flex-col justify-between
+">
+      
       <div>
         <div className="flex items-center gap-3 px-5 py-6">
           <div className="h-10 w-10 rounded-full bg-teal-500 flex items-center justify-center">
@@ -81,7 +107,7 @@ export function AdminSidebar() {
           </div>
         </div>
 
-        {/* Navigation */}
+        
         <nav className="mt-2 flex flex-col gap-1 px-3">
           {NAV_ITEMS.map((item, index) => {
             const active = isActive(item.href);
@@ -124,7 +150,7 @@ export function AdminSidebar() {
         </nav>
       </div>
 
-      {/* User section */}
+      
       <div className="px-3 pb-5">
         <div className="border-t border-gray-800 pt-4">
           <div className="flex items-center gap-3 px-3 py-2">
