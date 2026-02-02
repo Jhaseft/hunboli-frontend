@@ -22,7 +22,8 @@ export const ROUTES = {
   DASHBOARD_DEPOSITS: '/dashboard/deposits',
 
   // Admin
-  ADMIN_DEPOSITS: '/dashboard/admin/deposits',
+  ADMIN_DEPOSITS: '/admin/deposits',
+  ADMIN_MINTS: '/admin/mints',
 
   // Onboarding
   COMPLETE_PROFILE: '/complete-profile',
