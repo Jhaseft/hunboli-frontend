@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 type DepositStatus =
   | "PENDING"
   | "PROOF_SUBMITTED"
+  | "NEED_CORRECTION"
   | "RATE_EXPIRED"
   | "APPROVED"
   | "REJECTED"
@@ -33,6 +34,10 @@ type AdminDepositItem = {
   proofUploadedAt: string | null;
   proofFileName: string | null;
   proofMimeType: string | null;
+
+  reviewNote: string | null;
+  reviewedById: string | null;
+  reviewedAt: string | null;
 
   validatedById: string | null;
   validatedAt: string | null;
@@ -76,6 +81,8 @@ function statusBadgeClass(status: DepositStatus) {
       return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
     case "PROOF_SUBMITTED":
       return "border border-cyan-500/30 bg-cyan-500/10 text-cyan-200";
+    case "NEED_CORRECTION":
+      return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
     case "APPROVED":
       return "border border-teal-500/30 bg-teal-500/10 text-teal-200";
     case "MINTED":
@@ -95,6 +102,8 @@ function statusLabel(status: DepositStatus) {
       return "Pendiente";
     case "PROOF_SUBMITTED":
       return "Comprobante enviado";
+    case "NEED_CORRECTION":
+      return "Requiere corrección";
     case "RATE_EXPIRED":
       return "Rate expirado";
     case "APPROVED":
@@ -161,6 +170,9 @@ export function AdminDeposits() {
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
 
   const [preview, setPreview] = useState<AdminDepositItem | null>(null);
+  const [correctionTarget, setCorrectionTarget] = useState<AdminDepositItem | null>(null);
+  const [correctionNote, setCorrectionNote] = useState<string>("");
+  const [submittingCorrection, setSubmittingCorrection] = useState(false);
 
   const canFetch = useMemo(
     () => !!backendUrl && !!token && !isLoading,
@@ -293,6 +305,74 @@ export function AdminDeposits() {
     }
   };
 
+  async function submitCorrection() {
+    if (!backendUrl || !token || !correctionTarget) return;
+    const note = correctionNote.trim();
+    if (note.length < 5) {
+      alert("La nota debe tener al menos 5 caracteres.");
+      return;
+    }
+
+    try {
+      setSubmittingCorrection(true);
+      setActingId(correctionTarget.id);
+
+      const res = await fetch(
+        `${backendUrl}/admin/deposits/${correctionTarget.id}/request-correction`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ note }),
+        }
+      );
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || "No se pudo solicitar corrección");
+      }
+
+      const data = await res.json();
+
+      setItems((prev) => {
+        if (filter === "PROOF_SUBMITTED") {
+          return prev.filter((x) => x.id !== correctionTarget.id);
+        }
+        return prev.map((x) => {
+          if (x.id !== correctionTarget.id) return x;
+          return {
+            ...x,
+            status: data.status,
+            reviewNote: data.reviewNote ?? note,
+            reviewedById: data.reviewedById ?? x.reviewedById,
+            reviewedAt: data.reviewedAt ?? new Date().toISOString(),
+          };
+        });
+      });
+
+      setPreview((p) => {
+        if (!p || p.id !== correctionTarget.id) return p;
+        return {
+          ...p,
+          status: data.status,
+          reviewNote: data.reviewNote ?? note,
+          reviewedById: data.reviewedById ?? p.reviewedById,
+          reviewedAt: data.reviewedAt ?? new Date().toISOString(),
+        };
+      });
+
+      setCorrectionTarget(null);
+      setCorrectionNote("");
+    } catch (e: any) {
+      alert(e?.message ?? "Error solicitando corrección");
+    } finally {
+      setSubmittingCorrection(false);
+      setActingId(null);
+    }
+  }
+
   const filteredBySearch = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return items;
@@ -401,10 +481,15 @@ export function AdminDeposits() {
 
           const canApprove =
             d.status !== "MINTED" &&
+            d.status !== "NEED_CORRECTION" &&
             !(d.currency === "PEN" && d.isRateExpired) &&
             !!d.proofUrl; // regla: no aprobar sin proof
 
-          const canReject = d.status !== "MINTED";
+          const canReject =
+            d.status !== "MINTED" &&
+            (d.status === "PROOF_SUBMITTED" || d.status === "NEED_CORRECTION");
+          const canRequestCorrection =
+            d.status === "PROOF_SUBMITTED" && !!d.proofUrl;
 
           const showImageThumb = !!d.proofUrl && isImageMime(d.proofMimeType);
 
@@ -567,6 +652,18 @@ export function AdminDeposits() {
                     </div>
                   </div>
 
+                  {d.status === "NEED_CORRECTION" && d.reviewNote && (
+                    <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                      <p className="text-xs font-semibold text-amber-300">Observado</p>
+                      <p className="mt-1 text-sm text-amber-100">{d.reviewNote}</p>
+                      {d.reviewedAt && (
+                        <p className="mt-2 text-[11px] text-amber-200/70">
+                          {new Date(d.reviewedAt).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {d.currency === "PEN" && d.rateUsed && d.rateExpiresAt && (
                     <div className="mt-3 rounded-xl border border-gray-800 bg-[#071225] p-3">
                       <p className="text-xs text-gray-400">
@@ -602,6 +699,22 @@ export function AdminDeposits() {
                       }`}
                     >
                       {actingId === d.id ? "Procesando..." : "Aprobar"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCorrectionTarget(d);
+                        setCorrectionNote(d.reviewNote ?? "");
+                      }}
+                      disabled={actingId === d.id || submittingCorrection || !canRequestCorrection}
+                      className={`mt-2 w-full py-2.5 rounded-lg font-medium transition-colors ${
+                        actingId === d.id || submittingCorrection || !canRequestCorrection
+                          ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
+                          : "bg-amber-600 text-white hover:bg-amber-700"
+                      }`}
+                    >
+                      Solicitar corrección
                     </button>
 
                     <button
@@ -772,6 +885,20 @@ export function AdminDeposits() {
                   </div>
                 )}
 
+                {preview.reviewNote && (
+                  <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                    <p className="text-xs text-amber-200 font-semibold">Revisión solicitada</p>
+                    <p className="text-sm text-amber-100 mt-1 whitespace-pre-line">
+                      {preview.reviewNote}
+                    </p>
+                    {preview.reviewedAt && (
+                      <p className="text-xs text-amber-200/70 mt-2">
+                        {new Date(preview.reviewedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-4 space-y-2">
                   <button
                     type="button"
@@ -828,6 +955,66 @@ export function AdminDeposits() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {correctionTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-gray-800 bg-[#071225] p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-white font-semibold">Solicitar corrección</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Ref: {correctionTarget.referenceCode} • {correctionTarget.user.email}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!submittingCorrection) {
+                    setCorrectionTarget(null);
+                    setCorrectionNote("");
+                  }
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <label className="block mt-4 text-xs text-gray-300">Motivo / indicaciones</label>
+            <textarea
+              value={correctionNote}
+              onChange={(e) => setCorrectionNote(e.target.value)}
+              rows={4}
+              className="mt-2 w-full rounded-xl border border-gray-800 bg-[#0B1B34] p-3 text-sm text-white outline-none focus:border-amber-500/60"
+              placeholder="Ej: No se ve el monto ni la fecha. Envia otra foto más clara."
+            />
+
+            <div className="mt-4 flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setCorrectionTarget(null);
+                  setCorrectionNote("");
+                }}
+                disabled={submittingCorrection}
+                className="px-4 py-2 rounded-lg bg-gray-700/40 text-gray-200 hover:bg-gray-700/60 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={submitCorrection}
+                disabled={submittingCorrection || correctionNote.trim().length < 5}
+                className="px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                {submittingCorrection ? "Enviando..." : "Enviar corrección"}
+              </button>
             </div>
           </div>
         </div>

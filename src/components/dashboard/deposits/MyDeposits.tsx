@@ -7,7 +7,8 @@ import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
 type DepositStatus = 
     | "PENDING"
     | "PROOF_SUBMITTED"
-    | "RATE_EXPPIRED"
+    | "NEED_CORRECTION"
+    | "RATE_EXPIRED"
     | "APPROVED"
     | "REJECTED"
     | "COMPLETED"
@@ -36,6 +37,8 @@ type MyDepositItem = {
     proofUploadedAt: string | null;
     prooFileName: string | null;
     proofMimeType: string | null;
+    reviewNote: string | null;
+    reviewedAt: string | null;
 
     createdAt: string;
 };
@@ -57,6 +60,8 @@ function statusBadgeClass(status: DepositStatus) {
       return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
     case "PROOF_SUBMITTED":
       return "border border-cyan-500/30 bg-cyan-500/10 text-cyan-200";
+    case "NEED_CORRECTION":
+      return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
     case "APPROVED":
       return "border border-teal-500/30 bg-teal-500/10 text-teal-200";
     case "MINTED":
@@ -76,6 +81,8 @@ function statusLabel(status: DepositStatus) {
       return "Pendiente";
     case "PROOF_SUBMITTED":
       return "Comprobante enviado";
+    case "NEED_CORRECTION":
+      return "Observado";
     case "RATE_EXPIRED":
       return "Tipo de cambio expirado";
     case "APPROVED":
@@ -91,6 +98,9 @@ function statusLabel(status: DepositStatus) {
 
 export function MyDeposits() {
   const { token, isLoading } = useAuth();
+
+  const canUploadProof = (status: string) =>
+    status === "PENDING" || status === "NEED_CORRECTION";
 
   const [items, setItems] = useState<MyDepositItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -161,6 +171,10 @@ export function MyDeposits() {
     },
     [backendUrl, token]
   );
+
+  const refetch = useCallback(() => {
+    fetchPage(null);
+  }, [fetchPage]);
 
   useEffect(() => {
     if (!canFetch) return;
@@ -270,6 +284,75 @@ export function MyDeposits() {
                       {new Date(d.rateExpiresAt).toLocaleString()}
                     </span>
                   </p>
+                </div>
+              )}
+
+              <div className="mt-3">
+                {(() => {
+                  switch (d.status) {
+                    case "PENDING":
+                      return (
+                        <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-3">
+                          <p className="text-xs text-gray-400">
+                            Sube tu comprobante para iniciar la revisión.
+                          </p>
+                        </div>
+                      );
+                    case "PROOF_SUBMITTED":
+                      return (
+                        <p className="mt-3 text-xs text-gray-300">
+                          Comprobante enviado. Estamos verificando tu depósito.
+                        </p>
+                      );
+                    case "NEED_CORRECTION":
+                      return (
+                        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                          <p className="text-xs font-semibold text-amber-300">Tu comprobante fue observado</p>
+                          <p className="mt-1 text-sm text-amber-100">
+                            {d.reviewNote ?? "Necesitamos que reenvíes el comprobante."}
+                          </p>
+
+                          {d.reviewedAt && (
+                            <p className="mt-2 text-[11px] text-amber-200/70">
+                              Fecha de observación: {new Date(d.reviewedAt).toLocaleString()}
+                            </p>
+                          )}
+
+                          <p className="mt-2 text-xs text-amber-200/80">
+                            Sube un nuevo comprobante más claro (monto, fecha y referencia visibles).
+                          </p>
+                        </div>
+                      );
+                    case "RATE_EXPIRED":
+                      return (
+                        <p className="mt-3 text-xs text-red-300">
+                          El tipo de cambio expiró antes de subir el comprobante. Crea un nuevo depósito.
+                        </p>
+                      );
+                    case "APPROVED":
+                      return (
+                        <p className="mt-3 text-xs text-green-300">
+                          Depósito aprobado. (El mint se realizará más adelante.)
+                        </p>
+                      );
+                    case "REJECTED":
+                      return (
+                        <p className="mt-3 text-xs text-red-300">
+                          Depósito rechazado. Si crees que es un error, crea un nuevo depósito o contacta soporte.
+                        </p>
+                      );
+                    case "MINTED":
+                    case "COMPLETED":
+                      return <p className="text-xs text-gray-400">Completado.</p>;
+                    default:
+                      return null;
+                  }
+                })()}
+              </div>
+
+              {canUploadProof(d.status) && (
+                <div className="mt-3">
+                  <ProofUploader depositId={d.id} onUploaded={refetch} />
                 </div>
               )}
 

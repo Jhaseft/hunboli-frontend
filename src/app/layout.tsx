@@ -4,7 +4,7 @@ import "./globals.css";
 import '@rainbow-me/rainbowkit/styles.css'; // 👈 1. IMPORTAR ESTILOS
 import { Providers } from '../components/Providers'; // 👈 2. IMPORTAR TUS PROVIDERS
 import '../components/dashboard/styles/index.css';
-import { Navbar } from "@/components/layout/Navbar";
+import { Navbar } from "@/components/layout/Navbar/Navbar";
 
 
 const geistSans = Geist({
