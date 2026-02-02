@@ -65,6 +65,10 @@ export const verificationService = {
     rejectVerificationRequest: async (requestId: string): Promise<VerificationData | null> => {
         const { data } = await api.patch<VerificationData>("verification/reject", { requestId });
         return data;
+    },
+    getQuantity: async (): Promise<{ quantity: number | null } | null> => {
+        const { data } = await api.get("verification/pending-requests/quantity")
+        return data;
     }
 
 
