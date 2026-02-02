@@ -5,7 +5,7 @@ import { MintRequestsSection } from "@/components/admin/MintRequestsSection";
 
 export default function AdminDashboardPage() {
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="max-w-5xl mx-auto flex flex-col gap-6 mt-10">
       <DashboardHeader
         title="Panel de Control"
         subtitle="Gestión de reservas, emisiones y redenciones"
