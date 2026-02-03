@@ -99,9 +99,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
     }
 
     try {
-      //  Registrar en backend
-      await api.post('/retiro', { currency: selectedCurrency, amount, bankAccountId: parseInt(selectedBankId) });
-
+      
       //  Blockchain
       if (!isConnected || !walletClient) {
         setReportModal({ isOpen: true, success: false, message: 'Conecta tu wallet' });
@@ -119,6 +117,10 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
       functionName: 'requestRedemption',
       args: [amountWei],
     });
+
+    //  Registrar en backend
+      await api.post('/retiro', { currency: selectedCurrency, amount, bankAccountId: parseInt(selectedBankId),txHash });
+
 
       setReportModal({
         isOpen: true,

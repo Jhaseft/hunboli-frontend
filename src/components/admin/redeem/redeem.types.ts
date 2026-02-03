@@ -52,6 +52,7 @@ export type RedeemRequest = {
   fiatSent: string;   // Prisma Decimal → string
   bankAccountId: bigint;
   payoutTxRef: string | null;
+  TxHash?: string;
   paidAt: string | null;
   logProofUrl?: string | null;
   proofUploadedAt?: string | null;
