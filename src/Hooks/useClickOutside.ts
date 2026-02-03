@@ -6,11 +6,11 @@ import { useEffect, RefObject } from 'react';
  * @param handler - Función a ejecutar cuando se hace click fuera
  * @param enabled - Si el hook está activo o no
  */
-export function useClickOutside(
-  refs: RefObject<HTMLElement> | RefObject<HTMLElement>[],
+export const useClickOutside = (
+  refs: React.RefObject<HTMLElement | null>,
   handler: () => void,
-  enabled: boolean = true
-) {
+  enabled: boolean
+) => {
   useEffect(() => {
     if (!enabled) return;
 

@@ -3,8 +3,8 @@
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useToggle } from '@/hooks/useToggle';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useToggle } from '@/Hooks/useToggle';
+import { useClickOutside } from '@/Hooks/useClickOutside';
 import { ProfileButton } from './ProfileButton';
 import { ProfileDropdown } from './ProfileDropdown';
 
