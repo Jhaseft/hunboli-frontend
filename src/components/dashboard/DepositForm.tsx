@@ -438,7 +438,7 @@ export function DepositForm() {
           role="dialog"
         >
           <div
-            className="w-full max-w-2xl rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
