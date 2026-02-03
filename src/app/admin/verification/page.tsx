@@ -1,7 +1,9 @@
 import { VerificationSection } from "@/components/admin/VerificationSection";
 
-export default function page() {
+export default function VerificationPage() {
     return (
-        <VerificationSection />
+        <div className="max-w-7xl mx-auto">
+            <VerificationSection />
+        </div>
     )
 }
