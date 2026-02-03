@@ -368,7 +368,7 @@ export function MyDeposits() {
                     >
                       Ver archivo
                     </a>
-                    {d.proofFileName ? <span className="text-gray-500"> • {d.proofFileName}</span> : null}
+                    {d.prooFileName ? <span className="text-gray-500"> • {d.prooFileName}</span> : null}
                   </p>
 
                   <p className="text-xs text-gray-500">
