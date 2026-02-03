@@ -120,8 +120,8 @@ export default function AdminRedeemPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-white">
-        Cargando retiros...
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-400" />
       </div>
     );
   }
@@ -129,8 +129,8 @@ export default function AdminRedeemPage() {
   const hasAnySearch = searchByCode || searchByUser;
 
   return (
-    <div className="min-h-screen p-6 bg-gray-900">
-      <h1 className="text-3xl text-white mb-6 font-bold">
+    <div className="max-w-7xl mx-auto">
+      <h1 className="text-2xl lg:text-3xl text-white mb-6 font-bold">
         Solicitudes de Retiro
       </h1>
 
@@ -155,25 +155,25 @@ export default function AdminRedeemPage() {
         />
       )}
 
-    
+
       {meta && !hasAnySearch && (
-        <div className="flex justify-between items-center mt-6 text-white">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 text-white">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 hover:bg-gray-600 transition-colors"
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-800 rounded-lg disabled:opacity-50 hover:bg-gray-700 transition-colors border border-gray-700"
           >
             Anterior
           </button>
 
-          <span>
+          <span className="text-sm">
             Página {meta.page} de {meta.totalPages}
           </span>
 
           <button
             disabled={page === meta.totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50 hover:bg-gray-600 transition-colors"
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-800 rounded-lg disabled:opacity-50 hover:bg-gray-700 transition-colors border border-gray-700"
           >
             Siguiente
           </button>
