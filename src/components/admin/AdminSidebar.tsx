@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { retiroService } from "@/services/retiro.service";
 import { verificationService } from "@/services/verification.service";
+import { mintsService } from "@/services/mints.service";
 
 type NavItem = {
   label: string;
@@ -28,6 +29,7 @@ type NavItem = {
 export function AdminSidebar() {
 
   const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [pendingMints, setPendingMints] = useState<number | null>(null);
   const [pendingVerifications, setPendingVerifications] = useState<number | null | undefined>(null);
 
   const pathname = usePathname();
@@ -36,12 +38,16 @@ export function AdminSidebar() {
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
-        const data = await retiroService.pendingacoounts();
-        setPendingCount(data.pendingCount);
-        const response = await verificationService.getQuantity();
-        setPendingVerifications(response?.quantity);
+        const [retiros, verifications, mints] = await Promise.all([
+          retiroService.pendingacoounts(),
+          verificationService.getQuantity(),
+          mintsService.getPendingCount(),
+        ]);
+        setPendingCount(retiros.pendingCount);
+        setPendingVerifications(verifications?.quantity);
+        setPendingMints(mints?.pendingCount ?? null);
       } catch (error) {
-        console.error("Error al cargar retiros pendientes:", error);
+        console.error("Error al cargar contadores admin:", error);
       }
     };
 
@@ -72,7 +78,7 @@ export function AdminSidebar() {
       label: "Solicitudes Mint",
       href: "/admin/mints",
       icon: <Plus className="w-5 h-5" />,
-      badge: 5,
+      badge: pendingMints ?? undefined,
       section: "OPERACIONES",
     },
     {
