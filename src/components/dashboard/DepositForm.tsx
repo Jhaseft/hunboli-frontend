@@ -7,6 +7,9 @@ import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
 type Currency = "BOB" | "PEN";
 
 const FEE_RATE = 0.001; // 0.1%
+const FIXED_FEE_BOB = 100; // 100 Bs
+const FIXED_FEE_MIN_BOB = 10_000;
+const FIXED_FEE_MAX_BOB = 100_000;
 const MIN_DEPOSIT_BOB = 10_000; // 10 mil Bs
 
 function parseMoney(input: string) {
@@ -153,11 +156,30 @@ export function DepositForm() {
 
   const meetsMinimum = amountInBobEquivalent >= MIN_DEPOSIT_BOB;
 
-  // Comisión 0.1% (en la moneda del depósito)
+  const qualifiesForFixedFee =
+    amountInBobEquivalent >= FIXED_FEE_MIN_BOB &&
+    amountInBobEquivalent < FIXED_FEE_MAX_BOB;
+
+  // Comisión (en la moneda del depósito)
   const serviceFee = useMemo(() => {
     if (!isValidAmount) return 0;
+    if (amountInBobEquivalent < MIN_DEPOSIT_BOB) return 0;
+    if (qualifiesForFixedFee) {
+      if (selectedCurrency === "PEN") {
+        if (!penToBobRate) return 0;
+        return FIXED_FEE_BOB / penToBobRate;
+      }
+      return FIXED_FEE_BOB;
+    }
     return amountNum * FEE_RATE;
-  }, [isValidAmount, amountNum]);
+  }, [
+    isValidAmount,
+    amountNum,
+    amountInBobEquivalent,
+    qualifiesForFixedFee,
+    selectedCurrency,
+    penToBobRate,
+  ]);
 
   // Total a pagar (monto + comisión)
   const totalToPay = useMemo(() => {
@@ -398,7 +420,13 @@ export function DepositForm() {
           </div>
 
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-sm text-gray-300">Comisión (0.1%)</span>
+            <span className="text-sm text-gray-300">
+              {amountInBobEquivalent < MIN_DEPOSIT_BOB
+                ? "Comisión"
+                : qualifiesForFixedFee
+                ? "Comisión fija"
+                : "Comisión (0.1%)"}
+            </span>
             <span className="text-sm font-semibold text-white">
               {serviceFee.toFixed(2)} {currencyLabel}
             </span>
