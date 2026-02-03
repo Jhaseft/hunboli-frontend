@@ -59,9 +59,9 @@ export default function SearchBar({
 
   return (
     <div className="mb-6">
-      <div className="flex flex-wrap gap-3 items-start">
-       
-        <div className="flex gap-2 flex-1 min-w-[300px]">
+      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-start">
+
+        <div className="flex gap-2 flex-1">
           <div className="relative flex-1">
             <input
               type="text"
@@ -69,7 +69,7 @@ export default function SearchBar({
               value={localCodeSearch}
               onChange={(e) => setLocalCodeSearch(e.target.value)}
               onKeyPress={handleCodeKeyPress}
-              className="w-full px-3 py-2 pl-9 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+              className="w-full px-3 py-2.5 pl-10 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/50"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -85,10 +85,10 @@ export default function SearchBar({
               />
             </svg>
           </div>
-          
+
           <button
             onClick={handleCodeSearch}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+            className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
           >
             Buscar
           </button>
@@ -96,7 +96,7 @@ export default function SearchBar({
           {searchByCode && (
             <button
               onClick={handleClearCode}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+              className="px-3 py-2.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
               title="Limpiar búsqueda por código"
             >
               ✕
@@ -104,8 +104,8 @@ export default function SearchBar({
           )}
         </div>
 
-      
-        <div className="flex gap-2 flex-1 min-w-[300px]">
+
+        <div className="flex gap-2 flex-1">
           <div className="relative flex-1">
             <input
               type="text"
@@ -113,7 +113,7 @@ export default function SearchBar({
               value={localUserSearch}
               onChange={(e) => setLocalUserSearch(e.target.value)}
               onKeyPress={handleUserKeyPress}
-              className="w-full px-3 py-2 pl-9 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              className="w-full px-3 py-2.5 pl-10 bg-gray-800 text-white text-sm rounded-lg border border-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/50"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -129,10 +129,10 @@ export default function SearchBar({
               />
             </svg>
           </div>
-          
+
           <button
             onClick={handleUserSearch}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+            className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
           >
             Buscar
           </button>
@@ -140,7 +140,7 @@ export default function SearchBar({
           {searchByUser && (
             <button
               onClick={handleClearUser}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+              className="px-3 py-2.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
               title="Limpiar búsqueda por usuario"
             >
               ✕
@@ -148,11 +148,11 @@ export default function SearchBar({
           )}
         </div>
 
- 
+
         {hasAnySearch && (
           <button
             onClick={handleClearAll}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap"
+            className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-colors whitespace-nowrap lg:w-auto w-full"
             title="Limpiar todas las búsquedas"
           >
             Limpiar Todo
