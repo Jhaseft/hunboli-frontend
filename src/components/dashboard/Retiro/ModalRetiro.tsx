@@ -9,9 +9,9 @@ interface ModalRetiroProps {
   currency: 'BOB' | 'PEN';
   amountBOBH: string;
   amountReceived: string;
-  walletAmount: string;
-  porcentaje: number;
-  comisionminima: number;
+  comisionCalculada: number;
+  newBalance: number;
+  totalDeduction: number;
   setSelectedBankId: React.Dispatch<React.SetStateAction<string>>;
   onConfirm: () => void;
 }
@@ -22,9 +22,9 @@ export default function ModalRetiro({
   currency,
   amountBOBH,
   amountReceived,
-  walletAmount,
-  porcentaje,
-  comisionminima,
+  comisionCalculada,
+  newBalance,
+  totalDeduction,
   setSelectedBankId,
   onConfirm,
 }: ModalRetiroProps) {
@@ -32,18 +32,7 @@ export default function ModalRetiro({
     // Estados para manejar datos del componente Banks2
   const [bankAccount, setBankAccount] = useState('');
 
-  // Convertir a number los valores
-  const walletboboenum = parseFloat(walletAmount);
-  
-  // Cálculo de comisión y deducción total
-  const comisionCalculada = Math.max(parseFloat(amountBOBH) * porcentaje, comisionminima);
 
-// amountReceived viene como string, hay que convertirlo a número
-const totalDeduction = parseFloat(amountReceived) + comisionCalculada;
-
-const newBalance = parseFloat(walletAmount) - totalDeduction;
-
-  const gasFee = 0.005;
   if (!isOpen) return null;
   
   return (
@@ -72,7 +61,6 @@ const newBalance = parseFloat(walletAmount) - totalDeduction;
          
           <Infoadicional
             comision={comisionCalculada}
-            gasFee={gasFee}
             newBalance={newBalance}
             totalDeduction={totalDeduction}
           />

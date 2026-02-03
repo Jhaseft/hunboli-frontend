@@ -9,6 +9,7 @@ type DetailModalProps = {
 };
 
 export default function DetailModal({ request, onClose }: DetailModalProps) {
+  console.log("Request data:", request);
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -63,6 +64,10 @@ export default function DetailModal({ request, onClose }: DetailModalProps) {
               <div>
                 <p className="text-gray-400 text-sm">Tasa Usada</p>
                 <p className="font-semibold">{request.operation?.rateUsed || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Hash de Transacción</p>
+                <p className="font-mono text-xs break-all">{request?.TxHash|| "N/A"}</p>
               </div>
             </div>
           </div>
