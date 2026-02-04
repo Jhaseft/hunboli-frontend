@@ -22,6 +22,7 @@ export const ROUTES = {
   DASHBOARD_DEPOSITS: '/dashboard/deposits',
   DASHBOARD_VERIFY_ACCOUNT: '/dashboard/verify-account',
 
+  DASHBOARD_WITHDRAWALS: '/dashboard/withdrawals',
   // Admin
   ADMIN_DEPOSITS: '/admin/deposits',
   ADMIN_MINTS: '/admin/mints',

@@ -12,7 +12,7 @@ import {
 /**
  * Tipo para los items del menú de perfil
  */
-export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'kyc' | 'deposits' | 'admin-deposits' | 'logout';
+export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'kyc' | 'deposits' | 'admin-deposits' | 'logout' | 'retiros';
 
 export interface ProfileMenuItem {
   id: ProfileMenuItemType;
@@ -79,7 +79,18 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
     variant: 'default',
     requiresAuth: true,
     showInDashboard: true,
-    showOutsideDashboard: true,
+    showOutsideDashboard: false,
+    excludedRoles: ['admin'], // No mostrar a admins
+  },
+  {
+    id: 'retiros',
+    label: 'Mis Retiros',
+    icon: WalletIcon,
+    href: ROUTES.DASHBOARD_WITHDRAWALS,
+    variant: 'default',
+    requiresAuth: true,
+    showInDashboard: true,
+    showOutsideDashboard: false,
     excludedRoles: ['admin'], // No mostrar a admins
   },
   {
