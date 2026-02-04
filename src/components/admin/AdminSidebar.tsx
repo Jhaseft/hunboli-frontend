@@ -110,7 +110,7 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Botón hamburguesa para mobile */}
+  
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-50 lg:hidden bg-[#0a1628] p-2 rounded-lg border border-gray-800 text-gray-400 hover:text-white transition-colors"
@@ -118,7 +118,7 @@ export function AdminSidebar() {
         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
-      {/* Overlay para mobile */}
+   
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -126,7 +126,7 @@ export function AdminSidebar() {
         />
       )}
 
-      {/* Sidebar */}
+     
       <aside className={`
         fixed top-0 left-0
         w-[260px] min-h-screen
