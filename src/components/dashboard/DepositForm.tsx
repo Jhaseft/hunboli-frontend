@@ -3,10 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
+import { handleKycGateResponse } from "@/lib/kyc-errors";
 
 type Currency = "BOB" | "PEN";
 
 const FEE_RATE = 0.001; // 0.1%
+const FIXED_FEE_BOB = 100; // 100 Bs
+const FIXED_FEE_MIN_BOB = 10_000;
+const FIXED_FEE_MAX_BOB = 100_000;
 const MIN_DEPOSIT_BOB = 10_000; // 10 mil Bs
 
 function parseMoney(input: string) {
@@ -153,11 +157,30 @@ export function DepositForm() {
 
   const meetsMinimum = amountInBobEquivalent >= MIN_DEPOSIT_BOB;
 
-  // Comisión 0.1% (en la moneda del depósito)
+  const qualifiesForFixedFee =
+    amountInBobEquivalent >= FIXED_FEE_MIN_BOB &&
+    amountInBobEquivalent < FIXED_FEE_MAX_BOB;
+
+  // Comisión (en la moneda del depósito)
   const serviceFee = useMemo(() => {
     if (!isValidAmount) return 0;
+    if (amountInBobEquivalent < MIN_DEPOSIT_BOB) return 0;
+    if (qualifiesForFixedFee) {
+      if (selectedCurrency === "PEN") {
+        if (!penToBobRate) return 0;
+        return FIXED_FEE_BOB / penToBobRate;
+      }
+      return FIXED_FEE_BOB;
+    }
     return amountNum * FEE_RATE;
-  }, [isValidAmount, amountNum]);
+  }, [
+    isValidAmount,
+    amountNum,
+    amountInBobEquivalent,
+    qualifiesForFixedFee,
+    selectedCurrency,
+    penToBobRate,
+  ]);
 
   // Total a pagar (monto + comisión)
   const totalToPay = useMemo(() => {
@@ -222,6 +245,7 @@ export function DepositForm() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
+        if (handleKycGateResponse(res.status, data)) return;
         const msg =
           (data && (data.message || data.error)) ||
           (res.status === 401
@@ -276,6 +300,7 @@ export function DepositForm() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
+        if (handleKycGateResponse(res.status, data)) return;
         const msg =
           (data && (data.message || data.error)) ||
           "No se pudo subir el comprobante.";
@@ -398,7 +423,13 @@ export function DepositForm() {
           </div>
 
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-sm text-gray-300">Comisión (0.1%)</span>
+            <span className="text-sm text-gray-300">
+              {amountInBobEquivalent < MIN_DEPOSIT_BOB
+                ? "Comisión"
+                : qualifiesForFixedFee
+                ? "Comisión fija"
+                : "Comisión (0.1%)"}
+            </span>
             <span className="text-sm font-semibold text-white">
               {serviceFee.toFixed(2)} {currencyLabel}
             </span>
@@ -438,7 +469,7 @@ export function DepositForm() {
           role="dialog"
         >
           <div
-            className="w-full max-w-2xl rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}

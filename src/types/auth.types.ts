@@ -18,6 +18,8 @@ export interface RegisterDto {
     phoneNumber?: string;
 }
 
+export type KycStatus = 'UNVERIFIED' | 'PENDING' | 'NEED_CORRECTION' | 'VERIFIED' | 'REJECTED';
+
 export interface AuthResponse {
     access_token: string;
     user: User;
@@ -31,7 +33,7 @@ export interface User {
     phoneNumber?: string | null;
     country: Country;
     walletAddress: string | null;
-    kycStatus: string;
+    kycStatus: KycStatus;
     role: string;
     createdAt: string;
     updatedAt: string;
