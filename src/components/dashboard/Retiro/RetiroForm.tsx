@@ -9,7 +9,6 @@ import RectanguloDerecha from './RectanguloDerecha';
 import { useAccount, useWalletClient } from 'wagmi';
 import ABI from '@/abi/BobH.json';
 import ReportModal from "../ReportModal";
-import { handleKycGateAxiosError } from "@/lib/kyc-errors";
 /////////////////////////////////////////////////
 type RetiroFormProps = {
   amount_wallet: string;
@@ -102,7 +101,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
     try {
       
       //  Blockchain
-      if ( !walletClient) {
+      if (!isConnected || !walletClient) {
         setReportModal({ isOpen: true, success: false, message: 'Conecta tu wallet' });
         return;
       }
@@ -132,14 +131,6 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
       setIsModalOpen(false);
       setAmount('');
     } catch (err) {
-      if (handleKycGateAxiosError(err)) {
-        setReportModal({
-          isOpen: true,
-          success: false,
-          message: 'Debes completar KYC o verificar tu cuenta antes de continuar.'
-        });
-        return;
-      }
       console.error(err);
       setReportModal({
         isOpen: true,
