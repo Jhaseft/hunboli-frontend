@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { User } from '@/types/auth.types';
 import { AuthButtons } from '@/components/features/auth/AuthButtons';
 import { ProfileMenu } from '@/components/features/auth/ProfileMenu';
@@ -66,6 +67,17 @@ export function NavAuthSection({
             };
 
             const badge = map[status];
+            if (status === 'UNVERIFIED') {
+              return (
+                <Link
+                  href="/dashboard/kyc"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${badge.className} hover:opacity-90`}
+                  aria-label="Ir a verificación KYC"
+                >
+                  {badge.label}
+                </Link>
+              );
+            }
             return (
               <div className={`px-3 py-2 rounded-md text-sm font-medium ${badge.className}`}>
                 {badge.label}
