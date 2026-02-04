@@ -18,6 +18,7 @@ import {
 import { retiroService } from "@/services/retiro.service";
 import { verificationService } from "@/services/verification.service";
 import { mintsService } from "@/services/mints.service";
+import { adminKycService } from "@/services/adminKyc.service";
 
 type NavItem = {
   label: string;
@@ -33,6 +34,7 @@ export function AdminSidebar() {
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [pendingMints, setPendingMints] = useState<number | null>(null);
   const [pendingVerifications, setPendingVerifications] = useState<number | null | undefined>(null);
+  const [pendingKyc, setPendingKyc] = useState<number | null>(null);
 
   const pathname = usePathname();
   const { user, logout } = useAuth();
@@ -40,14 +42,16 @@ export function AdminSidebar() {
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
-        const [retiros, verifications, mints] = await Promise.all([
+        const [retiros, verifications, mints, kycCount] = await Promise.all([
           retiroService.pendingacoounts(),
           verificationService.getQuantity(),
           mintsService.getPendingCount(),
+          adminKycService.getPendingCount(),
         ]);
         setPendingCount(retiros.pendingCount);
         setPendingVerifications(verifications?.quantity);
         setPendingMints(mints?.pendingCount ?? null);
+        setPendingKyc(kycCount ?? null);
       } catch (error) {
         console.error("Error al cargar contadores admin:", error);
       }
@@ -77,7 +81,7 @@ export function AdminSidebar() {
       section: "OPERACIONES",
     },
     {
-      label: "Solicitudes Mint",
+      label: "Solicitudes Mint",  
       href: "/admin/mints",
       icon: <Plus className="w-5 h-5" />,
       badge: pendingMints ?? undefined,
@@ -93,7 +97,7 @@ export function AdminSidebar() {
       label: "Usuarios KYC",
       href: "/admin/kyc",
       icon: <ShieldCheck className="w-5 h-5" />,
-      badge: 3,
+      badge: pendingKyc ?? undefined,
     },
     {
       label: "Historial",

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
+import { handleKycGateResponse } from "@/lib/kyc-errors";
 
 type Currency = "BOB" | "PEN";
 
@@ -244,6 +245,7 @@ export function DepositForm() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
+        if (handleKycGateResponse(res.status, data)) return;
         const msg =
           (data && (data.message || data.error)) ||
           (res.status === 401
@@ -298,6 +300,7 @@ export function DepositForm() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
+        if (handleKycGateResponse(res.status, data)) return;
         const msg =
           (data && (data.message || data.error)) ||
           "No se pudo subir el comprobante.";

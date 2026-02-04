@@ -1,4 +1,4 @@
-import { User } from '@/types';
+import { User } from '@/types/auth.types';
 import { AuthButtons } from '@/components/features/auth/AuthButtons';
 import { ProfileMenu } from '@/components/features/auth/ProfileMenu';
 import { VerificationBadge } from '@/components/features/auth/VerificationBadge';
@@ -38,21 +38,40 @@ export function NavAuthSection({
             <VerificationBadge isVerified={user?.isVerified ?? false} />
           </div>
 
-          <div
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              user?.kycStatus === 'APPROVED'
-                ? 'bg-green-600/20 text-green-300 border border-green-500/30'
-                : user?.kycStatus === 'REJECTED'
-                ? 'bg-red-600/20 text-red-300 border border-red-500/30'
-                : 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30'
-            }`}
-          >
-            {user?.kycStatus === 'APPROVED'
-              ? 'KYC Aprobado'
-              : user?.kycStatus === 'REJECTED'
-              ? 'KYC Rechazado'
-              : 'KYC Pendiente'}
-          </div>
+          {(() => {
+            const status = user?.kycStatus;
+            if (!status) return null;
+
+            const map: Record<string, { label: string; className: string }> = {
+              VERIFIED: {
+                label: 'KYC Verificado',
+                className: 'bg-green-600/20 text-green-300 border border-green-500/30',
+              },
+              PENDING: {
+                label: 'En revisión',
+                className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
+              },
+              NEED_CORRECTION: {
+                label: 'Corrección requerida',
+                className: 'bg-amber-600/20 text-amber-300 border border-amber-500/30',
+              },
+              REJECTED: {
+                label: 'Rechazado',
+                className: 'bg-red-600/20 text-red-300 border border-red-500/30',
+              },
+              UNVERIFIED: {
+                label: 'Pendiente',
+                className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
+              },
+            };
+
+            const badge = map[status];
+            return (
+              <div className={`px-3 py-2 rounded-md text-sm font-medium ${badge.className}`}>
+                {badge.label}
+              </div>
+            );
+          })()}
         </>
       )}
 

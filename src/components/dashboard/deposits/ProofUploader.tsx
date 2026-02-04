@@ -2,6 +2,7 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { handleKycGateResponse } from "@/lib/kyc-errors";
 
 type Props = {
   depositId: string;
@@ -98,6 +99,7 @@ export function ProofUploader({ depositId, disabled, onUploaded }: Props) {
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
+        if (handleKycGateResponse(res.status, data)) return;
         const msg =
           (data && (data.message || data.error)) ||
           (res.status === 401 ? "Sesión expirada. Vuelve a iniciar sesión." : "No se pudo subir el comprobante.");
