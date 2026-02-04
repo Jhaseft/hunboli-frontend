@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/services/user.service";
 import { walletService } from "@/services/wallet.service";
 import { PasswordRequirements, isPasswordValid } from "@/components/ui/PasswordRequirements";
+import { useConnect, useAccount, useDisconnect } from "wagmi";
+import { metaMask } from "wagmi/connectors";
 
 export function SecurityPanel() {
   const { user, refreshUser } = useAuth();
@@ -296,6 +298,12 @@ function WalletSection({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showConnectorModal, setShowConnectorModal] = useState(false);
+
+  // Hooks de wagmi para manejar la conexión de wallets
+  const { connectors, connect } = useConnect();
+  const { address: connectedAddress, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const resetState = () => {
     setStep('idle');
@@ -304,54 +312,57 @@ function WalletSection({
     setShowPassword(false);
     setError(null);
     setSuccess(false);
+    setShowConnectorModal(false);
+    // Desconectar la wallet temporal si hay alguna conectada
+    if (isConnected && !hasWallet) {
+      disconnect();
+    }
   };
 
-  const connectMetaMask = async () => {
-    const ethereum = window.ethereum as { isMetaMask?: boolean; request: (args: { method: string }) => Promise<string[]> } | undefined;
+  // Detectar cuando se conecta una wallet
+  useEffect(() => {
+    if (isConnected && connectedAddress && step === 'connecting') {
+      const newAddress = connectedAddress.toLowerCase();
+      const currentAddress = walletAddress?.toLowerCase();
 
-    if (!ethereum?.isMetaMask) {
-      setError("MetaMask no está instalado. Por favor instálalo para continuar.");
-      return;
+      console.log('Nueva wallet conectada:', newAddress);
+      console.log('Wallet actual (Backend):', currentAddress);
+
+      // Verificar si es la misma wallet
+      if (hasWallet && newAddress === currentAddress) {
+        setError("Esta es la misma billetera que ya tienes vinculada. Selecciona una billetera diferente.");
+        disconnect();
+        setStep('idle');
+        return;
+      }
+
+      setPendingWalletAddress(newAddress);
+      setStep('password');
     }
+  }, [isConnected, connectedAddress, step, walletAddress, hasWallet, disconnect]);
 
+  const handleConnectorSelect = async (connectorId: string) => {
     setStep('connecting');
     setError(null);
+    setShowConnectorModal(false);
 
     try {
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      if (accounts && accounts.length > 0) {
-        // Normalizar a minúsculas para comparación consistente con el backend
-        const newAddress = accounts[0].toLowerCase();
-        const currentAddress = walletAddress?.toLowerCase();
-
-        console.log('Nueva wallet (MetaMask):', newAddress);
-        console.log('Wallet actual (Backend):', currentAddress);
-
-        // Verificar si es la misma wallet
-        if (hasWallet && newAddress === currentAddress) {
-          setError("Esta es la misma billetera que ya tienes vinculada. Selecciona una billetera diferente en MetaMask.");
-          setStep('idle');
-          return;
-        }
-
-        setPendingWalletAddress(newAddress);
-        setStep('password');
-      } else {
-        setError("No se pudo obtener la dirección de la billetera");
-        setStep('idle');
+      const connector = connectors.find(c => c.id === connectorId);
+      if (!connector) {
+        throw new Error("Conector no encontrado");
       }
+
+      await connect({ connector });
     } catch (err: unknown) {
-      const error = err as { code?: number; message?: string };
-      if (error.code === 4001) {
-        setError("Conexión rechazada. Por favor acepta la conexión en MetaMask.");
-      } else {
-        setError("Error al conectar con MetaMask");
-      }
+      const error = err as { message?: string };
+      setError(error.message || "Error al conectar la billetera");
       setStep('idle');
     }
+  };
+
+  const startWalletConnection = () => {
+    setShowConnectorModal(true);
+    setError(null);
   };
 
   const handleLinkWallet = async () => {
@@ -382,7 +393,7 @@ function WalletSection({
   };
 
   const handleConfirmChange = () => {
-    connectMetaMask();
+    startWalletConnection();
   };
 
   return (
@@ -447,7 +458,7 @@ function WalletSection({
             )}
 
             {/* Step: Confirm change */}
-            {step === 'confirm-change' && (
+            {step === 'confirm-change' && !showConnectorModal && (
               <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 space-y-3">
                 <div className="flex items-start gap-3">
                   <WarningIcon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
@@ -456,7 +467,7 @@ function WalletSection({
                       ¿Estás seguro de cambiar tu billetera?
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      Se conectará con MetaMask para obtener tu nueva dirección.
+                      Selecciona una billetera para conectar tu nueva dirección.
                     </p>
                   </div>
                 </div>
@@ -473,9 +484,52 @@ function WalletSection({
                     onClick={handleConfirmChange}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold transition"
                   >
-                    <FoxIcon />
-                    Conectar MetaMask
+                    <WalletIcon className="w-4 h-4" />
+                    Continuar
                   </button>
+                </div>
+              </div>
+            )}
+
+            {/* Selector de conectores (cuando se cambia la wallet) */}
+            {step === 'confirm-change' && showConnectorModal && (
+              <div className="p-4 rounded-lg bg-gray-800/50 border border-gray-700 space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-white">Selecciona tu billetera</h4>
+                  <button
+                    type="button"
+                    onClick={resetState}
+                    className="text-gray-400 hover:text-gray-300 transition"
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  Elige cómo quieres conectar tu billetera. En móvil, usa WalletConnect para conectar apps como MetaMask móvil.
+                </p>
+                <div className="space-y-2">
+                  {connectors.map((connector) => (
+                    <button
+                      key={connector.id}
+                      type="button"
+                      onClick={() => handleConnectorSelect(connector.id)}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-900/50 border border-gray-700/50 hover:border-teal-500/50 hover:bg-gray-900/80 transition text-left"
+                    >
+                      {connector.id === 'metaMask' || connector.id === 'io.metamask' ? (
+                        <FoxIcon />
+                      ) : connector.id === 'walletConnect' ? (
+                        <WalletConnectIcon />
+                      ) : (
+                        <WalletIcon className="w-5 h-5 text-gray-400" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{connector.name}</p>
+                        {connector.id === 'walletConnect' && (
+                          <p className="text-xs text-gray-500 mt-0.5">Recomendado para móviles</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -485,7 +539,7 @@ function WalletSection({
               <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/30">
                 <div className="flex items-center gap-3">
                   <LoadingSpinner />
-                  <p className="text-sm text-orange-400">Conectando con MetaMask...</p>
+                  <p className="text-sm text-orange-400">Conectando billetera...</p>
                 </div>
               </div>
             )}
@@ -557,7 +611,7 @@ function WalletSection({
           </div>
         ) : (
           <div className="space-y-4">
-            {step === 'idle' && (
+            {step === 'idle' && !showConnectorModal && (
               <div className="text-center py-4">
                 <div className="h-12 w-12 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-3">
                   <WalletIcon className="w-6 h-6 text-gray-500" />
@@ -567,12 +621,55 @@ function WalletSection({
                 </p>
                 <button
                   type="button"
-                  onClick={connectMetaMask}
+                  onClick={startWalletConnection}
                   className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-semibold transition"
                 >
-                  <FoxIcon />
-                  Conectar MetaMask
+                  <WalletIcon className="w-5 h-5" />
+                  Conectar Billetera
                 </button>
+              </div>
+            )}
+
+            {/* Selector de conectores */}
+            {showConnectorModal && (
+              <div className="p-4 rounded-lg bg-gray-800/50 border border-gray-700 space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-white">Selecciona tu billetera</h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowConnectorModal(false)}
+                    className="text-gray-400 hover:text-gray-300 transition"
+                  >
+                    <XIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  Elige cómo quieres conectar tu billetera. En móvil, usa WalletConnect para conectar apps como MetaMask móvil.
+                </p>
+                <div className="space-y-2">
+                  {connectors.map((connector) => (
+                    <button
+                      key={connector.id}
+                      type="button"
+                      onClick={() => handleConnectorSelect(connector.id)}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-900/50 border border-gray-700/50 hover:border-teal-500/50 hover:bg-gray-900/80 transition text-left"
+                    >
+                      {connector.id === 'metaMask' || connector.id === 'io.metamask' ? (
+                        <FoxIcon />
+                      ) : connector.id === 'walletConnect' ? (
+                        <WalletConnectIcon />
+                      ) : (
+                        <WalletIcon className="w-5 h-5 text-gray-400" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{connector.name}</p>
+                        {connector.id === 'walletConnect' && (
+                          <p className="text-xs text-gray-500 mt-0.5">Recomendado para móviles</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -582,7 +679,7 @@ function WalletSection({
                 <div className="h-12 w-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-3">
                   <LoadingSpinner />
                 </div>
-                <p className="text-sm text-orange-400">Conectando con MetaMask...</p>
+                <p className="text-sm text-orange-400">Conectando billetera...</p>
               </div>
             )}
 
@@ -769,6 +866,14 @@ function LoadingSpinner() {
     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
+function WalletConnectIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 300 185" fill="none">
+      <path d="M61.439 36.256c48.91-47.888 128.212-47.888 177.123 0l5.886 5.764a6.041 6.041 0 0 1 0 8.67l-20.136 19.716a3.179 3.179 0 0 1-4.428 0l-8.101-7.931c-34.122-33.408-89.444-33.408-123.566 0l-8.675 8.494a3.179 3.179 0 0 1-4.428 0L54.978 51.253a6.041 6.041 0 0 1 0-8.67l6.46-6.327ZM280.206 77.03l17.922 17.547a6.041 6.041 0 0 1 0 8.67l-80.81 79.122c-2.446 2.394-6.41 2.394-8.856 0l-57.354-56.155a1.59 1.59 0 0 0-2.214 0L91.54 182.37c-2.446 2.394-6.411 2.394-8.857 0L1.872 103.247a6.041 6.041 0 0 1 0-8.671l17.922-17.547c2.445-2.394 6.41-2.394 8.856 0l57.355 56.155a1.59 1.59 0 0 0 2.214 0L145.572 77.03c2.446-2.394 6.41-2.395 8.856 0l57.355 56.155a1.59 1.59 0 0 0 2.214 0L271.35 77.03c2.446-2.394 6.41-2.394 8.856 0Z" fill="#3B99FC"/>
     </svg>
   );
 }
