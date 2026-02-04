@@ -101,7 +101,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
     try {
       
       //  Blockchain
-      if (!isConnected || !walletClient) {
+      if ( !walletClient) {
         setReportModal({ isOpen: true, success: false, message: 'Conecta tu wallet' });
         return;
       }
