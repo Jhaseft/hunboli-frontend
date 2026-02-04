@@ -60,7 +60,7 @@ export function NavAuthSection({
                 className: 'bg-red-600/20 text-red-300 border border-red-500/30',
               },
               UNVERIFIED: {
-                label: 'Pendiente',
+                label: 'KYC Pendiente',
                 className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
               },
             };
