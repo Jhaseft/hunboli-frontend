@@ -1,6 +1,7 @@
 import { User } from '@/types';
 import { AuthButtons } from '@/components/features/auth/AuthButtons';
 import { ProfileMenu } from '@/components/features/auth/ProfileMenu';
+import { VerificationBadge } from '@/components/features/auth/VerificationBadge';
 
 interface NavAuthSectionProps {
   isLoading: boolean;
@@ -33,9 +34,8 @@ export function NavAuthSection({
     <>
       {variant === 'desktop' && isDashboard && (
         <>
-          <div className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-200">
-            <span className="opacity-80">👤</span>
-            <span className="text-sm">{user?.firstName || 'Usuario'}</span>
+          <div className="flex items-center gap-2 px-3 py-2 text-gray-200">
+            <VerificationBadge isVerified={user?.isVerified ?? false} />
           </div>
 
           <div
@@ -54,6 +54,10 @@ export function NavAuthSection({
               : 'KYC Pendiente'}
           </div>
         </>
+      )}
+
+      {variant === 'mobile' && isDashboard && (
+        <VerificationBadge isVerified={user?.isVerified ?? false} />
       )}
 
       <ProfileMenu isDashboard={isDashboard} variant={variant} />
