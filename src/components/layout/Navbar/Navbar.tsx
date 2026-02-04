@@ -37,7 +37,6 @@ export function Navbar() {
 
             {!showDashboardUI && <NavLinks />}
 
-            {/* Desktop: botones de auth o perfil - oculto en mobile, visible en md+ */}
             <div className="hidden! md:flex! items-center gap-1">
               <NavAuthSection
                 isLoading={isLoading}
@@ -48,7 +47,6 @@ export function Navbar() {
               />
             </div>
 
-            {/* Mobile: perfil y hamburguesa - visible en mobile, oculto en md+ */}
             <div className="flex md:hidden! items-center gap-3">
               <NavAuthSection
                 isLoading={isLoading}
@@ -58,7 +56,6 @@ export function Navbar() {
                 variant="mobile"
               />
 
-              {/* Hamburguesa (solo cuando NO está en dashboard) */}
               {!showDashboardUI && (
                 <MobileMenuButton isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
               )}

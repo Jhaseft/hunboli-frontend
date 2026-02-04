@@ -117,7 +117,7 @@ export function StatsCards() {
       title: "Solicitudes Pendientes",
       value: pendingCount !== null ? `${pendingCount + (pendingVerifications || 0)}` : "Cargando...",
       subtitle: "Requieren atención",
-      detail: "Verificaciones: "+(pendingVerifications) +" - Retiros: "+(pendingCount) ,
+      detail: "Depositos: "+(pendingVerifications) +" - Retiros: "+(pendingCount) ,
       detailType: "neutral",
       icon: <Clock className="w-5 h-5 text-yellow-400" />,
       iconBg: "bg-yellow-500/20",
