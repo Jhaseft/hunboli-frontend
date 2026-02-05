@@ -7,7 +7,7 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 ">
       <button
         onClick={() => setActiveTab('depositar')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${

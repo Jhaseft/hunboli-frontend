@@ -5,15 +5,67 @@ import { BalanceCard } from "./BalanceCard";
 import { ActionButtons } from "./ActionButtons";
 import { DepositForm } from "./DepositForm";
 import { RecentActivity } from "./RecentActivity";
-import { ArrowDownCircle, ArrowRightLeft, ArrowUpCircle, Banknote, CircleDollarSign, PiggyBank, Repeat, Send, Wallet } from 'lucide-react';
+import { Banknote, CircleDollarSign, Repeat } from 'lucide-react';
 import RetiroForm from "./Retiro/RetiroForm";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from 'next/navigation';
+import ReportModal from "../dashboard/ReportModal";
 
 export default function App() {
+   const [reportModal, setReportModal] = useState({
+      isOpen: false,
+      success: true,
+      message: ''
+    });
   const [activeTab, setActiveTab] = useState<"depositar" | "retirar" | "transferir">("depositar");
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const [walletBalance, setWalletBalance] = useState<string>("0");
+  const { user } = useAuth();
+  const router = useRouter();
 
   const openMobileModal = (tab: "depositar" | "retirar" | "transferir") => {
+    if (!user) return;
+
+    // Verificar cuenta
+    if (!user.isVerified) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: "Por favor, verifica tu cuenta para acceder a esta función."
+      });
+      setTimeout(() => {
+        router.push('/dashboard/verify-account');
+      }, 2000);
+      return;
+    }
+
+    // Verificar KYC
+    if (user.kycStatus !== "VERIFIED") {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: "Por favor, completa el proceso de KYC para acceder a esta función."
+      });
+      setTimeout(() => {
+        router.push('/dashboard/kyc');
+      }, 2000);
+      return;
+    }
+
+    // Verificar onboarding
+    if (!user.isOnboardingCompleted) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: "Por favor, completa el proceso de onboarding para acceder a esta función."
+      });
+      setTimeout(() => {
+        router.push('/onboarding');
+      }, 2000);
+      return;
+    }
+
+    // Si todas las validaciones pasaron, abrir modal
     setActiveTab(tab);
     setMobileModalOpen(true);
   };
@@ -21,6 +73,7 @@ export default function App() {
   const closeMobileModal = () => setMobileModalOpen(false);
 
   return (
+    <>
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
 
       <div className="mx-auto w-full max-w-md lg:max-w-7xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8">
@@ -132,5 +185,13 @@ export default function App() {
         </div>
       )}
     </div>
+
+    <ReportModal
+            isOpen={reportModal.isOpen}
+            onClose={() => setReportModal({ ...reportModal, isOpen: false })}
+            success={reportModal.success}
+            message={reportModal.message}
+          />
+          </>
   );
 }
