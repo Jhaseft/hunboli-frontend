@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(dir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run build:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\USUARIO\\Desktop\\Lee\\hunboli-frontend\\src\\components"

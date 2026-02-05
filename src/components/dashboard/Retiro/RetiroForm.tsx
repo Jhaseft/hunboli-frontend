@@ -9,7 +9,6 @@ import RectanguloDerecha from './RectanguloDerecha';
 import { useAccount, useWalletClient } from 'wagmi';
 import ABI from '@/abi/BobH.json';
 import ReportModal from "../ReportModal";
-import { handleKycGateAxiosError } from "@/lib/kyc-errors";
 /////////////////////////////////////////////////
 type RetiroFormProps = {
   amount_wallet: string;
@@ -132,14 +131,6 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
       setIsModalOpen(false);
       setAmount('');
     } catch (err) {
-      if (handleKycGateAxiosError(err)) {
-        setReportModal({
-          isOpen: true,
-          success: false,
-          message: 'Debes completar KYC o verificar tu cuenta antes de continuar.'
-        });
-        return;
-      }
       console.error(err);
       setReportModal({
         isOpen: true,
@@ -150,91 +141,92 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
   };
 
 
-  return (
-    <>
-      <div className="bg-[#0f1e33] rounded-2xl p-6 border border-gray-800">
-        <h2 className="text-2xl font-semibold text-white mb-2">Retirar Fondos</h2>
-        <p className="text-gray-400 mb-6">Redime tus tokens BOBH por BOB o PEN</p>
+ return (
+  <>
+    <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 border border-gray-800 max-h-[calc(100vh-200px)] md:max-h-none overflow-y-auto md:overflow-visible">
+      
+      <h2 className="text-2xl font-semibold text-white mb-2">Retirar Fondos</h2>
+      <p className="text-gray-400 mb-6">Redime tus tokens BOBH por BOB o PEN</p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
 
-          <Moneda_Retiro
-            selectedCurrency={selectedCurrency}
-            setSelectedCurrency={setSelectedCurrency}
-          />
+        <Moneda_Retiro
+          selectedCurrency={selectedCurrency}
+          setSelectedCurrency={setSelectedCurrency}
+        />
 
-          <Tasa
-            exchangeRate={exchangeRate}
-            currency={selectedCurrency}
-          />
+        <Tasa
+          exchangeRate={exchangeRate}
+          currency={selectedCurrency}
+        />
 
-          <div className="bg-[#0a1628] border border-gray-700 rounded-xl p-5">
-            <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+        <div className="bg-[#0a1628] border border-gray-700 rounded-xl p-5">
+          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
 
-              <div>
-                <label className="text-sm text-gray-300">
-                  Tienes {amount_wallet} BOBH
-                </label>
+            <div>
+              <label className="text-sm text-gray-300">
+                Tienes {amount_wallet} BOBH
+              </label>
 
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setAmount(val);
-                    setError(validateAmount(val));
-                  }}
-                  step="any"
-                  min={minAmount}
-                  max={MAX_AMOUNT}
-                  className={`w-full px-4 py-3 bg-[#152b47] border rounded-lg text-white
-                    ${error ? 'border-red-500' : 'border-gray-600'}`}
-                />
-
-                {error && (
-                  <p className="text-xs text-red-400 mt-1">{error}</p>
-                )}
-              </div>
-
-              <Flecha />
-
-              <RectanguloDerecha
-                calculateReceived={calculateReceived}
-                selectedCurrency={selectedCurrency}
-                exchangeRate={exchangeRate}
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAmount(val);
+                  setError(validateAmount(val));
+                }}
+                step="any"
+                min={minAmount}
+                max={MAX_AMOUNT}
+                className={`w-full px-4 py-3 bg-[#152b47] border rounded-lg text-white
+                  ${error ? 'border-red-500' : 'border-gray-600'}`}
               />
+
+              {error && (
+                <p className="text-xs text-red-400 mt-1">{error}</p>
+              )}
             </div>
+
+            <Flecha />
+
+            <RectanguloDerecha
+              calculateReceived={calculateReceived}
+              selectedCurrency={selectedCurrency}
+              exchangeRate={exchangeRate}
+            />
           </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={!amount || !!error}
-            className="w-full py-3 bg-teal-600 text-white rounded-lg
-              hover:bg-teal-700 disabled:opacity-50"
-          >
-            Iniciar Retiro
-          </button>
-        </form>
-      </div>
+        <button
+          type="submit"
+          disabled={!amount || !!error}
+          className="w-full py-3 bg-teal-600 text-white rounded-lg
+            hover:bg-teal-700 disabled:opacity-50"
+        >
+          Iniciar Retiro
+        </button>
+      </form>
+    </div>
 
-      <ModalRetiro
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        currency={selectedCurrency}
-        amountBOBH={amount}
-        amountReceived={calculateReceived()}
-        comisionCalculada={comisionCalculada}
-        newBalance={newBalance}
-        totalDeduction={totalDeduction}
-        setSelectedBankId={setSelectedBankId}
-        onConfirm={handleConfirmRetiro}
-      />
-      <ReportModal
-        isOpen={reportModal.isOpen}
-        onClose={() => setReportModal({ ...reportModal, isOpen: false })}
-        success={reportModal.success}
-        message={reportModal.message}
-      />
-    </>
-  );
+    <ModalRetiro
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      currency={selectedCurrency}
+      amountBOBH={amount}
+      amountReceived={calculateReceived()}
+      comisionCalculada={comisionCalculada}
+      newBalance={newBalance}
+      totalDeduction={totalDeduction}
+      setSelectedBankId={setSelectedBankId}
+      onConfirm={handleConfirmRetiro}
+    />
+    <ReportModal
+      isOpen={reportModal.isOpen}
+      onClose={() => setReportModal({ ...reportModal, isOpen: false })}
+      success={reportModal.success}
+      message={reportModal.message}
+    />
+  </>
+);
 }

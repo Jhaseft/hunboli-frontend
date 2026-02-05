@@ -5,14 +5,15 @@ import { BalanceCard } from "./BalanceCard";
 import { ActionButtons } from "./ActionButtons";
 import { DepositForm } from "./DepositForm";
 import { RecentActivity } from "./RecentActivity";
+import { ArrowDownCircle, ArrowRightLeft, ArrowUpCircle, Banknote, CircleDollarSign, PiggyBank, Repeat, Send, Wallet } from 'lucide-react';
 import RetiroForm from "./Retiro/RetiroForm";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"depositar" | "retirar">("depositar");
+  const [activeTab, setActiveTab] = useState<"depositar" | "retirar" | "transferir">("depositar");
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
-    const [walletBalance, setWalletBalance] = useState<string>("0");
+  const [walletBalance, setWalletBalance] = useState<string>("0");
 
-  const openMobileModal = (tab: "depositar" | "retirar") => {
+  const openMobileModal = (tab: "depositar" | "retirar" | "transferir") => {
     setActiveTab(tab);
     setMobileModalOpen(true);
   };
@@ -21,14 +22,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
-      {/* pb-24 para que la barra fija de abajo no tape el contenido en móvil */}
+
       <div className="mx-auto w-full max-w-md lg:max-w-7xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Main */}
+
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             <BalanceCard onBalanceChange={setWalletBalance} />
 
-            {/* En móvil: historial debajo del balance */}
+
             <div className="lg:hidden">
               <RecentActivity />
             </div>
@@ -42,7 +43,13 @@ export default function App() {
 
               {activeTab === "retirar" && (
                 <RetiroForm
-                amount_wallet={walletBalance}
+                  amount_wallet={walletBalance}
+                />
+              )}
+
+              {activeTab === "transferir" && (
+                <RetiroForm
+                  amount_wallet={walletBalance}
                 />
               )}
             </div>
@@ -54,39 +61,51 @@ export default function App() {
         </div>
       </div>
 
-   
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-950/90 backdrop-blur border-t border-gray-800">
-        <div className="mx-auto w-full max-w-md px-4 py-3">
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => openMobileModal("depositar")}
-              className="w-full rounded-xl py-3 text-sm font-semibold transition bg-teal-600 text-white hover:bg-teal-500"
-            >
-              Depositar
-            </button>
 
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-950/95 backdrop-blur-sm border-t border-gray-800">
+        <div className="mx-auto w-full max-w-md px-4 py-2">
+          <div className="relative flex items-center justify-center gap-32 px-4">
             <button
               onClick={() => openMobileModal("retirar")}
-              className="w-full rounded-xl py-3 text-sm font-semibold transition bg-gray-800/60 text-gray-200 border border-gray-700 hover:bg-gray-800"
+              className="flex flex-col items-center gap-2 rounded-xl py-3 px-7 text-sm font-medium transition-all text-gray-400 hover:bg-gray-800/50 hover:text-orange-300 active:scale-95"
             >
-              Retirar
+              <Banknote className="w-10 h-10 text-teal-600" />
+              <span className="text-sm">Retirar</span>
+            </button>
+
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+              <button
+                onClick={() => openMobileModal("transferir")}
+                className="rounded-full p-5 transition-all bg-teal-600 text-white hover:bg-teal-500 active:scale-95 shadow-xl border-4 border-gray-950"
+              >
+                <Repeat className="w-7 h-7" />
+              </button>
+              <span className="text-sm font-medium text-gray-400">Transferir</span>
+            </div>
+
+            <button
+              onClick={() => openMobileModal("depositar")}
+              className="flex flex-col items-center gap-2 rounded-xl py-3 px-7 text-sm font-medium transition-all text-gray-400 hover:bg-gray-800/50 hover:text-cyan-300 active:scale-95"
+            >
+              <CircleDollarSign className="w-10 h-10 text-teal-600" />
+              <span className="text-sm">Depositar</span>
             </button>
           </div>
         </div>
       </div>
 
+
+
       {mobileModalOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          {/* overlay */}
+
           <div className="absolute inset-0 bg-black/50" onClick={closeMobileModal} />
 
-          {/* sheet */}
-          <div className="absolute bottom-0 left-0 right-0 mx-auto w-full max-w-md rounded-t-2xl border border-gray-800 bg-[#0f1e33] p-4 pb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-white font-semibold">
-                {activeTab === "depositar" ? "Depositar Fondos" : "Retirar"}
-              </h2>
 
+          <div className="absolute  bottom-0 left-0 right-0 mx-auto w-full max-w-md rounded-t-2xl border border-gray-800 bg-[#0f1e33] p-4 pb-6">
+            <div className="flex  items-center justify-between ">
+              <h2 className="text-white  font-semibold">
+              </h2>
               <button
                 onClick={closeMobileModal}
                 className="text-gray-300 hover:text-white px-2 py-1 rounded-md"
@@ -96,11 +115,17 @@ export default function App() {
               </button>
             </div>
 
-            {activeTab === "depositar" ? (
-              <DepositForm />
-            ) : (
+            {activeTab === "depositar" && <DepositForm />}
+
+            {activeTab === "retirar" && (
               <RetiroForm
-              amount_wallet={walletBalance}
+                amount_wallet={walletBalance}
+              />
+            )}
+
+            {activeTab === "transferir" && (
+              <RetiroForm
+                amount_wallet={walletBalance}
               />
             )}
           </div>
