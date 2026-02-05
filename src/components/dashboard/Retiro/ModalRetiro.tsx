@@ -32,7 +32,7 @@ export default function ModalRetiro({
     // Estados para manejar datos del componente Banks2
   const [bankAccount, setBankAccount] = useState('');
 
-
+ 
   if (!isOpen) return null;
   
   return (
