@@ -320,9 +320,9 @@ export function DepositForm() {
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
 
   return (
-    <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 shadow-sm border border-gray-800">
+    <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 shadow-sm border border-gray-800 max-h-[calc(100vh-200px)] md:max-h-none overflow-y-auto md:overflow-visible">
       <h2 className="text-2xl font-semibold mb-2 text-white">Depositar Fondos</h2>
-      <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p>
+      <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p> 
 
       {error && (
         <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
