@@ -25,7 +25,7 @@ export function KycIntro({
     ? "Inicia para ver los documentos requeridos."
     : missingDocs.length
     ? missingDocs.map((doc) => DOC_LABELS[doc]).join(", ")
-    : "Completo";
+    : "Ninguno";
 
   const isCorrection = status === "NEED_CORRECTION";
 

@@ -24,8 +24,8 @@ function statusBadge(status: KycStatus | null) {
 function StatusPanel({ status, reviewNote }: { status: KycStatus; reviewNote?: string | null }) {
   if (status === "PENDING") {
     return (
-      <div className="mt-6 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-200 text-sm">
-        Tu solicitud esta en revision. No puedes modificar archivos mientras se procesa.
+      <div className="mt-6 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-200 text-sm text-center">
+        Tu solicitud esta en revision. Tendras la respuesta pronto.
       </div>
     );
   }
@@ -142,6 +142,7 @@ export default function KycPage() {
 
       <KycWizardModal
         open={wizardOpen}
+        status={status}
         missingDocs={missingDocs}
         reviewNote={status === "NEED_CORRECTION" ? reviewNote : null}
         onClose={() => setWizardOpen(false)}

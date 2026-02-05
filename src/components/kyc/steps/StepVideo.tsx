@@ -6,10 +6,11 @@ type Props = {
   onUpload: (file: File) => Promise<void>;
   onUploaded: () => void;
   onBack?: () => void;
+  onSkip?: () => void;
   onClose: () => void;
 };
 
-export function StepVideo({ onUpload, onUploaded, onBack, onClose }: Props) {
+export function StepVideo({ onUpload, onUploaded, onBack, onSkip, onClose }: Props) {
   return (
     <KycUploadStep
       title="Video de verificacion"
@@ -22,6 +23,7 @@ export function StepVideo({ onUpload, onUploaded, onBack, onClose }: Props) {
       capture="user"
       pickLabel="Elegir archivo"
       captureLabel="Grabar video"
+      onSkip={onSkip}
       onUpload={onUpload}
       onUploaded={onUploaded}
       onBack={onBack}

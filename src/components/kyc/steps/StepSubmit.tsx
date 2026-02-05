@@ -18,7 +18,7 @@ export function StepSubmit({ missingDocs, onSubmit, onSubmitted, onBack, onClose
 
   const missingLabel = missingDocs.length
     ? missingDocs.map((doc) => DOC_LABELS[doc]).join(", ")
-    : "Completo";
+    : "Ninguno";
 
   const canSubmit = missingDocs.length === 0;
 

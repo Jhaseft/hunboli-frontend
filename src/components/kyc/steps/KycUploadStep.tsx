@@ -15,6 +15,8 @@ type Props = {
   capture?: "user" | "environment";
   pickLabel?: string;
   captureLabel?: string;
+  onSkip?: () => void;
+  skipLabel?: string;
   onUpload: (file: File) => Promise<void>;
   onUploaded: () => void;
   onBack?: () => void;
@@ -36,6 +38,8 @@ export function KycUploadStep({
   capture,
   pickLabel = "Elegir archivo",
   captureLabel,
+  onSkip,
+  skipLabel = "Siguiente",
   onUpload,
   onUploaded,
   onBack,
@@ -323,6 +327,20 @@ export function KycUploadStep({
           Volver
         </button>
         <div className="flex items-center gap-2">
+          {onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              disabled={uploading}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border ${
+                uploading
+                  ? "border-gray-700 bg-gray-700/30 text-gray-400 cursor-not-allowed"
+                  : "border-gray-700 bg-[#0a1628] text-gray-200 hover:bg-[#152b47]"
+              }`}
+            >
+              {skipLabel}
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}

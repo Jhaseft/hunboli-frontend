@@ -6,10 +6,11 @@ type Props = {
   onUpload: (file: File) => Promise<void>;
   onUploaded: () => void;
   onBack?: () => void;
+  onSkip?: () => void;
   onClose: () => void;
 };
 
-export function StepIdFront({ onUpload, onUploaded, onBack, onClose }: Props) {
+export function StepIdFront({ onUpload, onUploaded, onBack, onSkip, onClose }: Props) {
   return (
     <KycUploadStep
       title="CI Anverso"
@@ -21,6 +22,7 @@ export function StepIdFront({ onUpload, onUploaded, onBack, onClose }: Props) {
       capture="environment"
       pickLabel="Elegir archivo"
       captureLabel="Tomar foto"
+      onSkip={onSkip}
       onUpload={onUpload}
       onUploaded={onUploaded}
       onBack={onBack}

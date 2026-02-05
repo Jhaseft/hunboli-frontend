@@ -67,7 +67,7 @@ export function NavAuthSection({
             };
 
             const badge = map[status];
-            if (status === 'UNVERIFIED') {
+            if (status === 'UNVERIFIED' || status === 'NEED_CORRECTION') {
               return (
                 <Link
                   href="/dashboard/kyc"

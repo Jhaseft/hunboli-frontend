@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { KycDocumentType } from "@/services/kyc.service";
+import type { KycStatus } from "@/types/auth.types";
 import { DOC_LABELS } from "./useKycFlow";
 import { StepIdFront } from "./steps/StepIdFront";
 import { StepIdBack } from "./steps/StepIdBack";
@@ -16,10 +17,13 @@ const STEP_LABELS: Record<WizardStep, string> = {
   ID_FRONT: DOC_LABELS.ID_FRONT,
   ID_BACK: DOC_LABELS.ID_BACK,
   LIVENESS_VIDEO: DOC_LABELS.LIVENESS_VIDEO,
-  SUBMIT: "Enviar",
+  SUBMIT: "Revision",
 };
 
-function buildSteps(missingDocs: KycDocumentType[]): WizardStep[] {
+function buildSteps(status: KycStatus | null, missingDocs: KycDocumentType[]): WizardStep[] {
+  if (status === "NEED_CORRECTION") {
+    return [...DOC_ORDER, "SUBMIT"];
+  }
   const missing = new Set(missingDocs);
   const docs = DOC_ORDER.filter((doc) => missing.has(doc));
   return [...docs, "SUBMIT"];
@@ -27,6 +31,7 @@ function buildSteps(missingDocs: KycDocumentType[]): WizardStep[] {
 
 type Props = {
   open: boolean;
+  status: KycStatus | null;
   missingDocs: KycDocumentType[];
   reviewNote?: string | null;
   onClose: () => void;
@@ -39,6 +44,7 @@ type Props = {
 
 export function KycWizardModal({
   open,
+  status,
   missingDocs,
   reviewNote,
   onClose,
@@ -48,28 +54,59 @@ export function KycWizardModal({
   onSubmitted,
   allowClose = true,
 }: Props) {
-  const steps = useMemo(() => buildSteps(missingDocs), [missingDocs]);
+  const steps = useMemo(() => buildSteps(status, missingDocs), [status, missingDocs]);
   const [currentStep, setCurrentStep] = useState<WizardStep>("ID_FRONT");
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
-    setCurrentStep(steps[0] ?? "SUBMIT");
-  }, [open, steps]);
+    if (!open) {
+      wasOpenRef.current = false;
+      return;
+    }
 
-  const stepIndex = steps.indexOf(currentStep);
+    if (!wasOpenRef.current) {
+      wasOpenRef.current = true;
+      if (status === "NEED_CORRECTION") {
+        setCurrentStep("ID_FRONT");
+        return;
+      }
+      const initial = steps[0] ?? "SUBMIT";
+      setCurrentStep(initial);
+      return;
+    }
+
+    if (!steps.includes(currentStep)) {
+      setCurrentStep(steps[0] ?? "SUBMIT");
+    }
+  }, [open, status, steps, currentStep]);
+
+  const stepIndex = Math.max(0, steps.indexOf(currentStep));
   const totalSteps = steps.length;
   const canGoBack = stepIndex > 0;
+  const canGoNext = stepIndex < steps.length - 1;
+  const allowSkip = status === "NEED_CORRECTION";
 
   const goBack = () => {
     if (!canGoBack) return;
     setCurrentStep(steps[stepIndex - 1]);
   };
 
+  const goNext = () => {
+    if (!canGoNext) return;
+    setCurrentStep(steps[stepIndex + 1]);
+  };
+
   const handleUpload = async (docType: KycDocumentType, file: File) => {
     await onUpload(docType, file);
     const data = await onRefresh();
-    const nextSteps = buildSteps(data?.missingDocs ?? missingDocs);
-    setCurrentStep(nextSteps[0] ?? "SUBMIT");
+    const refreshedMissing = data?.missingDocs ?? missingDocs;
+    const nextSteps = buildSteps(status, refreshedMissing);
+    const idx = nextSteps.indexOf(currentStep);
+    if (idx >= 0 && idx < nextSteps.length - 1) {
+      setCurrentStep(nextSteps[idx + 1]);
+    } else {
+      setCurrentStep("SUBMIT");
+    }
   };
 
   const handleSubmit = async () => {
@@ -141,6 +178,7 @@ export function KycWizardModal({
               onUpload={(file) => handleUpload("ID_FRONT", file)}
               onUploaded={() => {}}
               onBack={canGoBack ? goBack : undefined}
+              onSkip={allowSkip ? goNext : undefined}
               onClose={onClose}
             />
           )}
@@ -149,6 +187,7 @@ export function KycWizardModal({
               onUpload={(file) => handleUpload("ID_BACK", file)}
               onUploaded={() => {}}
               onBack={canGoBack ? goBack : undefined}
+              onSkip={allowSkip ? goNext : undefined}
               onClose={onClose}
             />
           )}
@@ -157,6 +196,7 @@ export function KycWizardModal({
               onUpload={(file) => handleUpload("LIVENESS_VIDEO", file)}
               onUploaded={() => {}}
               onBack={canGoBack ? goBack : undefined}
+              onSkip={allowSkip ? goNext : undefined}
               onClose={onClose}
             />
           )}
