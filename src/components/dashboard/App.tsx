@@ -7,6 +7,7 @@ import { DepositForm } from "./DepositForm";
 import { RecentActivity } from "./RecentActivity";
 import { Banknote, CircleDollarSign, Repeat } from 'lucide-react';
 import RetiroForm from "./Retiro/RetiroForm";
+import  TransferForm  from "@/components/dashboard/Transfers/TransferForm";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from 'next/navigation';
 import ReportModal from "../dashboard/ReportModal";
@@ -101,7 +102,7 @@ export default function App() {
               )}
 
               {activeTab === "transferir" && (
-                <RetiroForm
+                <TransferForm
                   amount_wallet={walletBalance}
                 />
               )}
@@ -177,7 +178,7 @@ export default function App() {
             )}
 
             {activeTab === "transferir" && (
-              <RetiroForm
+              <TransferForm
                 amount_wallet={walletBalance}
               />
             )}
