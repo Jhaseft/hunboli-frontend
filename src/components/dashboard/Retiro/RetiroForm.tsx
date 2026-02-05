@@ -143,7 +143,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
   return (
     <>
-      <div className="bg-[#0f1e33] rounded-2xl p-6 border border-gray-800">
+      <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 border border-gray-800">
         <h2 className="text-2xl font-semibold text-white mb-2">Retirar Fondos</h2>
         <p className="text-gray-400 mb-6">Redime tus tokens BOBH por BOB o PEN</p>
 

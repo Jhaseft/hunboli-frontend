@@ -1,8 +1,8 @@
-import { ArrowDown, ArrowLeftRight, ArrowUp } from 'lucide-react';
+import { Banknote, Repeat, CircleDollarSign } from 'lucide-react';
 
 interface ActionButtonsProps {
-  activeTab: 'depositar' | 'retirar';
-  setActiveTab: (tab: 'depositar' | 'retirar') => void;
+  activeTab: 'depositar' | 'retirar' | 'transferir';
+  setActiveTab: (tab: 'depositar' | 'retirar' | 'transferir') => void;
 }
 
 export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
@@ -16,10 +16,22 @@ export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
             : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
         }`}
       >
-        <ArrowDown className="w-4 h-4" />
+        <CircleDollarSign className="w-4 h-4" />
         Depositar
       </button>
       
+      <button
+        onClick={() => setActiveTab('transferir')}
+        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
+          activeTab === 'transferir'
+            ? 'bg-teal-600 text-white shadow-md'
+            : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
+        }`}
+      >
+        <Repeat className="w-4 h-4" />
+        Transferir
+      </button>
+
       <button
         onClick={() => setActiveTab('retirar')}
         className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors ${
@@ -28,7 +40,7 @@ export function ActionButtons({ activeTab, setActiveTab }: ActionButtonsProps) {
             : 'bg-[#0f1e33] text-gray-300 border border-gray-700 hover:bg-[#152b47]'
         }`}
       >
-        <ArrowUp className="w-4 h-4" />
+        <Banknote className="w-4 h-4" />
         Retirar
       </button>
     </div>

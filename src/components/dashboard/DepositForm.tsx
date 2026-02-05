@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
@@ -321,7 +320,7 @@ export function DepositForm() {
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
 
   return (
-    <div className="bg-[#0f1e33] rounded-2xl p-6 shadow-sm border border-gray-800">
+    <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 shadow-sm border border-gray-800">
       <h2 className="text-2xl font-semibold mb-2 text-white">Depositar Fondos</h2>
       <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p>
 

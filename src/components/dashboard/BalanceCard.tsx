@@ -89,7 +89,7 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
       onBalanceChange(tokenBalance); // valor real (no formateado)
     }
   }, [tokenBalance, onBalanceChange]);
-  
+
   return (
     <div className="bg-gradient-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
       <div className="flex items-start justify-between mb-8">
@@ -99,7 +99,11 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <ConnectButton chainStatus="none" />
+          <ConnectButton
+            label="Conectar"
+            chainStatus="none"
+            showBalance={false}
+          />
           <TrendingUp className="w-5 h-5 opacity-70" />
         </div>
       </div>
