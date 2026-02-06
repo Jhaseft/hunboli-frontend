@@ -120,6 +120,7 @@ export function CameraCaptureModal({
       setError("No se pudo capturar la imagen.");
       return;
     }
+
     const file = new File([blob], "document.jpg", { type: "image/jpeg" });
     await onCaptured(file);
   };
@@ -218,7 +219,7 @@ export function CameraCaptureModal({
             </div>
           )}
 
-          <div className="rounded-xl border border-gray-800 bg-[#071225] p-2">
+          <div className="relative rounded-xl border border-gray-800 bg-[#071225] p-2">
             <video
               ref={videoRef}
               autoPlay
@@ -228,6 +229,16 @@ export function CameraCaptureModal({
             />
             {initializing && (
               <div className="mt-3 text-xs text-gray-400">Iniciando camara...</div>
+            )}
+
+            {/* Overlay de carga durante captura */}
+            {busy && (
+              <>
+                <div className="bg-[#0a1628]/80 absolute left-0 top-0 w-full h-full rounded-xl"></div>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+                  <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              </>
             )}
           </div>
 

@@ -189,7 +189,7 @@ export function KycUploadStep({
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className={`rounded-2xl border-2 border-dashed p-5 text-center cursor-pointer transition-colors ${
+        className={`relative rounded-2xl border-2 border-dashed p-5 text-center cursor-pointer transition-colors ${
           dragOver ? "border-teal-400 bg-teal-500/10" : "border-gray-700 bg-[#0a1628] hover:border-gray-600"
         }`}
       >
@@ -310,6 +310,16 @@ export function KycUploadStep({
               </div>
             )}
           </div>
+        )}
+
+        {/* Overlay de carga */}
+        {uploading && (
+          <>
+            <div className="bg-[#0a1628]/80 absolute left-0 top-0 w-full h-full rounded-2xl"></div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+              <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+          </>
         )}
       </div>
 
