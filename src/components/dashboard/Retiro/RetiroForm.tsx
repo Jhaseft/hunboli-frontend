@@ -43,9 +43,8 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
   const { user } = useAuth();
   const router = useRouter();
 
-  // Obtener tasas y mínimos
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStaticData = async () => {
       try {
         const resAmin = await api.get('/rate/comision');
         setcomisionaMinima(resAmin.data);
@@ -55,19 +54,35 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
         const resCom = await api.get('/rate/porcentaje');
         setporcentaje(resCom.data);
-
-        const endpoint = selectedCurrency === 'PEN' ? '/rate/bobtopen' : '/rate/bobtobobh';
-        const resRate = await api.get(endpoint);
-        setExchangeRate(resRate.data);
       } catch (err) {
-        console.error('Error fetching rates:', err);
+        console.error('Error fetching static rates:', err);
       }
-
     };
-    fetchData();
 
+    const fetchRate = async () => {
+      try {
+        if (selectedCurrency === 'PEN') {
+          const resRate = await api.get('/rate/bobtopen');
+          setExchangeRate(resRate?.data?.conversion?.BOB_PEN?.valor);
+        } else {
+          const resRate = await api.get('/rate/bobtobobh');
+          setExchangeRate(resRate?.data);
+        }
+      } catch (err) {
+        console.error('Error fetching exchange rate:', err);
+      }
+    };
+
+    fetchStaticData();
+    fetchRate();
+
+    const interval = setInterval(fetchRate, 1000);
+
+    return () => clearInterval(interval);
   }, [selectedCurrency]);
 
+
+  
   const validateAmount = (value: string): string => {
     if (!value) return '';
     const num = Number(value);
