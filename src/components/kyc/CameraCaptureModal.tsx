@@ -52,6 +52,11 @@ export function CameraCaptureModal({
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
     }
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+    }
     streamRef.current = null;
     recorderRef.current = null;
     chunksRef.current = [];
@@ -104,12 +109,14 @@ export function CameraCaptureModal({
     setError(null);
     const video = videoRef.current;
     if (!video) return;
+    video.pause(); //pausar el video para congelar la imagen mientras se captura la foto
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth || 1280;
     canvas.height = video.videoHeight || 720;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       setError("No se pudo capturar la imagen.");
+      video.play().catch(() => {});   //reanudar el video si no se pudo capturar la imagen
       return;
     }
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -118,6 +125,7 @@ export function CameraCaptureModal({
     );
     if (!blob) {
       setError("No se pudo capturar la imagen.");
+      video.play().catch(() => {});   //reanudar el video si no se pudo capturar la imagen
       return;
     }
 
@@ -157,6 +165,11 @@ export function CameraCaptureModal({
         setError("No se pudo guardar el video.");
         return;
       }
+
+      const video = videoRef.current;
+      if (video) {
+        video.pause();    
+      }
       const type = recorder.mimeType || mimeType || "video/webm";
       const blob = new Blob(data, { type });
       let extension = "webm";
@@ -172,15 +185,23 @@ export function CameraCaptureModal({
 
   const stopRecording = () => {
     if (!recorderRef.current) return;
+
+    const video = videoRef.current;   //congelar video
+    if (video) {
+      video.pause();    //pausar el video para congelar la imagen mientras se procesa la grabación
+    }
+
     recorderRef.current.stop();
     setRecording(false);
+
+    streamRef.current?.getTracks().forEach(track => track.stop());
   };
 
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4"
       onMouseDown={handleClose}
       aria-modal="true"
       role="dialog"

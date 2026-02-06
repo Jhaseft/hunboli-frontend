@@ -66,7 +66,6 @@ export function ProofUploader({ depositId, disabled, onUploaded }: Props) {
   };
 
   const onPickFile = () => inputFileRef.current?.click();
-  const onTakePhoto = () => inputCameraRef.current?.click();
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -107,7 +106,7 @@ export function ProofUploader({ depositId, disabled, onUploaded }: Props) {
         return;
       }
 
-      setOkMsg("✅ Comprobante subido. Queda en revisión.");
+      setOkMsg("Comprobante subido. Queda en revisión.");
       setFile(null);
       resetInputs();
       onUploaded?.();

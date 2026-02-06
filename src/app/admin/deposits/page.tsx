@@ -1,9 +1,5 @@
-import { AdminDeposits } from "@/components/dashboard/deposits/AdminDeposits";
+import { redirect } from "next/navigation";
 
 export default function AdminDepositsPage() {
-  return (
-    <div className="max-w-7xl mx-auto">
-      <AdminDeposits />
-    </div>
-  );
+  redirect("/admin/mints");
 }

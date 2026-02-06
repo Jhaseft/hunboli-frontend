@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Plus,
   Minus,
-  Banknote,
   ShieldCheck,
   Clock,
   LogOut,
@@ -75,13 +74,7 @@ export function AdminSidebar() {
       icon: <LayoutDashboard className="w-5 h-5" />,
     },
     {
-      label: "Depósitos",
-      href: "/admin/deposits",
-      icon: <Banknote className="w-5 h-5" />,
-      section: "OPERACIONES",
-    },
-    {
-      label: "Solicitudes Mint",  
+      label: "Solicitudes Mint",
       href: "/admin/mints",
       icon: <Plus className="w-5 h-5" />,
       badge: pendingMints ?? undefined,

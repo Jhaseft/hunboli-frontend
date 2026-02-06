@@ -11,7 +11,7 @@ export default function ReportModal({ isOpen, onClose, success, message }: Repor
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000000]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10000000">
       <div className="bg-white rounded-2xl p-6 w-96 shadow-lg relative flex flex-col items-center">
      
         <button
