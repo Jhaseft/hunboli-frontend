@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
+import { DepositBankQrModal } from "@/components/dashboard/deposits/DepositBankQrModal";
 import { handleKycGateResponse } from "@/lib/kyc-errors";
 
 type Currency = "BOB" | "PEN";
@@ -24,6 +25,9 @@ type DepositInstructions = {
   accountName: string;
   accountNumber: string;
   note: string;
+  cci?: string | null;
+  qrImageUrl?: string | null;
+  qrPublicId?: string | null;
 };
 
 type DepositCreateResponse = {
@@ -60,6 +64,7 @@ export function DepositForm() {
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [proofError, setProofError] = useState<string | null>(null);
@@ -69,6 +74,7 @@ export function DepositForm() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setIsQrModalOpen(false);
     // Si quieres limpiar el resultado al cerrar, descomenta:
     // setResult(null);
   };
@@ -78,15 +84,21 @@ export function DepositForm() {
     setError(null);
     setResult(null);
     setIsModalOpen(false);
+    setIsQrModalOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCurrency, amount]);
 
   // Cerrar con ESC + bloquear scroll
   useEffect(() => {
-    if (!isModalOpen) return;
+    if (!isModalOpen && !isQrModalOpen) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
+      if (e.key !== "Escape") return;
+      if (isQrModalOpen) {
+        setIsQrModalOpen(false);
+        return;
+      }
+      closeModal();
     };
 
     document.addEventListener("keydown", onKeyDown);
@@ -97,7 +109,7 @@ export function DepositForm() {
       document.body.style.overflow = "";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isModalOpen]);
+  }, [isModalOpen, isQrModalOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -317,7 +329,14 @@ export function DepositForm() {
     }
   };
 
+  const handleCopyAccountNumber = () => {
+    const accountNumber = result?.instructions?.accountNumber;
+    if (!accountNumber) return;
+    navigator.clipboard?.writeText(accountNumber).catch(() => {});
+  };
+
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
+  const qrImageUrl = result?.instructions?.qrImageUrl ?? null;
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 shadow-sm border border-gray-800 max-h-[calc(100vh-200px)] md:max-h-none overflow-y-auto md:overflow-visible">
@@ -459,7 +478,6 @@ export function DepositForm() {
         </button>
       </form>
 
-      {/* Modal */}
       {isModalOpen && result && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
@@ -471,7 +489,6 @@ export function DepositForm() {
             className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-start justify-between border-b border-gray-800 px-6 py-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">Depósito creado</h3>
@@ -496,7 +513,6 @@ export function DepositForm() {
               </button>
             </div>
 
-            {/* Body */}
             <div className="px-6 py-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
@@ -521,10 +537,37 @@ export function DepositForm() {
                     <span className="text-gray-400">Titular:</span>{" "}
                     {result.instructions.accountName}
                   </p>
-                  <p className="text-sm text-gray-200">
-                    <span className="text-gray-400">Cuenta:</span>{" "}
-                    {result.instructions.accountNumber}
-                  </p>
+                  <div className="text-sm text-gray-200 flex items-center gap-2">
+                    <span className="text-gray-400">Cuenta:</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyAccountNumber}
+                      className="text-teal-200 hover:text-teal-100 underline underline-offset-2"
+                    >
+                      {result.instructions.accountNumber}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyAccountNumber}
+                      className="text-xs text-teal-300 hover:text-teal-200"
+                    >
+                      (copiar)
+                    </button>
+                  </div>
+                  {result.instructions.cci && (
+                    <p className="text-sm text-gray-200">
+                      <span className="text-gray-400">CCI:</span> {result.instructions.cci}
+                    </p>
+                  )}
+                  {qrImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setIsQrModalOpen(true)}
+                      className="mt-3 inline-flex items-center justify-center rounded-lg border border-teal-500/40 bg-teal-500/10 px-3 py-1.5 text-xs font-medium text-teal-200 hover:bg-teal-500/20"
+                    >
+                      Ver QR
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -538,14 +581,11 @@ export function DepositForm() {
                 <ProofUploader
                   depositId={result.depositId}
                   onUploaded={() => {
-                    // Opcional: si quieres cerrar el modal al subir
-                    // setIsModalOpen(false);
                   }}
                 />
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex items-center justify-end gap-2 border-t border-gray-800 px-6 py-4">
               <button
                 type="button"
@@ -567,6 +607,14 @@ export function DepositForm() {
             </div>
           </div>
         </div>
+      )}
+      {qrImageUrl && (
+        <DepositBankQrModal
+          open={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          qrImageUrl={qrImageUrl}
+          bankName={result?.instructions?.bankName}
+        />
       )}
     </div>
   );

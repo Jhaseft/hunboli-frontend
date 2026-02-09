@@ -95,10 +95,8 @@ export function SettingsSidebar() {
 
   return (
     <aside className="w-full xl:w-[320px] xl:shrink-0">
-      {/* Mobile/Tablet: Selector desplegable */}
       <div className="xl:hidden">
         <div className="rounded-xl border border-gray-800 bg-[#0f1e33] overflow-hidden">
-          {/* Header con usuario y selector */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
             <div className="h-9 w-9 rounded-full bg-teal-600/20 border border-teal-500/30 flex items-center justify-center shrink-0">
               <span className="font-semibold text-teal-300 text-sm">{userInitial}</span>
@@ -109,7 +107,6 @@ export function SettingsSidebar() {
             </div>
           </div>
 
-          {/* Botón selector de sección */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition"
@@ -125,7 +122,6 @@ export function SettingsSidebar() {
             </svg>
           </button>
 
-          {/* Menú desplegable */}
           {isMenuOpen && (
             <nav className="border-t border-gray-800 py-1">
               {ITEMS.map((item) => {
@@ -160,9 +156,7 @@ export function SettingsSidebar() {
         </div>
       </div>
 
-      {/* Desktop: Sidebar tradicional */}
       <div className="hidden xl:block rounded-2xl border border-gray-800 bg-[#0f1e33] shadow-sm overflow-hidden">
-        {/* Header usuario */}
         <div className="flex items-center gap-3 px-5 py-4">
           <div className="h-10 w-10 rounded-full bg-teal-600/20 border border-teal-500/30 flex items-center justify-center">
             <span className="font-semibold text-teal-300">{userInitial}</span>
@@ -175,7 +169,6 @@ export function SettingsSidebar() {
 
         <div className="h-px bg-gray-800" />
 
-        {/* Items */}
         <nav className="py-2">
           {ITEMS.map((item) => {
             const active = isActive(item.href);
