@@ -63,10 +63,10 @@ export const VerificationStatusCard = ({ verification }: VerificationStatusCardP
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
             <div className="w-full max-w-lg">
-                <Logo />
+                <Logo width={18} height={18} />
 
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    <h1 className="text-2xl font-bold text-white mb-2">
                         Solicitud de Verificación
                     </h1>
                     <p className="text-gray-400">
@@ -133,16 +133,7 @@ export const VerificationStatusCard = ({ verification }: VerificationStatusCardP
                     </div>
                 )}
 
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => router.push('/dashboard')}
-                >
-                    Volver al Dashboard
-                </Button>
-
-                <p className="text-center text-gray-500 text-xs mt-8">
+                <p className="text-center text-gray-300 text-xs mt-8">
                     Tu comprobante será revisado en un plazo de 24 horas
                 </p>
             </div>

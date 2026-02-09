@@ -20,7 +20,7 @@ export const ROUTES = {
   DASHBOARD_SETTINGS: '/dashboard/settings',
   DASHBOARD_KYC: '/dashboard/kyc',
   DASHBOARD_DEPOSITS: '/dashboard/deposits',
-  DASHBOARD_VERIFY_ACCOUNT: '/dashboard/verify-account',
+  DASHBOARD_VERIFY_ACCOUNT: '/dashboard/settings/verification',
 
   DASHBOARD_WITHDRAWALS: '/dashboard/withdrawals',
   // Admin
