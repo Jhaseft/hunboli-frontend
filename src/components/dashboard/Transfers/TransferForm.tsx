@@ -75,7 +75,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
                 success: false,
                 message: "Verifica tu cuenta para continuar"
             });
-            setTimeout(() => router.push('/dashboard/verify-account'), 2000);
+            setTimeout(() => router.push('/dashboard/settings/verification'), 2000);
             return;
         }
 
