@@ -346,7 +346,7 @@ export function AdminDepositReviewCard({
           )}
         </div>
 
-        <div className="w-full xl:w-[270px]">
+        <div className="w-full xl:w-67.5">
           <div className="rounded-2xl border border-gray-800 bg-[#071225] p-4">
             <p className="text-sm font-semibold text-white mb-3">Revision</p>
 

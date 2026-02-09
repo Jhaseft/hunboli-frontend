@@ -92,7 +92,6 @@ export const VerificationSection = () => {
     return (
         <>
             <div className="space-y-6">
-                {/* Header + Filters */}
                 <div className="bg-[#0f1e33] border border-gray-800 rounded-xl p-6">
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -121,7 +120,6 @@ export const VerificationSection = () => {
                     </div>
                 </div>
 
-                {/* Table */}
                 <div className="bg-[#0f1e33] border border-gray-800 rounded-xl overflow-hidden">
                     {loading ? (
                         <div className="flex items-center justify-center py-16">
@@ -193,7 +191,6 @@ export const VerificationSection = () => {
                 </div>
             </div>
 
-            {/* Image Preview Modal */}
             {previewImage && (
                 <div
                     className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"

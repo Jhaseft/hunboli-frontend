@@ -538,9 +538,6 @@ export function AdminMints() {
             >
               Incluir observados y vencidos
             </button>
-            <span className="text-xs text-gray-500 self-center">
-              Cola: {filterLabel}
-            </span>
           </div>
         </div>
 
