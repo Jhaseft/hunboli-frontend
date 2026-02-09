@@ -5,6 +5,7 @@ import { verificationService, VerificationData } from "@/services/verification.s
 import { VerificationStatusCard } from "./VerificationStatusCard";
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 type Currency = 'BOB' | 'PEN' | null;
 
@@ -41,6 +42,7 @@ export const VerifyAccountForm = () => {
     const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+    const { user } = useAuth();
 
     useEffect(() => {
         const checkStatus = async () => {
@@ -142,6 +144,10 @@ export const VerifyAccountForm = () => {
                 </div>
             </div>
         );
+    }
+
+    if (user?.isVerified && verificationData) {
+        return <VerificationStatusCard verification={{ ...verificationData, status: 'approved' }} />;
     }
 
     if (verificationData) {
