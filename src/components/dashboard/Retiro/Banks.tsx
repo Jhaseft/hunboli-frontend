@@ -30,7 +30,7 @@ export default function Banks({ selectedCurrency, onBankChange, onAccountChange,
 
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [catalogBanks, setCatalogBanks] = useState<Bank[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [openModal, setOpenModal] = useState(false);
   const { user } = useAuth();
 
@@ -76,7 +76,8 @@ export default function Banks({ selectedCurrency, onBankChange, onAccountChange,
 
     try {
       await api.delete(`/bank-accounts/${selectedAccount}`);
-      setSelectedAccount(null);
+      onBankChange('');
+      setSelectedAccount('');
       fetchBanks();
 
       setReportModal({
