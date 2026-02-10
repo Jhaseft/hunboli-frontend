@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/services/user.service";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 export function SettingsPanel() {
   const { user, refreshUser } = useAuth();
@@ -298,56 +299,30 @@ function ContactDataSection({
       </div>
 
       <div className="p-4 sm:p-5 space-y-3">
-        <EditableField
-          label="Teléfono"
-          value={phoneNumber}
-          placeholder="+591 70000000"
-          icon={<PhoneIcon />}
-          isEditing={isEditing}
-          onChange={(v) => onChange("phoneNumber", v)}
-        />
+        {isEditing ? (
+          <PhoneInput
+            label="Teléfono"
+            id="phone-settings"
+            value={phoneNumber}
+            onChange={(v) => onChange("phoneNumber", v)}
+            placeholder="70000000"
+            maxLength={8}
+          />
+        ) : (
+          <div>
+            <label className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
+              <PhoneIcon />
+              Teléfono
+            </label>
+            <div className="rounded-lg border border-gray-700/50 bg-gray-900/50 px-4 py-2.5 text-gray-300 text-sm">
+              {phoneNumber || <span className="text-gray-600">+591 70000000</span>}
+            </div>
+          </div>
+        )}
         {error && (
           <p className="text-sm text-red-400">{error}</p>
         )}
       </div>
-    </div>
-  );
-}
-
-function EditableField({
-  label,
-  value,
-  placeholder,
-  icon,
-  isEditing,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  placeholder: string;
-  icon: React.ReactNode;
-  isEditing: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div>
-      <label className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
-        {icon}
-        {label}
-      </label>
-      {isEditing ? (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full rounded-lg border border-gray-700 bg-gray-900/70 px-4 py-2.5 text-gray-100 text-sm placeholder:text-gray-600 outline-none focus:border-teal-500/70 focus:ring-2 focus:ring-teal-500/20 transition"
-        />
-      ) : (
-        <div className="rounded-lg border border-gray-700/50 bg-gray-900/50 px-4 py-2.5 text-gray-300 text-sm">
-          {value || <span className="text-gray-600">{placeholder}</span>}
-        </div>
-      )}
     </div>
   );
 }
