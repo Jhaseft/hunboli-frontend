@@ -49,6 +49,7 @@ export function PhoneInput({ label, id, className = '', value, onChange, ...prop
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newNumber = e.target.value.replace(/[^0-9]/g, '');
+    if (props.maxLength && newNumber.length > props.maxLength) return;
     setPhoneNumber(newNumber);
     if (newNumber) {
       onChange(`${countryCode} ${newNumber}`);

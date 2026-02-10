@@ -301,9 +301,15 @@ function WalletSection({
   const [showConnectorModal, setShowConnectorModal] = useState(false);
 
   // Hooks de wagmi para manejar la conexión de wallets
-  const { connectors, connect } = useConnect();
+  const { connectors: allConnectors, connect } = useConnect();
   const { address: connectedAddress, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+
+  // Filtrar conectores duplicados por nombre
+  const connectors = allConnectors.filter(
+    (connector, index, self) =>
+      index === self.findIndex((c) => c.name === connector.name)
+  );
 
   const resetState = () => {
     setStep('idle');
