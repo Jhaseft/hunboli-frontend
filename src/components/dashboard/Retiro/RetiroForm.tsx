@@ -82,7 +82,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
   }, [selectedCurrency]);
 
 
-  
+
   const validateAmount = (value: string): string => {
     if (!value) return '';
     const num = Number(value);
@@ -127,17 +127,6 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
       return;
     }
 
-    if (!user.isOnboardingCompleted) {
-      setReportModal({
-        isOpen: true,
-        success: false,
-        message: "Por favor, completa el proceso de onboarding para acceder a esta función."
-      });
-      setTimeout(() => {
-        router.push('/onboarding');
-      }, 2000);
-      return;
-    }
 
     setIsModalOpen(true);
   };
@@ -166,6 +155,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
         return;
       }
 
+
       // Convertir amount a BigInt según decimales del token
       const decimals = 6;
       const amountWei = BigInt(Math.floor(Number(totalDeduction) * 10 ** decimals));
@@ -177,10 +167,8 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
         functionName: 'requestRedemption',
         args: [amountWei],
       });
-
       //  Registrar en backend
       await api.post('/retiro', { currency: selectedCurrency, amount, bankAccountId: parseInt(selectedBankId), txHash });
-
 
       setReportModal({
         isOpen: true,
@@ -190,12 +178,21 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
       setIsModalOpen(false);
       setAmount('');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      let message = 'Ocurrió un error inesperado';
+
+      if (
+        err?.name === 'UserRejectedRequestError' ||
+        err?.message?.includes('User rejected') ||
+        err?.details?.includes('User denied')
+      ) {
+        message = 'Cancelaste la transacción en MetaMask';
+      }
+
       setReportModal({
         isOpen: true,
         success: false,
-        message: 'Error en retiro o redención'
+        message,
       });
     }
   };
@@ -271,7 +268,10 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
       <ModalRetiro
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedBankId('');
+        }}
         currency={selectedCurrency}
         amountBOBH={amount}
         amountReceived={calculateReceived()}

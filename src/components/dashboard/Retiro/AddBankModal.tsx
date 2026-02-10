@@ -36,14 +36,26 @@ export default function AddBankModal({
     });
 
     const handleSave = async () => {
+
+
         if (!bankId || !accountNumber) {
             setReportModal({
                 isOpen: true,
                 success: false,
                 message: 'Debes completar todos los campos'
+            }); 
+            return;
+        }
+
+        if(accountNumber.length < 8 || accountNumber.length > 30){
+            setReportModal({
+                isOpen: true,
+                success: false,
+                message: 'El número de cuenta debe tener entre 8 y 30 dígitos'
             });
             return;
         }
+
 
         try {
             await api.post('/bank-accounts', {
@@ -102,7 +114,8 @@ export default function AddBankModal({
                             onChange={setBankId}
                         />
                         <input
-                            type="text"
+                            type="number"
+                            inputMode="numeric"
                             placeholder="Número de cuenta bancaria"
                             value={accountNumber}
                             onChange={e => setAccountNumber(e.target.value)}

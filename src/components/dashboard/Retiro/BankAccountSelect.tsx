@@ -74,7 +74,8 @@ export default function BankAccountSelect({
             </div>
           </div>
         ) : (
-          <span className="text-gray-400">Selecciona una cuenta</span>
+          <span className="text-gray-400">Selecciona o agrega una cuenta 
+</span>
         )}
 
         <ChevronDown size={18} className="text-gray-400" />

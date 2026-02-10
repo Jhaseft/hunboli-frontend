@@ -67,22 +67,18 @@ export default function EditModal({ request, onClose, onSave }: EditModalProps) 
             </select>
           </div>
 
-          <div>
-            <label className="block text-white text-sm mb-2 font-semibold">
-              Referencia de Pago
-            </label>
-            <input
-              type="text"
-              value={payoutTxRef}
-              onChange={(e) => setPayoutTxRef(e.target.value)}
-              placeholder="Ej: BANK-TRX-123456"
-              className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-
-      
           {status === "PROCESSED" && (
             <div>
+              <label className="block text-white text-sm mb-2 font-semibold">
+                Referencia de Pago
+              </label>
+              <input
+                type="text"
+                value={payoutTxRef}
+                onChange={(e) => setPayoutTxRef(e.target.value)}
+                placeholder="Ej: BANK-TRX-123456"
+                className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+              />
               <label className="block text-white text-sm mb-2 font-semibold">
                 Subir Comprobante
               </label>
