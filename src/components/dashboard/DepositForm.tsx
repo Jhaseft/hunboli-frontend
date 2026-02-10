@@ -108,7 +108,6 @@ export function DepositForm() {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isModalOpen, isQrModalOpen]);
 
   useEffect(() => {

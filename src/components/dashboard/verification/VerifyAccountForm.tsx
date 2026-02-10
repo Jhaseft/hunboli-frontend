@@ -135,7 +135,7 @@ export const VerifyAccountForm = () => {
 
     if (isCheckingStatus) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
+            <div className="min-h-screen bg-linear-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
                     <p className="text-gray-400 text-sm">Verificando estado...</p>
@@ -149,7 +149,7 @@ export const VerifyAccountForm = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-linear-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
             <div className="w-full max-w-lg">
                 <Logo />
 
@@ -162,7 +162,6 @@ export const VerifyAccountForm = () => {
                     </p>
                 </div>
 
-                {/* Selector de Moneda */}
                 <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-300 mb-3">
                         Selecciona la moneda de depósito
@@ -195,9 +194,8 @@ export const VerifyAccountForm = () => {
                     </div>
                 </div>
 
-                {/* Datos Bancarios */}
                 {bankData && (
-                    <div className="mb-6 p-5 rounded-xl bg-gradient-to-r from-gray-800/80 to-gray-700/50 border border-gray-600/50 backdrop-blur-sm">
+                    <div className="mb-6 p-5 rounded-xl bg-linear-to-r from-gray-800/80 to-gray-700/50 border border-gray-600/50 backdrop-blur-sm">
                         <div className="flex items-center gap-2 mb-4">
                             <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -229,14 +227,13 @@ export const VerifyAccountForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
                         <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {error}
                         </div>
                     )}
 
-                    {/* Zona de carga de imagen */}
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-3">
                             Comprobante de depósito
