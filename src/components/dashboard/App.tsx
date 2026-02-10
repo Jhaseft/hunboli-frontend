@@ -35,7 +35,7 @@ export default function App() {
         message: "Por favor, verifica tu cuenta para acceder a esta función."
       });
       setTimeout(() => {
-        router.push('/dashboard/verify-account');
+        router.push('/dashboard/settings/verification');
       }, 2000);
       return;
     }

@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 type Item = {
   label: string;
   href?: string;
-  key: "account" | "security" | "bank_accounts" | "whitelist" | "transparency" | "logout";
+  key: "account" | "security" | "bank_accounts" | "whitelist" | "transparency" | "logout" | "verification";
   icon: React.ReactNode;
 };
 
@@ -44,7 +44,7 @@ const ITEMS: Item[] = [
     )
   },
   {
-    key: "whitelist",
+    key: "verification",
     label: "Verificacion",
     href: "/dashboard/settings/verification",
     icon: (

@@ -71,6 +71,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            maxLength={254}
             disabled={isLoading}
           />
 
@@ -81,6 +82,7 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            maxLength={128}
             disabled={isLoading}
           />
           <p className="text-center text-gray-400 text-sm">

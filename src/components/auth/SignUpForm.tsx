@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -27,8 +27,15 @@ export const SignUpForm = () => {
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const errorRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const { login } = useAuth();
+
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [error]);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         setIsLoading(true);
@@ -93,7 +100,7 @@ export const SignUpForm = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {error && (
-                        <div className="bg-red-100 text-red-700 p-3 rounded-md">
+                        <div ref={errorRef} className="bg-red-100 text-red-700 p-3 rounded-md">
                             {error}
                         </div>
                     )}
@@ -102,20 +109,30 @@ export const SignUpForm = () => {
                             id="firstName"
                             type="text"
                             label="Nombre"
-                            placeholder="John"
+                            placeholder="Juan"
                             value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            onChange={(e) => {
+                                const filtered = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                                setFirstName(filtered);
+                            }}
                             required
+                            minLength={2}
+                            maxLength={50}
                             disabled={isLoading}
                         />
                         <Input
                             id="lastName"
                             type="text"
                             label="Apellido"
-                            placeholder="Doe"
+                            placeholder="Pérez"
                             value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
+                            onChange={(e) => {
+                                const filtered = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                                setLastName(filtered);
+                            }}
                             required
+                            minLength={2}
+                            maxLength={50}
                             disabled={isLoading}
                         />
                     </div>
@@ -123,11 +140,12 @@ export const SignUpForm = () => {
                     <Input
                         id="email"
                         type="email"
-                        label="Email Address"
+                        label="Correo electrónico"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        maxLength={254}
                         disabled={isLoading}
                     />
 
@@ -137,6 +155,8 @@ export const SignUpForm = () => {
                         placeholder="12345678"
                         value={phoneNumber}
                         onChange={setPhoneNumber}
+                        minLength={7}
+                        maxLength={15}
                         disabled={isLoading}
                     />
 
@@ -149,6 +169,7 @@ export const SignUpForm = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        maxLength={128}
                         disabled={isLoading}
                     />
 
@@ -161,6 +182,7 @@ export const SignUpForm = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
+                        maxLength={128}
                         disabled={isLoading}
                     />
 

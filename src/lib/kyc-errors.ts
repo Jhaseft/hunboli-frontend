@@ -9,7 +9,7 @@ const KYC_ACTIONS: Record<KycGateCode, { message: string; href: string }> = {
   },
   ACCOUNT_NOT_VERIFIED: {
     message: "Debes verificar tu cuenta para continuar.",
-    href: "/dashboard/verify-account",
+    href: "/dashboard/settings/verification",
   },
 };
 
