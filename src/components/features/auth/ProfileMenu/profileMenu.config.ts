@@ -3,7 +3,6 @@ import {
   HomeIcon,
   DashboardIcon,
   SettingsIcon,
-  DocumentIcon,
   LogoutIcon,
   WalletIcon,
   ShieldIcon,
@@ -12,7 +11,7 @@ import {
 /**
  * Tipo para los items del menú de perfil
  */
-export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'kyc' | 'deposits' | 'admin-deposits' | 'logout' | 'retiros';
+export type ProfileMenuItemType = 'home' | 'dashboard' | 'settings' | 'deposits' | 'admin-deposits' | 'logout' | 'retiros';
 
 export interface ProfileMenuItem {
   id: ProfileMenuItemType;
@@ -56,16 +55,6 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
     label: 'Configuración',
     icon: SettingsIcon,
     href: ROUTES.DASHBOARD_SETTINGS,
-    variant: 'default',
-    requiresAuth: true,
-    showInDashboard: true,
-    showOutsideDashboard: true,
-  },
-  {
-    id: 'kyc',
-    label: 'KYC',
-    icon: DocumentIcon,
-    href: ROUTES.DASHBOARD_KYC,
     variant: 'default',
     requiresAuth: true,
     showInDashboard: true,
