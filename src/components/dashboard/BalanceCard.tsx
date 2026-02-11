@@ -74,7 +74,7 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
       ]
       : [],
     query: { enabled: tokenEnabled },
-  }); // hook oficial para múltiples lecturas :contentReference[oaicite:5]{index=5}
+  });
 
   const decimals = (tokenReads?.[0]?.result as number | undefined) ?? 6;
   const symbol = (tokenReads?.[1]?.result as string | undefined) ?? "BOBH";
@@ -86,12 +86,12 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
 
   useEffect(() => {
     if (onBalanceChange) {
-      onBalanceChange(tokenBalance); // valor real (no formateado)
+      onBalanceChange(tokenBalance); 
     }
   }, [tokenBalance, onBalanceChange]);
 
   return (
-    <div className="bg-gradient-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
+    <div className="bg-linear-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-2">
           <Wallet className="w-5 h-5" />
@@ -124,7 +124,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </div>
         )}
 
-        {/* Mostrar botón de vincular si no tiene wallet vinculada */}
         {canLinkWallet && !wrongNetwork && (
           <button
             onClick={handleGoToLinkWallet}
@@ -135,7 +134,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </button>
         )}
 
-        {/* Advertencia: wallet conectada diferente a la vinculada */}
         {isWrongWallet && !wrongNetwork && (
           <div className="mt-4 text-sm bg-amber-500/20 text-amber-200 rounded-lg px-3 py-2">
             <div className="flex items-center gap-2 mb-2">
@@ -155,7 +153,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </div>
         )}
 
-        {/* Mensaje de éxito: wallet vinculada correctamente */}
         {isWalletLinked && (
           <div className="mt-4 text-sm bg-green-500/20 text-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

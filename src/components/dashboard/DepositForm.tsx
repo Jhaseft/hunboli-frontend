@@ -75,17 +75,14 @@ export function DepositForm() {
   const closeModal = () => {
     setIsModalOpen(false);
     setIsQrModalOpen(false);
-    // Si quieres limpiar el resultado al cerrar, descomenta:
-    // setResult(null);
   };
 
-  // Cuando cambias moneda o monto, limpiamos resultado/errores para no confundir
+  // Cuando cambias moneda o monto, se limpia resultado/errores para no confundir
   useEffect(() => {
     setError(null);
     setResult(null);
     setIsModalOpen(false);
     setIsQrModalOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCurrency, amount]);
 
   // Cerrar con ESC + bloquear scroll
