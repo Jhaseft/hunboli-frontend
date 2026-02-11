@@ -1,6 +1,6 @@
 // src/services/auth.service.ts
 import api from '@/lib/axios';
-import { LoginDto, RegisterDto, AuthResponse, CompleteProfileDto } from '@/types/index'; // Tus interfaces
+import { LoginDto, RegisterDto, AuthResponse, CompleteProfileDto, MessageResponse, VerifyCodeDto } from '@/types/index';
 
 export const authService = {
     // Login
@@ -9,9 +9,21 @@ export const authService = {
         return data;
     },
 
-    // Signup
+    // Signup - envía código de verificación al email
     signup: async (userData: RegisterDto) => {
-        const { data } = await api.post<AuthResponse>('/auth/signup', userData);
+        const { data } = await api.post<MessageResponse>('/auth/signup', userData);
+        return data;
+    },
+
+    // Verificar código y crear cuenta
+    verifySignupCode: async (verifyData: VerifyCodeDto) => {
+        const { data } = await api.post<AuthResponse>('/auth/verify-signup', verifyData);
+        return data;
+    },
+
+    // Reenviar código de verificación
+    resendCode: async (email: string) => {
+        const { data } = await api.post<MessageResponse>('/auth/resend-code', { email });
         return data;
     },
 
