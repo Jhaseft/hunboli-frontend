@@ -48,3 +48,12 @@ export interface CompleteProfileDto {
     phoneNumber: string;
     country: Country;
 }
+
+export interface VerifyCodeDto {
+    email: string;
+    code: string;
+}
+
+export interface MessageResponse {
+    message: string;
+}
