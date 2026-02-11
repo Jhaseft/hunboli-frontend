@@ -1,7 +1,7 @@
 "use client";
 
 import { retiroService } from "@/services/retiro.service";
-import { verificationService } from "@/services/verification.service";
+import { mintsService } from "@/services/mints.service";
 import { DollarSign, Landmark, TrendingUp, Clock } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAccount, useWalletClient, useReadContract } from 'wagmi';
@@ -49,7 +49,7 @@ function StatCardItem({ stat }: { stat: StatCard }) {
 
 export function StatsCards() {
   const [pendingCount, setPendingCount] = useState<number | null>(null);
-  const [pendingVerifications, setPendingVerifications] = useState<number | null | undefined>(null);
+  const [pendingMints, setPendingMints] = useState<number | null>(null);
   
   const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_BOBH_ADDRESS as `0x${string}`;
 
@@ -71,12 +71,14 @@ export function StatsCards() {
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
-        const data = await retiroService.pendingacoounts();
-        setPendingCount(data.pendingCount);
-        const response = await verificationService.getQuantity();
-        setPendingVerifications(response?.quantity);
+        const [retiros, mints] = await Promise.all([
+          retiroService.pendingacoounts(),
+          mintsService.getPendingCount(),
+        ]);
+        setPendingCount(retiros.pendingCount);
+        setPendingMints(mints?.pendingCount ?? null);
       } catch (error) {
-        console.error("Error al cargar retiros pendientes:", error);
+        console.error("Error al cargar contadores pendientes:", error);
       }
     };
     fetchPendingCount();
@@ -115,9 +117,12 @@ export function StatsCards() {
     },
     {
       title: "Solicitudes Pendientes",
-      value: pendingCount !== null ? `${pendingCount + (pendingVerifications || 0)}` : "Cargando...",
+      value:
+        pendingCount !== null && pendingMints !== null
+          ? `${pendingCount + pendingMints}`
+          : "Cargando...",
       subtitle: "Requieren atención",
-      detail: "Depositos: "+(pendingVerifications) +" - Retiros: "+(pendingCount) ,
+      detail: `Depositos: ${pendingMints ?? 0} - Retiros: ${pendingCount ?? 0}`,
       detailType: "neutral",
       icon: <Clock className="w-5 h-5 text-yellow-400" />,
       iconBg: "bg-yellow-500/20",
