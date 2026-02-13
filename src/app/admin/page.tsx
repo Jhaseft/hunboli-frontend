@@ -35,7 +35,6 @@ export default function AdminDashboardPage() {
         />
         <StatsCards />
         <KycAlertBanner pendingCount={pendingKyc} totalDeposits="—" />
-        <MintRequestsSection />
       </div>
     </div>
   );

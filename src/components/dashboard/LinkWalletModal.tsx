@@ -60,8 +60,7 @@ export function LinkWalletModal({ isOpen, onClose, walletAddress, onSuccess }: L
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
             <div className="relative w-full max-w-md bg-[#1a2332] rounded-2xl shadow-xl overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-green-600 to-cyan-700 px-6 py-4 flex justify-between items-center">
+                <div className="bg-linear-to-r from-green-600 to-cyan-700 px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <Wallet className="w-6 h-6 text-white" />
                         <h2 className="text-xl font-bold text-white">Vincular Wallet</h2>
@@ -75,20 +74,17 @@ export function LinkWalletModal({ isOpen, onClose, walletAddress, onSuccess }: L
                     </button>
                 </div>
 
-                {/* Content */}
                 <form onSubmit={handleSubmit} className="p-6">
                     <div className="mb-6">
                         <p className="text-gray-300 text-sm mb-4">
                             Para vincular la wallet a tu cuenta de HUNBOLI, ingresa tu contraseña:
                         </p>
 
-                        {/* Wallet Address Display */}
                         <div className="bg-[#0f1419] rounded-lg px-4 py-3 mb-4">
                             <p className="text-gray-400 text-xs mb-1">Wallet a vincular</p>
                             <p className="text-cyan-400 font-mono text-sm">{shortenAddress(walletAddress)}</p>
                         </div>
 
-                        {/* Password Input */}
                         <div className="relative">
                             <label className="block text-gray-400 text-sm mb-2">
                                 Contraseña de HUNBOLI
@@ -113,7 +109,6 @@ export function LinkWalletModal({ isOpen, onClose, walletAddress, onSuccess }: L
                             </div>
                         </div>
 
-                        {/* Error Message */}
                         {error && (
                             <div className="mt-3 text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">
                                 {error}
@@ -121,7 +116,6 @@ export function LinkWalletModal({ isOpen, onClose, walletAddress, onSuccess }: L
                         )}
                     </div>
 
-                    {/* Buttons */}
                     <div className="flex gap-3">
                         <button
                             type="button"
