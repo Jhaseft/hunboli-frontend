@@ -1,7 +1,8 @@
-import { X } from 'lucide-react'; 
+import { X } from 'lucide-react';
 import { useState } from "react";
 import Infoadicional from './Infoadicional';
 import Banks from './Banks';
+import { TermsCheckbox } from '@/components/auth/TermsCheckbox';
 
 interface ModalRetiroProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalRetiroProps {
   amountReceived: string;
   comisionCalculada: number;
   newBalance: number;
+  setaceptterms: React.Dispatch<React.SetStateAction<boolean>>;
   totalDeduction: number;
   setSelectedBankId: React.Dispatch<React.SetStateAction<string>>;
   onConfirm: () => void;
@@ -24,21 +26,22 @@ export default function ModalRetiro({
   amountReceived,
   comisionCalculada,
   newBalance,
+  setaceptterms,
   totalDeduction,
   setSelectedBankId,
   onConfirm,
 }: ModalRetiroProps) {
 
-    // Estados para manejar datos del componente Banks2
+  // Estados para manejar datos del componente Banks2
   const [bankAccount, setBankAccount] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
- 
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
       <div className="bg-[#0f1e33] border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-        
+
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white hover:border border-teal-700 rounded-xs transition-colors"
@@ -51,21 +54,28 @@ export default function ModalRetiro({
         </h2>
 
         <div className="space-y-4">
-         
+
           <Banks
             selectedCurrency={currency}
             onBankChange={setSelectedBankId}
             onAccountChange={setBankAccount}
           />
 
-         
+
           <Infoadicional
             comision={comisionCalculada}
             newBalance={newBalance}
             totalDeduction={totalDeduction}
           />
 
-         
+          <TermsCheckbox
+            checked={acceptTerms}
+            onChange={(value) => {
+              setAcceptTerms(value);
+              setaceptterms(value); 
+            }}
+          />
+
           <div className="flex gap-3 mt-6">
             <button
               onClick={onClose}
