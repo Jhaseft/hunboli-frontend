@@ -168,8 +168,6 @@ export function AdminDepositReviewCard({
     !!item.user.walletAddress &&
     !item.safeTxHash;
 
-  const showImageThumb = !!item.proofUrl && isImageMime(item.proofMimeType);
-
   return (
     <div className="rounded-2xl border border-gray-700 bg-[#0a1628] p-5">
       <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
@@ -293,21 +291,7 @@ export function AdminDepositReviewCard({
                     </p>
                   ) : null}
 
-                  {showImageThumb && (
-                    <button
-                      type="button"
-                      onClick={() => onPreview(item)}
-                      className="mt-3 w-full text-left"
-                      title="Abrir vista previa"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.proofUrl}
-                        alt="Comprobante"
-                        className="w-full max-h-44 object-cover rounded-xl border border-gray-800 bg-[#0a1628]"
-                      />
-                    </button>
-                  )}
+                  
                 </>
               )}
             </div>

@@ -102,12 +102,12 @@ export const VerificationSection = () => {
                                 Solicitudes de verificacion de identidad
                             </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                             {FILTERS.map((f) => (
                                 <button
                                     key={f.value}
                                     onClick={() => setFilter(f.value)}
-                                    className={`flex items-center gap-2 border font-medium text-sm px-4 py-2 rounded-lg transition-colors ${filter === f.value
+                                    className={`flex items-center gap-2 border font-medium text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap ${filter === f.value
                                             ? "border-teal-500 bg-teal-600/20 text-teal-300"
                                             : "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                                         }`}
