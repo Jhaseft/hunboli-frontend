@@ -2,34 +2,13 @@
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { verificationService, VerificationData } from "@/services/verification.service";
+import { companyBankAccountsService, CompanyBankAccount } from "@/services/company-bank-accounts.service";
 import { VerificationStatusCard } from "./VerificationStatusCard";
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 type Currency = 'BOB' | 'PEN' | null;
-
-interface BankData {
-    banco: string;
-    numeroCuenta: string;
-    titular: string;
-    montoRequerido: string;
-}
-
-const bankDataByCountry: Record<'BOB' | 'PEN', BankData> = {
-    BOB: {
-        banco: 'Banco Mercantil Santa Cruz',
-        numeroCuenta: '4500-123456-789',
-        titular: 'Hunboli S.R.L.',
-        montoRequerido: '1000 Bs'
-    },
-    PEN: {
-        banco: 'Banco de Crédito del Perú (BCP)',
-        numeroCuenta: '193-12345678-0-12',
-        titular: 'Hunboli S.A.C.',
-        montoRequerido: '350 Soles'
-    }
-};
 
 export const VerifyAccountForm = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -40,9 +19,31 @@ export const VerifyAccountForm = () => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
+    const [bankData, setBankData] = useState<CompanyBankAccount | null>(null);
+    const [isBankLoading, setIsBankLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (!selectedCurrency) {
+            setBankData(null);
+            return;
+        }
+        const fetchBankData = async () => {
+            setIsBankLoading(true);
+            try {
+                const data = await companyBankAccountsService.getByCurrency(selectedCurrency);
+                setBankData(data);
+            } catch {
+                setError('No se pudo cargar los datos bancarios');
+                setBankData(null);
+            } finally {
+                setIsBankLoading(false);
+            }
+        };
+        fetchBankData();
+    }, [selectedCurrency]);
 
     useEffect(() => {
         const checkStatus = async () => {
@@ -133,8 +134,6 @@ export const VerifyAccountForm = () => {
         }
     };
 
-    const bankData = selectedCurrency ? bankDataByCountry[selectedCurrency] : null;
-
     if (isCheckingStatus) {
         return (
             <div className="min-h-screen bg-linear-to-br from-[#0a1929] via-[#0f1f33] to-[#0a1929] flex items-center justify-center p-4">
@@ -200,7 +199,14 @@ export const VerifyAccountForm = () => {
                     </div>
                 </div>
 
-                {bankData && (
+                {isBankLoading && selectedCurrency && (
+                    <div className="mb-6 p-5 rounded-xl bg-linear-to-r from-gray-800/80 to-gray-700/50 border border-gray-600/50 backdrop-blur-sm flex items-center justify-center gap-3">
+                        <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-gray-400 text-sm">Cargando datos bancarios...</span>
+                    </div>
+                )}
+
+                {bankData && !isBankLoading && (
                     <div className="mb-6 p-5 rounded-xl bg-linear-to-r from-gray-800/80 to-gray-700/50 border border-gray-600/50 backdrop-blur-sm">
                         <div className="flex items-center gap-2 mb-4">
                             <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,21 +218,34 @@ export const VerifyAccountForm = () => {
                         <div className="space-y-3">
                             <div className="flex justify-between items-center py-2 border-b border-gray-600/50">
                                 <span className="text-gray-400">Banco</span>
-                                <span className="text-white font-medium">{bankData.banco}</span>
+                                <span className="text-white font-medium">{bankData.bankName}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-600/50">
                                 <span className="text-gray-400">Nº de Cuenta</span>
-                                <span className="text-white font-mono font-medium">{bankData.numeroCuenta}</span>
+                                <span className="text-white font-mono font-medium">{bankData.accountNumber}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-600/50">
                                 <span className="text-gray-400">Titular</span>
-                                <span className="text-white font-medium">{bankData.titular}</span>
+                                <span className="text-white font-medium">{bankData.accountHolder}</span>
                             </div>
-                            <div className="flex justify-between items-center py-2">
-                                <span className="text-gray-400">Monto a depositar</span>
-                                <span className="text-emerald-400 font-bold text-lg">{bankData.montoRequerido}</span>
-                            </div>
+                            {bankData.cci && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-600/50">
+                                    <span className="text-gray-400">CCI</span>
+                                    <span className="text-white font-mono font-medium">{bankData.cci}</span>
+                                </div>
+                            )}
                         </div>
+
+                        {bankData.qrImageUrl && (
+                            <div className="mt-4 flex flex-col items-center gap-2">
+                                <span className="text-gray-400 text-sm">Escanea el QR para pagar</span>
+                                <img
+                                    src={bankData.qrImageUrl}
+                                    alt="QR de pago"
+                                    className="w-48 h-48 rounded-lg border border-gray-600/50"
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
 
