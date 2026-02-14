@@ -94,7 +94,7 @@ export function AdminSidebar() {
     },
     {
       label: "Historial",
-      href: "/admin/historial",
+      href: "/admin/logs",
       icon: <Clock className="w-5 h-5" />,
     },
     {
