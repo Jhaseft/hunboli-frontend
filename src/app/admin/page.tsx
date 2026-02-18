@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { DashboardHeader } from "@/components/admin/DashboardHeader";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { KycAlertBanner } from "@/components/admin/KycAlertBanner";
-import { MintRequestsSection } from "@/components/admin/MintRequestsSection";
 import { adminKycService } from "@/services/adminKyc.service";
 
 export default function AdminDashboardPage() {
