@@ -135,26 +135,20 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
         )}
 
         {isWrongWallet && !wrongNetwork && (
-          <div className="mt-4 text-sm bg-amber-500/20 text-amber-200 rounded-lg px-3 py-2">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
-              <span className="font-medium">Esta no es tu wallet vinculada</span>
-            </div>
-            <p className="text-xs text-amber-200/80 mb-3">
-              Tu cuenta está vinculada a otra wallet. Conecta la wallet correcta o cambia la vinculación en ajustes.
-            </p>
+          <div className="mt-3 flex items-center gap-2 bg-amber-500/20 text-amber-200 rounded-lg px-3 py-2 text-xs">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Wallet no vinculada —</span>
             <button
               onClick={handleGoToLinkWallet}
-              className="w-full flex items-center justify-center gap-2 bg-amber-500/30 hover:bg-amber-500/40 text-amber-100 font-medium rounded-lg px-3 py-2 text-xs transition-colors"
+              className="underline hover:text-white transition-colors font-medium"
             >
-              <LinkIcon className="w-3 h-3" />
-              Cambiar wallet vinculada
+              Cambiar en ajustes
             </button>
           </div>
         )}
 
         {isWalletLinked && (
-          <div className="mt-4 text-sm bg-green-500/20 text-green-200 rounded-lg px-3 py-2 flex items-center gap-2">
+          <div className="mt-4 text-sm bg-green-500/20 text-white rounded-lg px-3 py-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>

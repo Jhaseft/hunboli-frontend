@@ -24,6 +24,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
   });
   const [selectedCurrency, setSelectedCurrency] = useState<'BOB' | 'PEN'>('BOB');
   const [amount, setAmount] = useState('');
+  const [aceptTerms, setaceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBankId, setSelectedBankId] = useState<string | ''>('');
@@ -142,8 +143,14 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
 
   // Función corregida para enviar retiro y requestRedemption
   const handleConfirmRetiro = async () => {
+
     if (!selectedCurrency || !amount || !selectedBankId) {
       setReportModal({ isOpen: true, success: false, message: 'Completa todos los campos' });
+      return;
+    }
+
+    if (!aceptTerms) {
+      setReportModal({ isOpen: true, success: false, message: 'Acepta los terminos y condiciones' });
       return;
     }
 
@@ -277,6 +284,7 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
         amountReceived={calculateReceived()}
         comisionCalculada={comisionCalculada}
         newBalance={newBalance}
+        setaceptterms={setaceptTerms}
         totalDeduction={totalDeduction}
         setSelectedBankId={setSelectedBankId}
         onConfirm={handleConfirmRetiro}

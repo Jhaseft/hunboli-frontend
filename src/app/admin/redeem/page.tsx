@@ -7,6 +7,7 @@ import RedeemTable from "@/components/admin/redeem/RedeemTable";
 import DetailModal from "@/components/admin/redeem/DetailModal";
 import EditModal from "@/components/admin/redeem/EditModal";
 import { RedeemRequest } from "@/components/admin/redeem/redeem.types";
+import ReportModal from "@/components/dashboard/ReportModal";
 
 type Meta = {
   total: number;
@@ -16,6 +17,11 @@ type Meta = {
 };
 
 export default function AdminRedeemPage() {
+  const [reportModal, setReportModal] = useState({
+        isOpen: false,
+        success: true,
+        message: ''
+      });
   const [requests, setRequests] = useState<RedeemRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<RedeemRequest[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
@@ -107,11 +113,16 @@ export default function AdminRedeemPage() {
             }
           : req
       );
-
       setRequests(updatedRequests);
       setFilteredRequests(updatedRequests);
       setShowEditModal(false);
       setSelectedRequest(null);
+      setReportModal({
+        isOpen: true,
+        success: true,
+        message: "Edicion exitosa"
+      });
+
     } catch (error) {
       console.error("Error al actualizar el retiro:", error);
       alert("Error al actualizar el retiro");
@@ -129,6 +140,7 @@ export default function AdminRedeemPage() {
   const hasAnySearch = searchByCode || searchByUser;
 
   return (
+    <>
     <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl lg:text-3xl text-white mb-6 font-bold">
         Solicitudes de Retiro
@@ -195,5 +207,13 @@ export default function AdminRedeemPage() {
         />
       )}
     </div>
+      <ReportModal
+                  isOpen={reportModal.isOpen}
+                  onClose={() => setReportModal({ ...reportModal, isOpen: false })}
+                  success={reportModal.success}
+                  message={reportModal.message}
+      />
+
+    </>
   );
 }

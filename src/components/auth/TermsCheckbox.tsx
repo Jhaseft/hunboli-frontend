@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { TermsModal } from './TermsModal';
+import {PrivacyModal} from './Privacy'
 
 interface TermsCheckboxProps {
     checked: boolean;
@@ -9,11 +10,19 @@ interface TermsCheckboxProps {
 }
 
 export const TermsCheckbox = ({ checked, onChange }: TermsCheckboxProps) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleLinkClick = (e: React.MouseEvent) => {
+    const [isModalOpen1, setIsModalOpen1] = useState(false);
+
+    const [isModalOpen2, setIsModalOpen2] = useState(false);
+
+    const handleLinkClick1 = (e: React.MouseEvent) => {
         e.preventDefault();
-        setIsModalOpen(true);
+        setIsModalOpen1(true);
+    };
+
+    const handleLinkClick2 = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsModalOpen2(true);
     };
 
     return (
@@ -28,26 +37,28 @@ export const TermsCheckbox = ({ checked, onChange }: TermsCheckboxProps) => {
                     required
                 />
                 <label htmlFor="terms" className="text-sm text-gray-400">
-                    I accept the{' '}
+                    Yo acepto los{' '}
                     <button
                         type="button"
-                        onClick={handleLinkClick}
+                        onClick={handleLinkClick1}
                         className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
                     >
-                        Terms and Conditions
+                        Terminos y Condiciones
                     </button>
-                    {' '}and{' '}
+                    {' '}y{' '}
                     <button
                         type="button"
-                        onClick={handleLinkClick}
+                        onClick={handleLinkClick2}
                         className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
                     >
-                        Privacy Policy
+                        Politicas de privacidad
                     </button>
                 </label>
             </div>
 
-            <TermsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <TermsModal isOpen={isModalOpen1} onClose={() => setIsModalOpen1(false)} />
+
+            <PrivacyModal isOpen={isModalOpen2} onClose={() => setIsModalOpen2(false)} />
         </>
     );
 };
