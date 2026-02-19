@@ -14,7 +14,6 @@ export default function ReportModal({ isOpen, onClose, success, message }: Repor
     <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="relative w-full max-w-sm bg-[#1a2332] rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Header con gradiente dinámico */}
         <div
           className={`px-6 py-5 flex justify-between items-center ${
             success
@@ -34,10 +33,9 @@ export default function ReportModal({ isOpen, onClose, success, message }: Repor
           </button>
         </div>
 
-        {/* Cuerpo */}
+
         <div className="px-6 py-8 flex flex-col items-center gap-4">
 
-          {/* Icono con halo de color */}
           <div
             className={`rounded-full p-4 ${
               success
@@ -52,7 +50,6 @@ export default function ReportModal({ isOpen, onClose, success, message }: Repor
             )}
           </div>
 
-          {/* Mensaje */}
           <p
             className={`text-center text-sm leading-relaxed font-medium ${
               success ? "text-gray-300" : "text-red-300"
@@ -62,7 +59,6 @@ export default function ReportModal({ isOpen, onClose, success, message }: Repor
           </p>
         </div>
 
-        {/* Footer con botón */}
         <div className="px-6 pb-6">
           <button
             onClick={onClose}
