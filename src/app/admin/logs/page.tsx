@@ -1,6 +1,7 @@
+import { LogsSection } from "@/components/admin/LogsSection";
 
 export default function page() {
   return (
-    <div className="p-4">page</div>
+    <LogsSection />
   )
 }
