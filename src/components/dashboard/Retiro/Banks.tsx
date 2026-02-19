@@ -42,7 +42,7 @@ export default function Banks({ selectedCurrency, onBankChange, onAccountChange,
     message: ''
   });
   const USER_ID = user?.id;
-
+ 
   const fetchBanks = useCallback(async () => {
     if (!USER_ID) return;
     try {

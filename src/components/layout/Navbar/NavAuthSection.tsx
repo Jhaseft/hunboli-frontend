@@ -19,7 +19,10 @@ export function NavAuthSection({
   isDashboard,
   variant = 'desktop',
 }: NavAuthSectionProps) {
+  const hideMobileProfile = variant === 'mobile' && !isDashboard;
+
   if (isLoading) {
+    if (hideMobileProfile) return null;
     return variant === 'desktop' ? (
       <div className="w-24 h-8 bg-gray-800/50 rounded-full animate-pulse" />
     ) : (
@@ -91,7 +94,9 @@ export function NavAuthSection({
         <VerificationBadge isVerified={user?.isVerified ?? false} />
       )}
 
-      <ProfileMenu isDashboard={isDashboard} variant={variant} />
+      {!hideMobileProfile && (
+        <ProfileMenu isDashboard={isDashboard} variant={variant} />
+      )}
     </>
   );
 }
