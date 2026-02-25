@@ -1,192 +1,30 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
-
-type DepositStatus = 
-    | "PENDING"
-    | "PROOF_SUBMITTED"
-    | "NEED_CORRECTION"
-    | "RATE_EXPIRED"
-    | "APPROVED"
-    | "REJECTED"
-    | "COMPLETED"
-    | "MINTED";
-
-type FiatCurrency = "BOB" | "PEN";
-
-type MyDepositItem = {
-    id: string;
-    referenceCode: string;
-    currency: FiatCurrency;
-    status: DepositStatus;
-
-    amount: string;
-    feeRate: string;
-    serviceFee: string;
-    totalAmount: string;
-    expectedBOBH: string;
-
-    rateUsed: string | null;
-    rateSource: string | null;
-    rateQuoteTime: string | null;
-    rateExpiresAt: string | null;
-
-    proofUrl: string | null;
-    proofUploadedAt: string | null;
-    prooFileName: string | null;
-    proofMimeType: string | null;
-    reviewNote: string | null;
-    reviewedAt: string | null;
-
-    createdAt: string;
-};
-
-type MyDepositsResponse = {
-  items: MyDepositItem[];
-  nextCursor: string | null;
-  hasMore: boolean;
-  limit: number;
-};
-
-function formatMoney(n: number, decimals = 2) {
-  return Number.isFinite(n) ? n.toFixed(decimals) : "0.00";
-}
-
-function statusBadgeClass(status: DepositStatus) {
-  switch (status) {
-    case "PENDING":
-      return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
-    case "PROOF_SUBMITTED":
-      return "border border-cyan-500/30 bg-cyan-500/10 text-cyan-200";
-    case "NEED_CORRECTION":
-      return "border border-amber-500/30 bg-amber-500/10 text-amber-200";
-    case "APPROVED":
-      return "border border-teal-500/30 bg-teal-500/10 text-teal-200";
-    case "MINTED":
-      return "border border-emerald-500/30 bg-emerald-500/10 text-emerald-200";
-    case "REJECTED":
-      return "border border-red-500/30 bg-red-500/10 text-red-200";
-    case "RATE_EXPIRED":
-      return "border border-gray-500/30 bg-gray-500/10 text-gray-200";
-    default:
-      return "border border-gray-500/30 bg-gray-500/10 text-gray-200";
-  }
-}
-
-function statusLabel(status: DepositStatus) {
-  switch (status) {
-    case "PENDING":
-      return "Pendiente";
-    case "PROOF_SUBMITTED":
-      return "Comprobante enviado";
-    case "NEED_CORRECTION":
-      return "Observado";
-    case "RATE_EXPIRED":
-      return "Tipo de cambio expirado";
-    case "APPROVED":
-      return "Aprobado";
-    case "REJECTED":
-      return "Rechazado";
-    case "MINTED":
-      return "Mint realizado";
-    default:
-      return status;
-  }
-}
+import React from "react";
+import { useMyDeposits } from "./hooks/useMyDeposits";
+import { MyDepositCard } from "./MyDepositCard";
 
 export function MyDeposits() {
-  const { token, isLoading } = useAuth();
-
-  const canUploadProof = (status: string) =>
-    status === "PENDING" || status === "NEED_CORRECTION";
-
-  const [items, setItems] = useState<MyDepositItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-  const canFetch = useMemo(() => !!backendUrl && !!token && !isLoading, [backendUrl, token, isLoading]);
-
-  const fetchPage = useCallback(
-    async (cursor?: string | null) => {
-      if (!backendUrl) {
-        setError("NEXT_PUBLIC_BACKEND_URL no está configurado.");
-        return;
-      }
-      if (!token) {
-        setError("Debes iniciar sesión para ver tus depósitos.");
-        return;
-      }
-
-      const isFirst = !cursor;
-
-      try {
-        if (isFirst) {
-          setLoading(true);
-        } else {
-          setLoadingMore(true);
-        }
-        setError(null);
-
-        const params = new URLSearchParams();
-        params.set("limit", "10");
-        if (cursor) params.set("cursor", cursor);
-
-        const res = await fetch(`${backendUrl}/deposits/my?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        });
-
-        const data = (await res.json().catch(() => null)) as MyDepositsResponse | null;
-
-        if (!res.ok || !data) {
-          const msg =
-            (data as any)?.message ||
-            (res.status === 401 ? "Sesión expirada. Vuelve a iniciar sesión." : "No se pudo cargar el historial.");
-          setError(typeof msg === "string" ? msg : "No se pudo cargar el historial.");
-          return;
-        }
-
-        if (isFirst) {
-          setItems(data.items ?? []);
-        } else {
-          setItems((prev) => [...prev, ...(data.items ?? [])]);
-        }
-
-        setNextCursor(data.nextCursor ?? null);
-        setHasMore(!!data.hasMore);
-      } catch {
-        setError("Error de red. Revisa que el backend esté activo y CORS habilitado.");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [backendUrl, token]
-  );
-
-  const refetch = useCallback(() => {
-    fetchPage(null);
-  }, [fetchPage]);
-
-  useEffect(() => {
-    if (!canFetch) return;
-    fetchPage(null);
-  }, [canFetch, fetchPage]);
+  const {
+    items,
+    nextCursor,
+    hasMore,
+    loading,
+    loadingMore,
+    error,
+    canFetch,
+    fetchPage,
+    refetch,
+  } = useMyDeposits();
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl p-6 shadow-sm border border-gray-800">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-2xl font-semibold text-white">Mis Depósitos</h2>
-          <p className="text-gray-400 text-sm">Historial de solicitudes, comprobantes y estados.</p>
+          <p className="text-gray-400 text-sm">
+            Historial de solicitudes, comprobantes y estados.
+          </p>
         </div>
 
         <button
@@ -222,165 +60,9 @@ export function MyDeposits() {
       )}
 
       <div className="space-y-3">
-        {items.map((d) => {
-          const total = Number(d.totalAmount);
-          const expected = Number(d.expectedBOBH);
-
-          const currencyLabel = d.currency === "BOB" ? "Bs" : "S/";
-          const created = new Date(d.createdAt).toLocaleString();
-
-          return (
-            <div key={d.id} className="rounded-2xl border border-gray-700 bg-[#0a1628] p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass(d.status)}`}>
-                    {statusLabel(d.status)}
-                  </span>
-
-                  <div className="text-sm text-gray-200">
-                    <span className="text-gray-400">Ref:</span>{" "}
-                    <span className="font-semibold text-teal-200">{d.referenceCode}</span>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-400">{created}</div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="rounded-xl border border-gray-800 bg-[#071225] p-3">
-                  <p className="text-xs text-gray-400">Total a pagar</p>
-                  <p className="text-base font-semibold text-white">
-                    {formatMoney(total)} {currencyLabel}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-gray-800 bg-[#071225] p-3">
-                  <p className="text-xs text-gray-400">Recibirás (estimado)</p>
-                  <p className="text-base font-semibold text-teal-300">
-                    {formatMoney(expected)} BOBH
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-gray-800 bg-[#071225] p-3">
-                  <p className="text-xs text-gray-400">Moneda</p>
-                  <p className="text-base font-semibold text-white">
-                    {d.currency === "BOB" ? "BOB (Bs)" : "PEN (S/)"}
-                  </p>
-                </div>
-              </div>
-
-              {d.currency === "PEN" && d.rateUsed && d.rateExpiresAt && (
-                <div className="mt-3 rounded-xl border border-gray-800 bg-[#071225] p-3">
-                  <p className="text-xs text-gray-400">
-                    Tipo de cambio fijado:{" "}
-                    <span className="text-gray-200 font-semibold">
-                      1 PEN = {Number(d.rateUsed).toFixed(4)} BOB
-                    </span>{" "}
-                    {d.rateSource ? <span className="text-gray-500">({d.rateSource})</span> : null}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Válido hasta:{" "}
-                    <span className="text-gray-200">
-                      {new Date(d.rateExpiresAt).toLocaleString()}
-                    </span>
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-3">
-                {(() => {
-                  switch (d.status) {
-                    case "PENDING":
-                      return (
-                        <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-3">
-                          <p className="text-xs text-gray-400">
-                            Sube tu comprobante para iniciar la revisión.
-                          </p>
-                        </div>
-                      );
-                    case "PROOF_SUBMITTED":
-                      return (
-                        <p className="mt-3 text-xs text-gray-300">
-                          Comprobante enviado. Estamos verificando tu depósito.
-                        </p>
-                      );
-                    case "NEED_CORRECTION":
-                      return (
-                        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
-                          <p className="text-xs font-semibold text-amber-300">Tu comprobante fue observado</p>
-                          <p className="mt-1 text-sm text-amber-100">
-                            {d.reviewNote ?? "Necesitamos que reenvíes el comprobante."}
-                          </p>
-
-                          {d.reviewedAt && (
-                            <p className="mt-2 text-[11px] text-amber-200/70">
-                              Fecha de observación: {new Date(d.reviewedAt).toLocaleString()}
-                            </p>
-                          )}
-
-                          <p className="mt-2 text-xs text-amber-200/80">
-                            Sube un nuevo comprobante más claro (monto, fecha y referencia visibles).
-                          </p>
-                        </div>
-                      );
-                    case "RATE_EXPIRED":
-                      return (
-                        <p className="mt-3 text-xs text-red-300">
-                          El tipo de cambio expiró antes de subir el comprobante. Crea un nuevo depósito.
-                        </p>
-                      );
-                    case "APPROVED":
-                      return (
-                        <p className="mt-3 text-xs text-green-300">
-                          Depósito aprobado. (El mint se realizará más adelante.)
-                        </p>
-                      );
-                    case "REJECTED":
-                      return (
-                        <p className="mt-3 text-xs text-red-300">
-                          Depósito rechazado. Si crees que es un error, crea un nuevo depósito o contacta soporte.
-                        </p>
-                      );
-                    case "MINTED":
-                    case "COMPLETED":
-                      return <p className="text-xs text-gray-400">Completado.</p>;
-                    default:
-                      return null;
-                  }
-                })()}
-              </div>
-
-              {canUploadProof(d.status) && (
-                <div className="mt-3">
-                  <ProofUploader depositId={d.id} onUploaded={refetch} />
-                </div>
-              )}
-
-              {d.proofUrl ? (
-                <div className="mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                  <p className="text-xs text-gray-400">
-                    Comprobante:{" "}
-                    <a
-                      href={d.proofUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-teal-300 hover:underline"
-                    >
-                      Ver archivo
-                    </a>
-                    {d.prooFileName ? <span className="text-gray-500"> • {d.prooFileName}</span> : null}
-                  </p>
-
-                  <p className="text-xs text-gray-500">
-                    {d.proofUploadedAt ? `Subido: ${new Date(d.proofUploadedAt).toLocaleString()}` : ""}
-                  </p>
-                </div>
-              ) : (
-                <p className="mt-3 text-xs text-gray-500">Sin comprobante aún.</p>
-              )}
-            </div>
-          );
-        })}
+        {items.map((d) => (
+          <MyDepositCard key={d.id} deposit={d} onUploaded={refetch} />
+        ))}
       </div>
 
       <div className="mt-5">

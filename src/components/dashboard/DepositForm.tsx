@@ -1,343 +1,43 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { ProofUploader } from "@/components/dashboard/deposits/ProofUploader";
-import { DepositBankQrModal } from "@/components/dashboard/deposits/DepositBankQrModal";
-import { handleKycGateResponse } from "@/lib/kyc-errors";
 
-type Currency = "BOB" | "PEN";
-
-const FEE_RATE = 0.001; // 0.1%
-const FIXED_FEE_BOB = 100; // 100 Bs
-const FIXED_FEE_MIN_BOB = 10_000;
-const FIXED_FEE_MAX_BOB = 100_000;
-const MIN_DEPOSIT_BOB = 10_000; // 10 mil Bs
-
-function parseMoney(input: string) {
-  const normalized = input.replace(",", ".").trim();
-  const n = Number(normalized);
-  return Number.isFinite(n) ? n : NaN;
-}
-
-type DepositInstructions = {
-  title: string;
-  bankName: string;
-  accountName: string;
-  accountNumber: string;
-  note: string;
-  cci?: string | null;
-  qrImageUrl?: string | null;
-  qrPublicId?: string | null;
-};
-
-type DepositCreateResponse = {
-  depositId: string;
-  status: string;
-  referenceCode: string;
-  currency: Currency;
-  amount: string;
-  feeRate: string;
-  serviceFee: string;
-  totalAmount: string;
-  rateUsed: string | null;
-  rateSource: string | null;
-  rateQuotedAt: string | null;
-  rateExpiresAt: string | null;
-  expectedBOBH: string;
-  instructions: DepositInstructions;
-};
+import React from "react";
+import { useDepositForm } from "@/components/dashboard/deposits/hooks/useDepositForm";
+import { DepositInstructionsModal } from "@/components/dashboard/deposits/DepositInstructionsModal";
+import type { FiatCurrency } from "@/components/dashboard/deposits/types";
 
 export function DepositForm() {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>("BOB");
-  const [amount, setAmount] = useState("");
-
-  // Rate state (PEN -> BOB) solo para mostrar en UI/calculadora
-  const [penToBobRate, setPenToBobRate] = useState<number | null>(null);
-  const [rateStatus, setRateStatus] = useState<"idle" | "loading" | "error">(
-    "idle"
-  );
-  const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<DepositCreateResponse | null>(null);
-
-  // Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [isUploadingProof, setIsUploadingProof] = useState(false);
-  const [proofError, setProofError] = useState<string | null>(null);
-  const [proofSuccess, setProofSuccess] = useState<string | null>(null);
-
-  const { token, isLoading } = useAuth();
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setIsQrModalOpen(false);
-  };
-
-  // Cuando cambias moneda o monto, se limpia resultado/errores para no confundir
-  useEffect(() => {
-    setError(null);
-    setResult(null);
-    setIsModalOpen(false);
-    setIsQrModalOpen(false);
-  }, [selectedCurrency, amount]);
-
-  // Cerrar con ESC + bloquear scroll
-  useEffect(() => {
-    if (!isModalOpen && !isQrModalOpen) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (isQrModalOpen) {
-        setIsQrModalOpen(false);
-        return;
-      }
-      closeModal();
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isModalOpen, isQrModalOpen]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (selectedCurrency !== "PEN") {
-      setPenToBobRate(null);
-      setRateUpdatedAt(null);
-      setRateStatus("idle");
-      return;
-    }
-
-    setRateStatus("loading");
-
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/rates`, { cache: "no-store" })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Error al obtener rates");
-        return res.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-
-        const rate = Number(data.pen_to_bob);
-        if (!Number.isFinite(rate) || rate <= 0) {
-          setPenToBobRate(null);
-          setRateStatus("error");
-          return;
-        }
-
-        setPenToBobRate(rate);
-        setRateUpdatedAt(typeof data.updatedAt === "string" ? data.updatedAt : null);
-        setRateStatus("idle");
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setRateStatus("error");
-        setPenToBobRate(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCurrency]);
-
-  const amountNum = useMemo(() => parseMoney(amount), [amount]);
-  const isValidAmount = Number.isFinite(amountNum) && amountNum > 0;
-
-  // Equivalente en BOB (para validar mínimo)
-  const amountInBobEquivalent = useMemo(() => {
-    if (!isValidAmount) return 0;
-
-    if (selectedCurrency === "BOB") return amountNum;
-
-    if (!penToBobRate) return 0;
-    return amountNum * penToBobRate;
-  }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
-
-  const meetsMinimum = amountInBobEquivalent >= MIN_DEPOSIT_BOB;
-
-  const qualifiesForFixedFee =
-    amountInBobEquivalent >= FIXED_FEE_MIN_BOB &&
-    amountInBobEquivalent < FIXED_FEE_MAX_BOB;
-
-  // Comisión (en la moneda del depósito)
-  const serviceFee = useMemo(() => {
-    if (!isValidAmount) return 0;
-    if (amountInBobEquivalent < MIN_DEPOSIT_BOB) return 0;
-    if (qualifiesForFixedFee) {
-      if (selectedCurrency === "PEN") {
-        if (!penToBobRate) return 0;
-        return FIXED_FEE_BOB / penToBobRate;
-      }
-      return FIXED_FEE_BOB;
-    }
-    return amountNum * FEE_RATE;
-  }, [
-    isValidAmount,
-    amountNum,
-    amountInBobEquivalent,
-    qualifiesForFixedFee,
+  const {
     selectedCurrency,
+    setSelectedCurrency,
+    amount,
+    setAmount,
+    isSubmitting,
+    error,
+    result,
+    canSubmit,
+    handleSubmit,
     penToBobRate,
-  ]);
-
-  // Total a pagar (monto + comisión)
-  const totalToPay = useMemo(() => {
-    if (!isValidAmount) return 0;
-    return amountNum + serviceFee;
-  }, [isValidAmount, amountNum, serviceFee]);
-
-  // BOBH a recibir (calculadora UI)
-  const receiveBOBH = useMemo(() => {
-    if (!isValidAmount) return 0;
-
-    if (selectedCurrency === "BOB") return amountNum;
-
-    if (!penToBobRate) return 0;
-    return amountNum * penToBobRate;
-  }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
-
-  const needsRate = selectedCurrency === "PEN";
-  const hasRate = !!penToBobRate;
-
-  const canSubmit =
-    !isLoading &&
-    !!token &&
-    isValidAmount &&
-    meetsMinimum &&
-    (!needsRate || hasRate) &&
-    !isSubmitting;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setResult(null);
-
-    if (isLoading) return;
-    if (!token) {
-      setError("Debes iniciar sesión para crear un depósito.");
-      return;
-    }
-    if (!canSubmit) return;
-
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (!backendUrl) {
-      setError("NEXT_PUBLIC_BACKEND_URL no está configurado en el frontend.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch(`${backendUrl}/deposits`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currency: selectedCurrency,
-          amount: amountNum,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        if (handleKycGateResponse(res.status, data)) return;
-        const msg =
-          (data && (data.message || data.error)) ||
-          (res.status === 401
-            ? "Sesión expirada. Vuelve a iniciar sesión."
-            : "No se pudo crear el depósito.");
-        setError(typeof msg === "string" ? msg : "No se pudo crear el depósito.");
-        return;
-      }
-
-      setResult(data as DepositCreateResponse);
-      setIsModalOpen(true);
-    } catch {
-      setError("Error de red. Revisa que el backend esté activo y CORS habilitado.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUploadProof = async () => {
-    if (!result?.depositId) return;
-    if (!token) {
-      setProofError("Debes iniciar sesión.");
-      return;
-    }
-    if (!proofFile) {
-      setProofError("Selecciona un archivo.");
-      return;
-    }
-
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (!backendUrl) {
-      setProofError("NEXT_PUBLIC_BACKEND_URL no está configurado.");
-      return;
-    }
-
-    setIsUploadingProof(true);
-    setProofError(null);
-    setProofSuccess(null);
-
-    try {
-      const form = new FormData();
-      form.append("file", proofFile);
-
-      const res = await fetch(`${backendUrl}/deposits/${result.depositId}/proof`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: form,
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        if (handleKycGateResponse(res.status, data)) return;
-        const msg =
-          (data && (data.message || data.error)) ||
-          "No se pudo subir el comprobante.";
-        setProofError(
-          typeof msg === "string" ? msg : "No se pudo subir el comprobante."
-        );
-        return;
-      }
-
-      setProofSuccess("Comprobante subido correctamente.");
-    } catch {
-      setProofError("Error de red al subir el comprobante.");
-    } finally {
-      setIsUploadingProof(false);
-    }
-  };
-
-  const handleCopyAccountNumber = () => {
-    const accountNumber = result?.instructions?.accountNumber;
-    if (!accountNumber) return;
-    navigator.clipboard?.writeText(accountNumber).catch(() => {});
-  };
+    rateStatus,
+    rateUpdatedAt,
+    isValidAmount,
+    amountInBobEquivalent,
+    meetsMinimum,
+    qualifiesForFixedFee,
+    serviceFee,
+    totalToPay,
+    receiveBOBH,
+    isModalOpen,
+    isQrModalOpen,
+    setIsQrModalOpen,
+    closeModal,
+  } = useDepositForm();
 
   const currencyLabel = selectedCurrency === "BOB" ? "Bs" : "S/";
-  const qrImageUrl = result?.instructions?.qrImageUrl ?? null;
 
   return (
     <div className="bg-[#0f1e33] rounded-2xl px-6 md:p-6 shadow-sm border border-gray-800 max-h-[calc(100vh-200px)] md:max-h-none overflow-y-auto md:overflow-visible">
       <h2 className="text-2xl font-semibold mb-2 text-white">Depositar Fondos</h2>
-      <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p> 
+      <p className="text-gray-400 mb-6">Depósito mínimo: 10.000 Bs</p>
 
       {error && (
         <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
@@ -346,34 +46,26 @@ export function DepositForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Currency selector */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Moneda de Depósito
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedCurrency("BOB")}
-              className={`py-3 px-4 rounded-lg font-medium transition-all ${
-                selectedCurrency === "BOB"
-                  ? "bg-teal-600 text-white shadow-md"
-                  : "bg-[#0a1628] text-gray-300 hover:bg-[#152b47] border border-gray-700"
-              }`}
-            >
-              BOB (Bs)
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedCurrency("PEN")}
-              className={`py-3 px-4 rounded-lg font-medium transition-all ${
-                selectedCurrency === "PEN"
-                  ? "bg-teal-600 text-white shadow-md"
-                  : "bg-[#0a1628] text-gray-300 hover:bg-[#152b47] border border-gray-700"
-              }`}
-            >
-              PEN (S/)
-            </button>
+            {(["BOB", "PEN"] as FiatCurrency[]).map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setSelectedCurrency(c)}
+                className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                  selectedCurrency === c
+                    ? "bg-teal-600 text-white shadow-md"
+                    : "bg-[#0a1628] text-gray-300 hover:bg-[#152b47] border border-gray-700"
+                }`}
+              >
+                {c === "BOB" ? "BOB (Bs)" : "PEN (S/)"}
+              </button>
+            ))}
           </div>
 
           {selectedCurrency === "PEN" && rateStatus === "error" && (
@@ -383,11 +75,9 @@ export function DepositForm() {
           )}
         </div>
 
+        {/* Amount input */}
         <div>
-          <label
-            htmlFor="amount"
-            className="block text-sm font-medium text-gray-300 mb-3"
-          >
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
             Monto
           </label>
           <input
@@ -411,6 +101,7 @@ export function DepositForm() {
           )}
         </div>
 
+        {/* Fee calculator */}
         <div className="rounded-2xl border border-gray-700 bg-[#0a1628] p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-300">Tipo de cambio</span>
@@ -438,7 +129,7 @@ export function DepositForm() {
 
           <div className="mt-3 flex items-center justify-between">
             <span className="text-sm text-gray-300">
-              {amountInBobEquivalent < MIN_DEPOSIT_BOB
+              {!meetsMinimum
                 ? "Comisión"
                 : qualifiesForFixedFee
                 ? "Comisión fija"
@@ -475,141 +166,12 @@ export function DepositForm() {
       </form>
 
       {isModalOpen && result && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          onMouseDown={closeModal}
-          aria-modal="true"
-          role="dialog"
-        >
-          <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-teal-500/30 bg-[#0f1e33] shadow-xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between border-b border-gray-800 px-6 py-4">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Depósito creado</h3>
-                <p className="text-sm text-gray-300">
-                  Referencia:{" "}
-                  <span className="font-semibold text-teal-200">{result.referenceCode}</span>
-                </p>
-                {result.currency === "PEN" && result.rateUsed && result.rateExpiresAt && (
-                  <p className="mt-2 text-xs text-gray-400">
-                    Tipo de cambio fijado: 1 PEN = {Number(result.rateUsed).toFixed(4)} BOB •
-                    Válido hasta: {new Date(result.rateExpiresAt).toLocaleString()}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-lg border border-gray-700 bg-[#0a1628] px-3 py-1.5 text-sm text-gray-200 hover:bg-[#152b47]"
-              >
-                Cerrar
-              </button>
-            </div>
-
-            <div className="px-6 py-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
-                  <p className="text-xs text-gray-400 mb-1">Total a pagar</p>
-                  <p className="text-base font-semibold text-white">
-                    {Number(result.totalAmount).toFixed(2)}{" "}
-                    {result.currency === "BOB" ? "Bs" : "S/"}
-                  </p>
-
-                  <p className="mt-2 text-xs text-gray-400 mb-1">Recibirás (estimado)</p>
-                  <p className="text-base font-semibold text-teal-300">
-                    {Number(result.expectedBOBH).toFixed(2)} BOBH
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-gray-700 bg-[#0a1628] p-4">
-                  <p className="text-xs text-gray-400 mb-2">{result.instructions.title}</p>
-                  <p className="text-sm text-gray-200">
-                    <span className="text-gray-400">Banco:</span> {result.instructions.bankName}
-                  </p>
-                  <p className="text-sm text-gray-200">
-                    <span className="text-gray-400">Titular:</span>{" "}
-                    {result.instructions.accountName}
-                  </p>
-                  <div className="text-sm text-gray-200 flex items-center gap-2">
-                    <span className="text-gray-400">Cuenta:</span>
-                    <button
-                      type="button"
-                      onClick={handleCopyAccountNumber}
-                      className="text-teal-200 hover:text-teal-100 underline underline-offset-2"
-                    >
-                      {result.instructions.accountNumber}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCopyAccountNumber}
-                      className="text-xs text-teal-300 hover:text-teal-200"
-                    >
-                      (copiar)
-                    </button>
-                  </div>
-                  {result.instructions.cci && (
-                    <p className="text-sm text-gray-200">
-                      <span className="text-gray-400">CCI:</span> {result.instructions.cci}
-                    </p>
-                  )}
-                  {qrImageUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setIsQrModalOpen(true)}
-                      className="mt-3 inline-flex items-center justify-center rounded-lg border border-teal-500/40 bg-teal-500/10 px-3 py-1.5 text-xs font-medium text-teal-200 hover:bg-teal-500/20"
-                    >
-                      Ver QR
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <p className="mt-4 text-sm text-gray-200">{result.instructions.note}</p>
-
-              <p className="mt-2 text-xs text-gray-400">
-                Estado actual: <span className="text-gray-200">{result.status}</span>
-              </p>
-
-              <div className="mt-4">
-                <ProofUploader
-                  depositId={result.depositId}
-                  onUploaded={() => {
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 border-t border-gray-800 px-6 py-4">
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard?.writeText(result.referenceCode).catch(() => {});
-                }}
-                className="rounded-lg border border-gray-700 bg-[#0a1628] px-4 py-2 text-sm text-gray-200 hover:bg-[#152b47]"
-              >
-                Copiar referencia
-              </button>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
-              >
-                Entendido
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {qrImageUrl && (
-        <DepositBankQrModal
-          open={isQrModalOpen}
-          onClose={() => setIsQrModalOpen(false)}
-          qrImageUrl={qrImageUrl}
-          bankName={result?.instructions?.bankName}
+        <DepositInstructionsModal
+          result={result}
+          isQrModalOpen={isQrModalOpen}
+          onOpenQr={() => setIsQrModalOpen(true)}
+          onCloseQr={() => setIsQrModalOpen(false)}
+          onClose={closeModal}
         />
       )}
     </div>
