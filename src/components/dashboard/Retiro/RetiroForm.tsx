@@ -128,6 +128,32 @@ export default function RetiroForm({ amount_wallet }: RetiroFormProps) {
       return;
     }
 
+    if (!user.walletAddress) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: 'No tienes una wallet vinculada. Ve a Configuración para vincularla.'
+      });
+      return;
+    }
+
+    if (!isConnected || !address) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: 'Conecta tu wallet para continuar.'
+      });
+      return;
+    }
+
+    if (address.toLowerCase() !== user.walletAddress.toLowerCase()) {
+      setReportModal({
+        isOpen: true,
+        success: false,
+        message: `La wallet conectada no coincide con tu wallet vinculada. Conecta: ${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`
+      });
+      return;
+    }
 
     setIsModalOpen(true);
   };

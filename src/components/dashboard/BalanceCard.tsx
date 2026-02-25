@@ -163,7 +163,7 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           <div className="text-xl font-semibold">{bobUI} Bs</div>
         </div>
         <div>
-          <div className="text-cyan-200 text-sm mb-1">BNB gas:</div>
+          <div className="text-cyan-200 text-sm mb-1">BNBs:</div>
           <div className="text-xl font-semibold">
             {native?.formatted ? Number(native.formatted).toFixed(4) : "0.0000"} {native?.symbol ?? "ETH"}
           </div>
