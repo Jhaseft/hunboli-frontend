@@ -46,7 +46,6 @@ export function DepositForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Currency selector */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
             Moneda de Depósito
@@ -75,19 +74,39 @@ export function DepositForm() {
           )}
         </div>
 
-        {/* Amount input */}
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-300 mb-3">
-            Monto
+            Monto{selectedCurrency === "PEN" && <span className="ml-1 text-gray-400">(S/)</span>}
           </label>
-          <input
-            type="text"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full px-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
-          />
+          {selectedCurrency === "PEN" ? (
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium select-none">
+                S/
+              </span>
+              <input
+                type="text"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full pl-10 pr-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
+              />
+            </div>
+          ) : (
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium select-none">
+                  Bs
+              </span>
+              <input
+                type="text"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full pl-10 pr-4 py-3 bg-[#0a1628] border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none text-white placeholder-gray-500"
+              />
+            </div>
+          )}
 
           {!isValidAmount && amount.length > 0 && (
             <p className="mt-2 text-xs text-red-300/90">Ingresa un monto válido mayor a 0.</p>
@@ -101,7 +120,6 @@ export function DepositForm() {
           )}
         </div>
 
-        {/* Fee calculator */}
         <div className="rounded-2xl border border-gray-700 bg-[#0a1628] p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-300">Tipo de cambio</span>
