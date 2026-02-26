@@ -2,7 +2,9 @@
 
 import React from "react";
 import type { AdminDepositItem } from "./types";
-import { statusBadgeClass, statusLabel, fmt, isImageMime } from "./depositUtils";
+import { statusBadgeClass, statusLabel, fmt } from "./depositUtils";
+import { AdminDepositActionsPanel } from "./AdminDepositActionsPanel";
+import { AdminDepositProofSection } from "./AdminDepositProofSection";
 
 type Props = {
   deposit: AdminDepositItem;
@@ -30,8 +32,6 @@ export function AdminDepositCard({
   const currencyLabel = d.currency === "BOB" ? "Bs" : "S/";
   const created = new Date(d.createdAt).toLocaleString();
 
-  const isActing = actingId === d.id;
-
   const canApprove =
     d.status !== "MINTED" &&
     d.status !== "NEED_CORRECTION" &&
@@ -44,17 +44,14 @@ export function AdminDepositCard({
 
   const canRequestCorrection = d.status === "PROOF_SUBMITTED" && !!d.proofUrl;
 
-  const showImageThumb = !!d.proofUrl && isImageMime(d.proofMimeType);
-
   return (
     <div className="rounded-2xl border border-gray-700 bg-[#0a1628] p-5">
       <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
+
         {/* LEFT */}
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-3">
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass(d.status)}`}
-            >
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass(d.status)}`}>
               {statusLabel(d.status)}
             </span>
 
@@ -146,63 +143,7 @@ export function AdminDepositCard({
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-800 bg-[#071225] p-3">
-              <p className="text-xs text-gray-400">Comprobante</p>
-
-              {!d.proofUrl ? (
-                <p className="text-xs text-gray-500 mt-1">Sin comprobante</p>
-              ) : (
-                <>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <a
-                      href={d.proofUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-2 rounded-lg text-xs font-medium border border-gray-700 bg-[#0a1628] text-teal-300 hover:bg-[#152b47]"
-                    >
-                      Abrir
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() => onPreview(d)}
-                      className="px-3 py-2 rounded-lg text-xs font-medium border border-gray-700 bg-[#0a1628] text-gray-200 hover:bg-[#152b47]"
-                    >
-                      Vista previa
-                    </button>
-
-                    {d.proofFileName ? (
-                      <span className="text-xs text-gray-500">
-                        {d.proofFileName}
-                        {d.proofMimeType ? ` • ${d.proofMimeType}` : ""}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {d.proofUploadedAt ? (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Subido: {new Date(d.proofUploadedAt).toLocaleString()}
-                    </p>
-                  ) : null}
-
-                  {showImageThumb && (
-                    <button
-                      type="button"
-                      onClick={() => onPreview(d)}
-                      className="mt-3 w-full text-left"
-                      title="Abrir vista previa"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={d.proofUrl}
-                        alt="Comprobante"
-                        className="w-full max-h-44 object-cover rounded-xl border border-gray-800 bg-[#0a1628]"
-                      />
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
+            <AdminDepositProofSection deposit={d} onPreview={onPreview} />
           </div>
 
           {d.status === "NEED_CORRECTION" && d.reviewNote && (
@@ -224,9 +165,9 @@ export function AdminDepositCard({
                 <span className="text-gray-200 font-semibold">
                   1 PEN = {Number(d.rateUsed).toFixed(4)} BOB
                 </span>{" "}
-                {d.rateSource ? (
+                {d.rateSource && (
                   <span className="text-gray-500">({d.rateSource})</span>
-                ) : null}
+                )}
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 Válido hasta:{" "}
@@ -239,81 +180,18 @@ export function AdminDepositCard({
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="w-full xl:w-[270px]">
-          <div className="rounded-2xl border border-gray-800 bg-[#071225] p-4">
-            <p className="text-sm font-semibold text-white mb-3">Acciones</p>
+        <AdminDepositActionsPanel
+          deposit={d}
+          actingId={actingId}
+          submittingCorrection={submittingCorrection}
+          canApprove={canApprove}
+          canReject={canReject}
+          canRequestCorrection={canRequestCorrection}
+          onApprove={onApprove}
+          onReject={onReject}
+          onRequestCorrection={onRequestCorrection}
+        />
 
-            <button
-              type="button"
-              onClick={() => onApprove(d.id)}
-              disabled={isActing || !canApprove}
-              className={`w-full py-2.5 rounded-lg font-medium transition-colors ${
-                isActing || !canApprove
-                  ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
-                  : "bg-teal-600 text-white hover:bg-cyan-700"
-              }`}
-            >
-              {isActing ? "Procesando..." : "Aprobar"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onRequestCorrection(d)}
-              disabled={isActing || submittingCorrection || !canRequestCorrection}
-              className={`mt-2 w-full py-2.5 rounded-lg font-medium transition-colors ${
-                isActing || submittingCorrection || !canRequestCorrection
-                  ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
-                  : "bg-amber-600 text-white hover:bg-amber-700"
-              }`}
-            >
-              Solicitar corrección
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onReject(d.id)}
-              disabled={isActing || !canReject}
-              className={`mt-2 w-full py-2.5 rounded-lg font-medium transition-colors ${
-                isActing || !canReject
-                  ? "bg-gray-700/40 text-gray-400 cursor-not-allowed"
-                  : "bg-red-600 text-white hover:bg-red-700"
-              }`}
-            >
-              {isActing ? "Procesando..." : "Rechazar"}
-            </button>
-
-            {!d.proofUrl && (
-              <p className="mt-3 text-xs text-gray-500">
-                Para aprobar, debe existir comprobante.
-              </p>
-            )}
-
-            {d.validatedAt && (
-              <p className="mt-3 text-xs text-gray-500">
-                Validado: {new Date(d.validatedAt).toLocaleString()}
-              </p>
-            )}
-          </div>
-
-          {d.safeTxHash && (
-            <div className="mt-3 rounded-2xl border border-gray-800 bg-[#071225] p-4">
-              <p className="text-xs text-gray-400">Propuesta creada</p>
-              {d.safeProposedAt && (
-                <p className="mt-1 text-[11px] text-gray-400">
-                  {new Date(d.safeProposedAt).toLocaleString()}
-                </p>
-              )}
-              <p className="mt-1 text-xs text-gray-200 break-all">{d.safeTxHash}</p>
-            </div>
-          )}
-
-          {d.mintTxHash && (
-            <div className="mt-3 rounded-2xl border border-gray-800 bg-[#071225] p-4">
-              <p className="text-xs text-gray-400">Mint Tx</p>
-              <p className="mt-1 text-xs text-gray-200 break-all">{d.mintTxHash}</p>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

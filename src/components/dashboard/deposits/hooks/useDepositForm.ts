@@ -3,18 +3,10 @@ import type { FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { handleKycGateResponse } from "@/lib/kyc-errors";
 import type { FiatCurrency, DepositCreateResponse } from "../types";
+import { parseMoney, calcDepositFees } from "../depositFees";
+import { usePenRate } from "./usePenRate";
 
-const FEE_RATE = 0.001; // 0.1%
-const FIXED_FEE_BOB = 100; // 100 Bs
-const FIXED_FEE_MIN_BOB = 10_000;
-const FIXED_FEE_MAX_BOB = 100_000;
-export const MIN_DEPOSIT_BOB = 10_000;
-
-function parseMoney(input: string): number {
-  const normalized = input.replace(",", ".").trim();
-  const n = Number(normalized);
-  return Number.isFinite(n) ? n : NaN;
-}
+export { MIN_DEPOSIT_BOB } from "../depositFees";
 
 export function useDepositForm() {
   const { token, isLoading } = useAuth();
@@ -23,11 +15,6 @@ export function useDepositForm() {
   // Form state
   const [selectedCurrency, setSelectedCurrency] = useState<FiatCurrency>("BOB");
   const [amount, setAmount] = useState("");
-
-  // PEN rate
-  const [penToBobRate, setPenToBobRate] = useState<number | null>(null);
-  const [rateStatus, setRateStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [rateUpdatedAt, setRateUpdatedAt] = useState<string | null>(null);
 
   // Submission
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +29,9 @@ export function useDepositForm() {
     setIsModalOpen(false);
     setIsQrModalOpen(false);
   };
+
+  // PEN rate
+  const { penToBobRate, rateStatus, rateUpdatedAt } = usePenRate(selectedCurrency, backendUrl);
 
   // Reset on currency/amount change
   useEffect(() => {
@@ -73,101 +63,20 @@ export function useDepositForm() {
     };
   }, [isModalOpen, isQrModalOpen]);
 
-  // PEN rate fetch
-  useEffect(() => {
-    let cancelled = false;
-
-    if (selectedCurrency !== "PEN") {
-      setPenToBobRate(null);
-      setRateUpdatedAt(null);
-      setRateStatus("idle");
-      return;
-    }
-
-    setRateStatus("loading");
-
-    fetch(`${backendUrl}/rates`, { cache: "no-store" })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Error al obtener rates");
-        return res.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        const rate = Number(data.pen_to_bob);
-        if (!Number.isFinite(rate) || rate <= 0) {
-          setPenToBobRate(null);
-          setRateStatus("error");
-          return;
-        }
-        setPenToBobRate(rate);
-        setRateUpdatedAt(typeof data.updatedAt === "string" ? data.updatedAt : null);
-        setRateStatus("idle");
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setRateStatus("error");
-        setPenToBobRate(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCurrency, backendUrl]);
-
   // Fee calculations
   const amountNum = useMemo(() => parseMoney(amount), [amount]);
   const isValidAmount = Number.isFinite(amountNum) && amountNum > 0;
 
-  const amountInBobEquivalent = useMemo(() => {
-    if (!isValidAmount) return 0;
-    if (selectedCurrency === "BOB") return amountNum;
-    if (!penToBobRate) return 0;
-    return amountNum * penToBobRate;
-  }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
-
-  const meetsMinimum = amountInBobEquivalent >= MIN_DEPOSIT_BOB;
-
-  const qualifiesForFixedFee =
-    amountInBobEquivalent >= FIXED_FEE_MIN_BOB &&
-    amountInBobEquivalent < FIXED_FEE_MAX_BOB;
-
-  const serviceFee = useMemo(() => {
-    if (!isValidAmount) return 0;
-    if (amountInBobEquivalent < MIN_DEPOSIT_BOB) return 0;
-    if (qualifiesForFixedFee) {
-      if (selectedCurrency === "PEN") {
-        if (!penToBobRate) return 0;
-        return FIXED_FEE_BOB / penToBobRate;
-      }
-      return FIXED_FEE_BOB;
-    }
-    return amountNum * FEE_RATE;
-  }, [
-    isValidAmount,
-    amountNum,
-    amountInBobEquivalent,
-    qualifiesForFixedFee,
-    selectedCurrency,
-    penToBobRate,
-  ]);
-
-  const totalToPay = useMemo(() => {
-    if (!isValidAmount) return 0;
-    return amountNum + serviceFee;
-  }, [isValidAmount, amountNum, serviceFee]);
-
-  const receiveBOBH = useMemo(() => {
-    if (!isValidAmount) return 0;
-    if (selectedCurrency === "BOB") return amountNum;
-    if (!penToBobRate) return 0;
-    return amountNum * penToBobRate;
-  }, [isValidAmount, amountNum, selectedCurrency, penToBobRate]);
+  const fees = useMemo(
+    () => calcDepositFees(amountNum, isValidAmount, selectedCurrency, penToBobRate),
+    [amountNum, isValidAmount, selectedCurrency, penToBobRate]
+  );
 
   const canSubmit =
     !isLoading &&
     !!token &&
     isValidAmount &&
-    meetsMinimum &&
+    fees.meetsMinimum &&
     (selectedCurrency !== "PEN" || !!penToBobRate) &&
     !isSubmitting;
 
@@ -239,12 +148,12 @@ export function useDepositForm() {
     rateUpdatedAt,
     // Calculated values
     isValidAmount,
-    amountInBobEquivalent,
-    meetsMinimum,
-    qualifiesForFixedFee,
-    serviceFee,
-    totalToPay,
-    receiveBOBH,
+    amountInBobEquivalent: fees.amountInBobEquivalent,
+    meetsMinimum: fees.meetsMinimum,
+    qualifiesForFixedFee: fees.qualifiesForFixedFee,
+    serviceFee: fees.serviceFee,
+    totalToPay: fees.totalToPay,
+    receiveBOBH: fees.receiveBOBH,
     // Modals
     isModalOpen,
     isQrModalOpen,
