@@ -5,8 +5,8 @@ import type { AdminMintDepositItem, AdminDepositReviewCardProps, DepositStatus }
 import { ReviewActionsPanel } from "./ReviewActionsPanel";
 import { MintPanel } from "./MintPanel";
 
-// Re-export type for consumers that import it from this file
-export type { AdminMintDepositItem };
+// Re-export types for consumers that import them from this file
+export type { AdminMintDepositItem, DepositStatus };
 // Backwards-compatible alias
 export type { AdminMintDepositItem as AdminDepositItem };
 
