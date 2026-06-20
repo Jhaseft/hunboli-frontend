@@ -3,7 +3,7 @@ import { X, CheckCircle, XCircle } from "lucide-react";
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  success: boolean; // true = bien, false = error
+  success: boolean; 
   message: string;
 }
 
