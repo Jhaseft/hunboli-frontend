@@ -74,7 +74,7 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
       ]
       : [],
     query: { enabled: tokenEnabled },
-  }); // hook oficial para múltiples lecturas :contentReference[oaicite:5]{index=5}
+  });
 
   const decimals = (tokenReads?.[0]?.result as number | undefined) ?? 6;
   const symbol = (tokenReads?.[1]?.result as string | undefined) ?? "BOBH";
@@ -86,12 +86,12 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
 
   useEffect(() => {
     if (onBalanceChange) {
-      onBalanceChange(tokenBalance); // valor real (no formateado)
+      onBalanceChange(tokenBalance); 
     }
   }, [tokenBalance, onBalanceChange]);
 
   return (
-    <div className="bg-gradient-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
+    <div className="bg-linear-to-br from-green-600 to-cyan-700 rounded-2xl p-8 text-white shadow-lg">
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-2">
           <Wallet className="w-5 h-5" />
@@ -124,7 +124,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </div>
         )}
 
-        {/* Mostrar botón de vincular si no tiene wallet vinculada */}
         {canLinkWallet && !wrongNetwork && (
           <button
             onClick={handleGoToLinkWallet}
@@ -135,7 +134,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </button>
         )}
 
-        {/* Advertencia: wallet conectada diferente a la vinculada */}
         {isWrongWallet && !wrongNetwork && (
           <div className="mt-3 flex items-center gap-2 bg-amber-500/20 text-amber-200 rounded-lg px-3 py-2 text-xs">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -149,7 +147,6 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           </div>
         )}
 
-        {/* Mensaje de éxito: wallet vinculada correctamente */}
         {isWalletLinked && (
           <div className="mt-4 text-sm bg-green-500/20 text-white rounded-lg px-3 py-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -166,7 +163,7 @@ export function BalanceCard({ onBalanceChange }: BalanceCardProps) {
           <div className="text-xl font-semibold">{bobUI} Bs</div>
         </div>
         <div>
-          <div className="text-cyan-200 text-sm mb-1">BNB gas:</div>
+          <div className="text-cyan-200 text-sm mb-1">BNBs:</div>
           <div className="text-xl font-semibold">
             {native?.formatted ? Number(native.formatted).toFixed(4) : "0.0000"} {native?.symbol ?? "ETH"}
           </div>

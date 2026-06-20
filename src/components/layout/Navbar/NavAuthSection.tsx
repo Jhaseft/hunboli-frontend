@@ -19,7 +19,10 @@ export function NavAuthSection({
   isDashboard,
   variant = 'desktop',
 }: NavAuthSectionProps) {
+  const hideMobileProfile = variant === 'mobile' && !isDashboard;
+
   if (isLoading) {
+    if (hideMobileProfile) return null;
     return variant === 'desktop' ? (
       <div className="w-24 h-8 bg-gray-800/50 rounded-full animate-pulse" />
     ) : (
@@ -43,11 +46,11 @@ export function NavAuthSection({
             const status = user?.kycStatus;
             if (!status) return null;
 
-            const map: Record<string, { label: string; className: string }> = {
-              VERIFIED: {
-                label: 'KYC Verificado',
-                className: 'bg-green-600/20 text-green-300 border border-green-500/30',
-              },
+              const map: Record<string, { label: string; className: string }> = {
+                VERIFIED: {
+                  label: 'KYC Verificado',
+                  className: 'bg-green-600/20 text-green-300 border border-green-500/30',
+                },
               PENDING: {
                 label: 'En revisión',
                 className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
@@ -60,13 +63,18 @@ export function NavAuthSection({
                 label: 'Rechazado',
                 className: 'bg-red-600/20 text-red-300 border border-red-500/30',
               },
-              UNVERIFIED: {
-                label: 'KYC Pendiente',
-                className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
-              },
-            };
+                UNVERIFIED: {
+                  label: 'KYC Pendiente',
+                  className: 'bg-yellow-600/20 text-yellow-300 border border-yellow-500/30',
+                },
+                BLACKLISTED: {
+                  label: 'KYC Bloqueado',
+                  className: 'bg-red-600/20 text-red-300 border border-red-500/30',
+                },
+              };
 
-            const badge = map[status];
+              const badge = map[status];
+              if (!badge) return null;
             if (status === 'UNVERIFIED' || status === 'NEED_CORRECTION') {
               return (
                 <Link
@@ -91,7 +99,9 @@ export function NavAuthSection({
         <VerificationBadge isVerified={user?.isVerified ?? false} />
       )}
 
-      <ProfileMenu isDashboard={isDashboard} variant={variant} />
+      {!hideMobileProfile && (
+        <ProfileMenu isDashboard={isDashboard} variant={variant} />
+      )}
     </>
   );
 }

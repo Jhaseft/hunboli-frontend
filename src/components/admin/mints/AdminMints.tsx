@@ -7,6 +7,7 @@ import {
   AdminDepositItem,
   DepositStatus,
 } from "./AdminDepositReviewCard";
+import { DepositReviewDrawer } from "./DepositReviewDrawer";
 
 type AdminDepositsResponse = {
   items: AdminDepositItem[];
@@ -104,6 +105,15 @@ function fmt(n: number, decimals = 2) {
   return Number.isFinite(n) ? n.toFixed(decimals) : "0.00";
 }
 
+function formatDecimalString(value: string, maxDecimals = 6) {
+  if (!value) return "0";
+  const normalized = value.trim();
+  const [intPart, decPart = ""] = normalized.split(".");
+  if (maxDecimals <= 0 || decPart.length === 0) return intPart || "0";
+  const trimmed = decPart.slice(0, maxDecimals);
+  return trimmed ? `${intPart || "0"}.${trimmed}` : intPart || "0";
+}
+
 export function AdminMints() {
   const { token, isLoading } = useAuth();
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -127,6 +137,7 @@ export function AdminMints() {
   }>({ open: false, type: "success", message: "" });
 
   const [preview, setPreview] = useState<AdminDepositItem | null>(null);
+  const [drawerItem, setDrawerItem] = useState<AdminDepositItem | null>(null);
   const [correctionTarget, setCorrectionTarget] =
     useState<AdminDepositItem | null>(null);
   const [correctionNote, setCorrectionNote] = useState<string>("");
@@ -209,10 +220,17 @@ export function AdminMints() {
 
   const refreshList = useCallback(async () => {
     const data = await fetchPage(null, true);
-    if (!data || !preview) return;
-    const updated = data.items?.find((d) => d.id === preview.id) ?? null;
-    setPreview(updated);
-  }, [fetchPage, preview]);
+    if (!data) return;
+    if (preview) {
+      const updated = data.items?.find((d) => d.id === preview.id) ?? null;
+      setPreview(updated);
+    }
+    if (drawerItem) {
+      const updatedDrawer =
+        data.items?.find((d) => d.id === drawerItem.id) ?? null;
+      setDrawerItem(updatedDrawer);
+    }
+  }, [fetchPage, preview, drawerItem]);
 
   const closeToast = useCallback(() => {
     setToast((prev) => ({ ...prev, open: false }));
@@ -296,6 +314,16 @@ export function AdminMints() {
         };
       });
 
+      setDrawerItem((p) => {
+        if (!p || p.id !== id) return p;
+        return {
+          ...p,
+          status: newStatus,
+          validatedById: data.validatedById ?? p.validatedById,
+          validatedAt: data.validatedAt ?? p.validatedAt,
+        };
+      });
+
       showToast(
         "success",
         action === "APPROVE" ? "Deposito aprobado." : "Deposito rechazado."
@@ -308,27 +336,32 @@ export function AdminMints() {
     }
   };
 
-  async function submitCorrection() {
-    if (!backendUrl || !token || !correctionTarget) return;
-    const note = correctionNote.trim();
-    if (note.length < 5) {
-      alert("La nota debe tener al menos 5 caracteres.");
+  const requestCorrection = async (
+    targetId: string,
+    note: string,
+    onSuccess?: () => void
+  ) => {
+    if (!backendUrl || !token) return;
+    const trimmed = note.trim();
+    if (trimmed.length < 5) {
+      showToast("error", "La nota debe tener al menos 5 caracteres.");
       return;
     }
 
     try {
       setSubmittingCorrection(true);
-      setActingId(correctionTarget.id);
+      setActingId(targetId);
+      closeToast();
 
       const res = await fetch(
-        `${backendUrl}/admin/deposits/${correctionTarget.id}/request-correction`,
+        `${backendUrl}/admin/deposits/${targetId}/request-correction`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ note }),
+          body: JSON.stringify({ note: trimmed }),
         }
       );
 
@@ -341,11 +374,11 @@ export function AdminMints() {
 
       setItems((prev) =>
         prev.map((x) => {
-          if (x.id !== correctionTarget.id) return x;
+          if (x.id !== targetId) return x;
           return {
             ...x,
             status: data.status,
-            reviewNote: data.reviewNote ?? note,
+            reviewNote: data.reviewNote ?? trimmed,
             reviewedById: data.reviewedById ?? x.reviewedById,
             reviewedAt: data.reviewedAt ?? new Date().toISOString(),
           };
@@ -353,18 +386,28 @@ export function AdminMints() {
       );
 
       setPreview((p) => {
-        if (!p || p.id !== correctionTarget.id) return p;
+        if (!p || p.id !== targetId) return p;
         return {
           ...p,
           status: data.status,
-          reviewNote: data.reviewNote ?? note,
+          reviewNote: data.reviewNote ?? trimmed,
           reviewedById: data.reviewedById ?? p.reviewedById,
           reviewedAt: data.reviewedAt ?? new Date().toISOString(),
         };
       });
 
-      setCorrectionTarget(null);
-      setCorrectionNote("");
+      setDrawerItem((p) => {
+        if (!p || p.id !== targetId) return p;
+        return {
+          ...p,
+          status: data.status,
+          reviewNote: data.reviewNote ?? trimmed,
+          reviewedById: data.reviewedById ?? p.reviewedById,
+          reviewedAt: data.reviewedAt ?? new Date().toISOString(),
+        };
+      });
+
+      onSuccess?.();
       showToast("success", "Correccion solicitada.");
       refreshList();
     } catch (e: any) {
@@ -373,6 +416,14 @@ export function AdminMints() {
       setSubmittingCorrection(false);
       setActingId(null);
     }
+  };
+
+  async function submitCorrection() {
+    if (!correctionTarget) return;
+    await requestCorrection(correctionTarget.id, correctionNote, () => {
+      setCorrectionTarget(null);
+      setCorrectionNote("");
+    });
   }
 
   const proposeMint = async (id: string) => {
@@ -421,6 +472,15 @@ export function AdminMints() {
         };
       });
 
+      setDrawerItem((p) => {
+        if (!p || p.id !== id) return p;
+        return {
+          ...p,
+          safeTxHash: data.safeTxHash ?? p.safeTxHash,
+          safeProposedAt: data.safeProposedAt ?? p.safeProposedAt,
+        };
+      });
+
       showToast("success", "Propuesta creada en Safe.");
       refreshList();
     } catch {
@@ -439,10 +499,11 @@ export function AdminMints() {
 
     return items.filter((d) => {
       if (preview?.id && d.id === preview.id) return true;
+      if (drawerItem?.id && d.id === drawerItem.id) return true;
       if (!allowed.has(d.status)) return false;
       return true;
     });
-  }, [items, includeReviewExtras, preview]);
+  }, [items, includeReviewExtras, preview, drawerItem]);
 
   const filteredBySearch = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -608,7 +669,85 @@ export function AdminMints() {
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="md:hidden space-y-3">
+        {orderedItems.map((d) => {
+          const total = Number(d.totalAmount);
+          const userName = `${d.user.firstName} ${d.user.lastName}`.trim();
+          const dateLabel = new Date(
+            d.proofUploadedAt ?? d.createdAt
+          ).toLocaleDateString();
+
+          return (
+            <div
+              key={d.id}
+              className="rounded-2xl border border-gray-700 bg-[#0a1628] p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusBadgeClass(
+                      d.status
+                    )}`}
+                  >
+                    {statusLabel(d.status)}
+                  </span>
+
+                  {d.currency === "PEN" && d.isRateExpired && (
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-500/30 bg-red-500/10 text-red-200">
+                      Rate vencido
+                    </span>
+                  )}
+
+                  <span className="text-xs text-gray-200">
+                    <span className="text-gray-400">Ref:</span>{" "}
+                    <span className="font-semibold text-teal-200">
+                      {d.referenceCode}
+                    </span>
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onCopy("Referencia", d.referenceCode)}
+                  className="shrink-0 px-2 py-1 rounded-md text-[11px] border border-gray-700 bg-[#071225] text-gray-200 hover:bg-[#152b47]"
+                >
+                  Copiar
+                </button>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-gray-400 truncate">
+                  {userName || "Usuario"} • {d.user.email}
+                </p>
+                <span className="text-[11px] text-gray-500">{dateLabel}</span>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="text-xs text-gray-200">
+                  <p>
+                    <span className="text-gray-400">Total:</span>{" "}
+                    {fmt(total)} {d.currency === "BOB" ? "Bs" : "S/"}
+                  </p>
+                  <p className="text-teal-300">
+                    <span className="text-gray-400">Recibe:</span>{" "}
+                    {formatDecimalString(d.expectedBOBH, 6)} BOBH
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setDrawerItem(d)}
+                  className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-cyan-700 transition-colors"
+                >
+                  Ver
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden md:block space-y-4">
         {orderedItems.map((d) => (
           <AdminDepositReviewCard
             key={d.id}
@@ -642,9 +781,23 @@ export function AdminMints() {
         </button>
       </div>
 
+      <DepositReviewDrawer
+        open={!!drawerItem}
+        item={drawerItem}
+        actingId={actingId}
+        submittingCorrection={submittingCorrection}
+        onClose={() => setDrawerItem(null)}
+        onApprove={(id) => decide(id, "APPROVE")}
+        onReject={(id) => decide(id, "REJECT")}
+        onRequestCorrection={(id, note) => requestCorrection(id, note)}
+        onProposeMint={(id) => proposeMint(id)}
+        onPreview={(item) => setPreview(item)}
+        onCopy={onCopy}
+      />
+
       {preview && previewRules && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl rounded-2xl border border-gray-700 bg-[#0f1e33] shadow-xl overflow-hidden">
+          <div className="w-full max-w-4xl max-h-[90vh] rounded-2xl border border-gray-700 bg-[#0f1e33] shadow-xl overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
               <div>
                 <p className="text-white font-semibold">Vista previa</p>
@@ -671,7 +824,7 @@ export function AdminMints() {
                   <img
                     src={preview.proofUrl}
                     alt="Comprobante"
-                    className="w-full max-h-[560px] object-contain rounded-xl border border-gray-800 bg-[#0a1628]"
+                    className="w-full max-h-[70vh] object-contain rounded-xl border border-gray-800 bg-[#0a1628]"
                   />
                 ) : isPdfMime(preview.proofMimeType) ? (
                   <div className="space-y-3">
@@ -687,7 +840,7 @@ export function AdminMints() {
                     <div className="rounded-xl border border-gray-800 overflow-hidden">
                       <iframe
                         src={preview.proofUrl}
-                        className="w-full h-[520px]"
+                        className="w-full h-[70vh] max-h-[70vh]"
                         title="PDF preview"
                       />
                     </div>

@@ -102,12 +102,12 @@ export const VerificationSection = () => {
                                 Solicitudes de verificacion de identidad
                             </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 overflow-x-auto">
                             {FILTERS.map((f) => (
                                 <button
                                     key={f.value}
                                     onClick={() => setFilter(f.value)}
-                                    className={`flex items-center gap-2 border font-medium text-sm px-4 py-2 rounded-lg transition-colors ${filter === f.value
+                                    className={`flex items-center gap-2 border font-medium text-sm px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${filter === f.value
                                             ? "border-teal-500 bg-teal-600/20 text-teal-300"
                                             : "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
                                         }`}
@@ -131,62 +131,64 @@ export const VerificationSection = () => {
                             <p className="text-sm">No hay solicitudes {filter === "PENDING" ? "pendientes" : filter === "APPROVED" ? "aprobadas" : "rechazadas"}</p>
                         </div>
                     ) : (
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-gray-800 text-gray-400 text-left">
-                                    <th className="px-6 py-4 font-medium">Usuario</th>
-                                    <th className="px-6 py-4 font-medium">Email</th>
-                                    <th className="px-6 py-4 font-medium">Estado</th>
-                                    <th className="px-6 py-4 font-medium">Fecha</th>
-                                    <th className="px-6 py-4 font-medium text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {requests.map((req) => (
-                                    <tr key={req.id} className="border-b border-gray-800/50 hover:bg-white/2 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className="text-white font-medium">
-                                                {req.users.firstName} {req.users.lastName}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-400">{req.users.email}</td>
-                                        <td className="px-6 py-4">{statusBadge(req.status)}</td>
-                                        <td className="px-6 py-4 text-gray-400">{formatDate(req.createdAt)}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => setPreviewImage(req.imageUrl)}
-                                                    className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
-                                                    title="Ver documento"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </button>
-                                                {filter === "PENDING" && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleApprove(req.id)}
-                                                            disabled={actionLoading === req.id}
-                                                            className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 text-green-400 transition-colors disabled:opacity-50"
-                                                            title="Aprobar"
-                                                        >
-                                                            <Check className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleReject(req.id)}
-                                                            disabled={actionLoading === req.id}
-                                                            className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 transition-colors disabled:opacity-50"
-                                                            title="Rechazar"
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm min-w-[600px]">
+                                <thead>
+                                    <tr className="border-b border-gray-800 text-gray-400 text-left">
+                                        <th className="px-4 py-4 font-medium">Usuario</th>
+                                        <th className="px-4 py-4 font-medium">Email</th>
+                                        <th className="px-4 py-4 font-medium">Estado</th>
+                                        <th className="px-4 py-4 font-medium">Fecha</th>
+                                        <th className="px-4 py-4 font-medium text-right">Acciones</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {requests.map((req) => (
+                                        <tr key={req.id} className="border-b border-gray-800/50 hover:bg-white/2 transition-colors">
+                                            <td className="px-4 py-4">
+                                                <span className="text-white font-medium">
+                                                    {req.users.firstName} {req.users.lastName}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-gray-400">{req.users.email}</td>
+                                            <td className="px-4 py-4">{statusBadge(req.status)}</td>
+                                            <td className="px-4 py-4 text-gray-400 whitespace-nowrap">{formatDate(req.createdAt)}</td>
+                                            <td className="px-4 py-4">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setPreviewImage(req.imageUrl)}
+                                                        className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+                                                        title="Ver documento"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    {filter === "PENDING" && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleApprove(req.id)}
+                                                                disabled={actionLoading === req.id}
+                                                                className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 text-green-400 transition-colors disabled:opacity-50"
+                                                                title="Aprobar"
+                                                            >
+                                                                <Check className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleReject(req.id)}
+                                                                disabled={actionLoading === req.id}
+                                                                className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-400 transition-colors disabled:opacity-50"
+                                                                title="Rechazar"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </div>

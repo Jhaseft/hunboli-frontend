@@ -18,7 +18,13 @@ export interface RegisterDto {
     phoneNumber?: string;
 }
 
-export type KycStatus = 'UNVERIFIED' | 'PENDING' | 'NEED_CORRECTION' | 'VERIFIED' | 'REJECTED';
+export type KycStatus =
+    | 'UNVERIFIED'
+    | 'PENDING'
+    | 'NEED_CORRECTION'
+    | 'VERIFIED'
+    | 'REJECTED'
+    | 'BLACKLISTED';
 
 export interface AuthResponse {
     access_token: string;
